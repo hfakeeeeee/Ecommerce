@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
+import { FaCheck, FaTimes, FaEye, FaEyeSlash } from 'react-icons/fa';
 
 export default function RegisterPage() {
     const [formData, setFormData] = useState({
@@ -12,31 +13,24 @@ export default function RegisterPage() {
         confirmPassword: ''
     });
     const [error, setError] = useState('');
-    const [passwordStrength, setPasswordStrength] = useState({
-        length: false,
-        uppercase: false,
-        lowercase: false,
-        number: false,
-        special: false
-    });
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const { register } = useAuth();
 
-    useEffect(() => {
-        validatePassword(formData.password);
-    }, [formData.password]);
-
     const validatePassword = (password) => {
-        setPasswordStrength({
+        const requirements = {
             length: password.length >= 8,
             uppercase: /[A-Z]/.test(password),
             lowercase: /[a-z]/.test(password),
             number: /[0-9]/.test(password),
             special: /[!@#$%^&*]/.test(password)
-        });
+        };
+        return requirements;
     };
 
     const isPasswordValid = () => {
-        return Object.values(passwordStrength).every(Boolean);
+        const requirements = validatePassword(formData.password);
+        return Object.values(requirements).every(Boolean);
     };
 
     const handleChange = (e) => {
@@ -75,124 +69,139 @@ export default function RegisterPage() {
 
     const PasswordRequirement = ({ met, text }) => (
         <div className="flex items-center space-x-2">
-            <div className={`w-2 h-2 rounded-full ${met ? 'bg-green-500' : 'bg-gray-300'}`} />
-            <span className={`text-sm ${met ? 'text-green-600' : 'text-gray-500'}`}>{text}</span>
+            {met ? (
+                <FaCheck className="text-green-500" />
+            ) : (
+                <FaTimes className="text-red-500" />
+            )}
+            <span className={met ? "text-green-500" : "text-red-500"}>{text}</span>
         </div>
     );
 
+    const requirements = validatePassword(formData.password);
+
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 to-purple-100 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg"
+                className="max-w-md w-full space-y-8"
             >
                 <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                        Create your account
-                    </h2>
-                    <p className="mt-2 text-center text-sm text-gray-600">
-                        Already have an account?
-                        <Link to="/login" className="ml-1 font-medium text-indigo-600 hover:text-indigo-500">
-                            Sign in
-                        </Link>
-                    </p>
+                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">Create your account</h2>
                 </div>
 
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                     <div className="rounded-md shadow-sm -space-y-px">
                         <div>
-                            <label htmlFor="firstName" className="sr-only">First Name</label>
                             <input
-                                id="firstName"
                                 name="firstName"
                                 type="text"
                                 required
-                                className="appearance-none rounded-t-md relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm dark:bg-gray-800"
                                 placeholder="First Name"
                                 value={formData.firstName}
                                 onChange={handleChange}
                             />
                         </div>
                         <div>
-                            <label htmlFor="lastName" className="sr-only">Last Name</label>
                             <input
-                                id="lastName"
                                 name="lastName"
                                 type="text"
                                 required
-                                className="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm dark:bg-gray-800"
                                 placeholder="Last Name"
                                 value={formData.lastName}
                                 onChange={handleChange}
                             />
                         </div>
                         <div>
-                            <label htmlFor="email" className="sr-only">Email address</label>
                             <input
-                                id="email"
                                 name="email"
                                 type="email"
                                 required
-                                className="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm dark:bg-gray-800"
                                 placeholder="Email address"
                                 value={formData.email}
                                 onChange={handleChange}
                             />
                         </div>
-                        <div>
-                            <label htmlFor="password" className="sr-only">Password</label>
+                        <div className="relative">
                             <input
-                                id="password"
                                 name="password"
-                                type="password"
+                                type={showPassword ? "text" : "password"}
                                 required
-                                className="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm dark:bg-gray-800"
                                 placeholder="Password"
                                 value={formData.password}
                                 onChange={handleChange}
                             />
+                            <button
+                                type="button"
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? (
+                                    <FaEyeSlash className="h-5 w-5 text-gray-400" />
+                                ) : (
+                                    <FaEye className="h-5 w-5 text-gray-400" />
+                                )}
+                            </button>
                         </div>
-                        <div>
-                            <label htmlFor="confirmPassword" className="sr-only">Confirm Password</label>
+                        <div className="relative">
                             <input
-                                id="confirmPassword"
                                 name="confirmPassword"
-                                type="password"
+                                type={showConfirmPassword ? "text" : "password"}
                                 required
-                                className="appearance-none rounded-b-md relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm dark:bg-gray-800"
                                 placeholder="Confirm Password"
                                 value={formData.confirmPassword}
                                 onChange={handleChange}
                             />
+                            <button
+                                type="button"
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            >
+                                {showConfirmPassword ? (
+                                    <FaEyeSlash className="h-5 w-5 text-gray-400" />
+                                ) : (
+                                    <FaEye className="h-5 w-5 text-gray-400" />
+                                )}
+                            </button>
                         </div>
                     </div>
 
-                    <div className="bg-gray-50 p-4 rounded-md space-y-2">
-                        <h3 className="text-sm font-medium text-gray-700">Password Requirements:</h3>
-                        <PasswordRequirement met={passwordStrength.length} text="At least 8 characters" />
-                        <PasswordRequirement met={passwordStrength.uppercase} text="One uppercase letter" />
-                        <PasswordRequirement met={passwordStrength.lowercase} text="One lowercase letter" />
-                        <PasswordRequirement met={passwordStrength.number} text="One number" />
-                        <PasswordRequirement met={passwordStrength.special} text="One special character (!@#$%^&*)" />
+                    <div className="rounded-md bg-gray-50 dark:bg-gray-800 p-4">
+                        <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Password Requirements:</h4>
+                        <div className="space-y-2 text-sm">
+                            <PasswordRequirement met={requirements.length} text="At least 8 characters" />
+                            <PasswordRequirement met={requirements.uppercase} text="At least one uppercase letter" />
+                            <PasswordRequirement met={requirements.lowercase} text="At least one lowercase letter" />
+                            <PasswordRequirement met={requirements.number} text="At least one number" />
+                            <PasswordRequirement met={requirements.special} text="At least one special character" />
+                        </div>
                     </div>
 
                     {error && (
-                        <div className="text-red-500 text-sm text-center bg-red-50 p-2 rounded">
+                        <div className="text-red-500 text-sm text-center">
                             {error}
                         </div>
                     )}
 
                     <div>
-                        <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
+                        <button
                             type="submit"
-                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
-                            Create Account
-                        </motion.button>
+                            Register
+                        </button>
+                    </div>
+
+                    <div className="text-sm text-center">
+                        <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+                            Already have an account? Sign in
+                        </Link>
                     </div>
                 </form>
             </motion.div>

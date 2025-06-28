@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 export default function LoginPage() {
     const [formData, setFormData] = useState({
@@ -9,9 +10,8 @@ export default function LoginPage() {
         password: ''
     });
     const [error, setError] = useState('');
-    const [isResetMode, setIsResetMode] = useState(false);
-    const [resetSuccess, setResetSuccess] = useState(false);
-    const { login, resetPassword } = useAuth();
+    const [showPassword, setShowPassword] = useState(false);
+    const { login } = useAuth();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -19,22 +19,10 @@ export default function LoginPage() {
             ...prev,
             [name]: value
         }));
-        setError('');
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
-        if (isResetMode) {
-            const result = await resetPassword(formData.email);
-            if (result.success) {
-                setResetSuccess(true);
-            } else {
-                setError(result.error);
-            }
-            return;
-        }
-
         const result = await login(formData.email, formData.password);
         if (!result.success) {
             setError(result.error);
@@ -42,108 +30,73 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 to-purple-100 py-12 px-4 sm:px-6 lg:px-8">
-            <motion.div
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+            <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg"
+                className="max-w-md w-full space-y-8"
             >
                 <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                        {isResetMode ? 'Reset Password' : 'Welcome Back'}
-                    </h2>
-                    <p className="mt-2 text-center text-sm text-gray-600">
-                        {isResetMode ? 'Enter your email to reset password' : "Don't have an account?"}
-                        {!isResetMode && (
-                            <Link to="/register" className="ml-1 font-medium text-indigo-600 hover:text-indigo-500">
-                                Sign up now
-                            </Link>
-                        )}
-                    </p>
+                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">Sign in to your account</h2>
                 </div>
+                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+                    <div className="rounded-md shadow-sm -space-y-px">
+                        <div>
+                            <input
+                                name="email"
+                                type="email"
+                                required
+                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm dark:bg-gray-800"
+                                placeholder="Email address"
+                                value={formData.email}
+                                onChange={handleChange}
+                            />
+                        </div>
+                        <div className="relative">
+                            <input
+                                name="password"
+                                type={showPassword ? "text" : "password"}
+                                required
+                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm dark:bg-gray-800"
+                                placeholder="Password"
+                                value={formData.password}
+                                onChange={handleChange}
+                            />
+                            <button
+                                type="button"
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? (
+                                    <FaEyeSlash className="h-5 w-5 text-gray-400" />
+                                ) : (
+                                    <FaEye className="h-5 w-5 text-gray-400" />
+                                )}
+                            </button>
+                        </div>
+                    </div>
 
-                {resetSuccess ? (
-                    <div className="bg-green-50 p-4 rounded-md">
-                        <p className="text-green-800">
-                            Password reset instructions have been sent to your email.
-                        </p>
+                    {error && (
+                        <div className="text-red-500 text-sm text-center">
+                            {error}
+                        </div>
+                    )}
+
+                    <div>
                         <button
-                            onClick={() => {
-                                setIsResetMode(false);
-                                setResetSuccess(false);
-                            }}
-                            className="mt-4 text-sm font-medium text-green-600 hover:text-green-500"
+                            type="submit"
+                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
-                            Return to login
+                            Sign in
                         </button>
                     </div>
-                ) : (
-                    <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                        <div className="rounded-md shadow-sm -space-y-px">
-                            <div>
-                                <label htmlFor="email" className="sr-only">Email address</label>
-                                <input
-                                    id="email"
-                                    name="email"
-                                    type="email"
-                                    required
-                                    className="appearance-none rounded-t-md relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                    placeholder="Email address"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            {!isResetMode && (
-                                <div>
-                                    <label htmlFor="password" className="sr-only">Password</label>
-                                    <input
-                                        id="password"
-                                        name="password"
-                                        type="password"
-                                        required
-                                        className="appearance-none rounded-b-md relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                        placeholder="Password"
-                                        value={formData.password}
-                                        onChange={handleChange}
-                                    />
-                                </div>
-                            )}
-                        </div>
 
-                        {error && (
-                            <div className="text-red-500 text-sm text-center bg-red-50 p-2 rounded">
-                                {error}
-                            </div>
-                        )}
-
-                        <div className="flex items-center justify-between">
-                            <div className="text-sm">
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setIsResetMode(!isResetMode);
-                                        setError('');
-                                    }}
-                                    className="font-medium text-indigo-600 hover:text-indigo-500"
-                                >
-                                    {isResetMode ? 'Back to login' : 'Forgot your password?'}
-                                </button>
-                            </div>
-                        </div>
-
-                        <div>
-                            <motion.button
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                type="submit"
-                                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                            >
-                                {isResetMode ? 'Send Reset Instructions' : 'Sign in'}
-                            </motion.button>
-                        </div>
-                    </form>
-                )}
+                    <div className="text-sm text-center">
+                        <Link to="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
+                            Don't have an account? Register
+                        </Link>
+                    </div>
+                </form>
             </motion.div>
         </div>
     );
