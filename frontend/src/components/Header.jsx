@@ -1,29 +1,12 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import ThemeSwitcher from './ThemeSwitcher'
 import { useCart } from '../context/CartContext'
-import { useState, useEffect } from 'react'
+import { useAuth } from '../context/AuthContext'
 
 export default function Header() {
   const { getCartItemCount } = useCart()
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [userEmail, setUserEmail] = useState('')
-  const navigate = useNavigate()
-
-  useEffect(() => {
-    const token = localStorage.getItem('token')
-    const email = localStorage.getItem('userEmail')
-    setIsLoggedIn(!!token)
-    setUserEmail(email || '')
-  }, [])
-
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('userEmail')
-    setIsLoggedIn(false)
-    setUserEmail('')
-    navigate('/')
-  }
+  const { isAuthenticated, userEmail, logout } = useAuth()
 
   return (
     <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50">
@@ -109,30 +92,37 @@ export default function Header() {
               </svg>
             </button>
 
-            {isLoggedIn ? (
+            {/* Auth Buttons */}
+            {isAuthenticated ? (
               <div className="flex items-center space-x-4">
-                <span className="text-gray-600">{userEmail}</span>
-                <button
-                  onClick={handleLogout}
-                  className="text-gray-600 hover:text-gray-900"
+                <span className="text-gray-600 dark:text-gray-300">{userEmail}</span>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={logout}
+                  className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                 >
                   Logout
-                </button>
+                </motion.button>
               </div>
             ) : (
               <div className="flex items-center space-x-4">
-                <Link
-                  to="/login"
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/register"
-                  className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
-                >
-                  Register
-                </Link>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Link
+                    to="/login"
+                    className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                  >
+                    Login
+                  </Link>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Link
+                    to="/register"
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                  >
+                    Register
+                  </Link>
+                </motion.div>
               </div>
             )}
           </div>

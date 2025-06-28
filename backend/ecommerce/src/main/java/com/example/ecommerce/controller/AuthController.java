@@ -2,6 +2,7 @@ package com.example.ecommerce.controller;
 
 import com.example.ecommerce.dto.LoginRequest;
 import com.example.ecommerce.dto.RegisterRequest;
+import com.example.ecommerce.dto.ResetPasswordRequest;
 import com.example.ecommerce.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -28,5 +29,15 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
+    }
+
+    @GetMapping("/verify")
+    public ResponseEntity<?> verifyToken() {
+        return ResponseEntity.ok(Map.of("status", "valid"));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        return authService.resetPassword(request);
     }
 } 
