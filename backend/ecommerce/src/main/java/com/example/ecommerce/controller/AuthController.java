@@ -1,5 +1,6 @@
 package com.example.ecommerce.controller;
 
+import com.example.ecommerce.dto.CompleteResetRequest;
 import com.example.ecommerce.dto.LoginRequest;
 import com.example.ecommerce.dto.RegisterRequest;
 import com.example.ecommerce.dto.ResetPasswordRequest;
@@ -43,6 +44,11 @@ public class AuthController {
         return authService.resetPassword(request);
     }
 
+    @PostMapping("/complete-reset")
+    public ResponseEntity<?> completeReset(@Valid @RequestBody CompleteResetRequest request) {
+        return authService.completeReset(request);
+    }
+
     @PutMapping("/profile")
     public ResponseEntity<?> updateProfile(@Valid @RequestBody UpdateProfileRequest request) {
         return authService.updateProfile(request);
@@ -55,9 +61,8 @@ public class AuthController {
 
     @PostMapping("/change-password")
     public ResponseEntity<?> changePassword(@RequestBody Map<String, String> request) {
-        return authService.changePassword(
-            request.get("currentPassword"),
-            request.get("newPassword")
-        );
+        String currentPassword = request.get("currentPassword");
+        String newPassword = request.get("newPassword");
+        return authService.changePassword(currentPassword, newPassword);
     }
 } 

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 import { FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
+import Toast from '../components/Toast';
 
 export default function LoginPage() {
     const [formData, setFormData] = useState({
@@ -14,6 +15,7 @@ export default function LoginPage() {
     const [isLoading, setIsLoading] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
+    const [toast, setToast] = useState({ message: '', type: '', visible: false });
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -35,10 +37,20 @@ export default function LoginPage() {
                 navigate('/');
             } else {
                 setError(result.error || 'Login failed. Please try again.');
+                setToast({
+                    message: result.error,
+                    type: 'error',
+                    visible: true
+                });
             }
         } catch (err) {
             console.error('Login error:', err);
             setError('An unexpected error occurred. Please try again.');
+            setToast({
+                message: 'An unexpected error occurred. Please try again.',
+                type: 'error',
+                visible: true
+            });
         } finally {
             setIsLoading(false);
         }
@@ -100,6 +112,12 @@ export default function LoginPage() {
                         </div>
                     )}
 
+                    <div className="text-sm text-center">
+                        <Link to="/forgot-password" className="font-medium text-indigo-600 hover:text-indigo-500">
+                            Forgot your password?
+                        </Link>
+                    </div>
+
                     <div>
                         <button
                             type="submit"
@@ -124,6 +142,13 @@ export default function LoginPage() {
                     </div>
                 </form>
             </motion.div>
+
+            <Toast
+                message={toast.message}
+                type={toast.type}
+                isVisible={toast.visible}
+                onClose={() => setToast(prev => ({ ...prev, visible: false }))}
+            />
         </div>
     );
 } 

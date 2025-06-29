@@ -14,6 +14,7 @@ import ShippingPage from './pages/ShippingPage'
 import WarrantyPage from './pages/WarrantyPage'
 import SetupGuidesPage from './pages/SetupGuidesPage'
 import FAQPage from './pages/FAQPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
 
 export default function AppRoutes() {
   const { user, loading } = useAuth()
@@ -48,6 +49,7 @@ export default function AppRoutes() {
       <Route path="/cart" element={<CartPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
 

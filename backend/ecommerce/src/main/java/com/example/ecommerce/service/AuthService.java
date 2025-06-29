@@ -4,6 +4,7 @@ import com.example.ecommerce.dto.LoginRequest;
 import com.example.ecommerce.dto.RegisterRequest;
 import com.example.ecommerce.dto.ResetPasswordRequest;
 import com.example.ecommerce.dto.UpdateProfileRequest;
+import com.example.ecommerce.dto.CompleteResetRequest;
 import com.example.ecommerce.model.User;
 import com.example.ecommerce.repository.UserRepository;
 import com.example.ecommerce.security.JwtUtils;
@@ -137,10 +138,36 @@ public class AuthService {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(user.getEmail());
         message.setSubject("Password Reset Request");
-        message.setText("To reset your password, use this token: " + token);
+        message.setText(
+            "Hello " + user.getFirstName() + " " + user.getLastName() + ",\n\n" +
+            "You have requested to reset your password. Click the link below to reset your password:\n\n" +
+            "http://localhost:5173/forgot-password?token=" + token + "\n\n" +
+            "If you did not request this password reset, please ignore this email.\n\n" +
+            "This link will expire in 30 minutes for security reasons.\n\n" +
+            "Best regards,\n" +
+            "Your Application Team"
+        );
         emailSender.send(message);
 
         return ResponseEntity.ok(Map.of("message", "Password reset email sent"));
+    }
+
+    public ResponseEntity<?> completeReset(CompleteResetRequest request) {
+        String email = resetTokens.get(request.getToken());
+        if (email == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Invalid or expired token"));
+        }
+
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "User not found"));
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+        resetTokens.remove(request.getToken());
+
+        return ResponseEntity.ok(Map.of("message", "Password has been reset successfully"));
     }
 
     public ResponseEntity<?> updateProfile(UpdateProfileRequest request) {
