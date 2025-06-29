@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { FaCamera, FaSpinner, FaCheck, FaEye, FaEyeSlash } from 'react-icons/fa';
-import { motion } from 'framer-motion';
+import { FaCamera, FaSpinner, FaCheck, FaEye, FaEyeSlash, FaUserCircle, FaEnvelope, FaLock, FaEdit } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function UserProfilePage() {
     const { user, updateProfile, updatePassword } = useAuth();
@@ -86,62 +86,113 @@ export default function UserProfilePage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md p-8"
+                className="max-w-4xl mx-auto"
             >
-                <div className="text-center mb-8">
-                    <div className="relative inline-block">
-                        <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 mx-auto">
-                            {user?.imageUrl ? (
-                                <img
-                                    src={user.imageUrl}
-                                    alt="Profile"
-                                    className="w-full h-full object-cover"
+                {/* Profile Header */}
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden mb-8">
+                    <div className="relative h-48 bg-gradient-to-r from-blue-500 to-indigo-600">
+                        <div className="absolute -bottom-12 left-8">
+                            <div className="relative">
+                                <motion.div
+                                    whileHover={{ scale: 1.05 }}
+                                    className="w-32 h-32 rounded-full overflow-hidden ring-4 ring-white dark:ring-gray-800 bg-white dark:bg-gray-700"
+                                >
+                                    {user?.imageUrl ? (
+                                        <img
+                                            src={user.imageUrl}
+                                            alt="Profile"
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-500">
+                                            <FaUserCircle className="text-white w-16 h-16" />
+                                        </div>
+                                    )}
+                                </motion.div>
+                                <motion.button
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="absolute bottom-0 right-0 bg-indigo-600 text-white p-2 rounded-full hover:bg-indigo-700 transition-colors shadow-lg"
+                                    disabled={loading}
+                                >
+                                    <FaCamera size={16} />
+                                </motion.button>
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    className="hidden"
+                                    accept="image/*"
+                                    onChange={handleImageUpload}
                                 />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                    <FaCamera size={40} />
-                                </div>
-                            )}
+                            </div>
                         </div>
-                        <button
-                            onClick={() => fileInputRef.current?.click()}
-                            className="absolute bottom-0 right-0 bg-indigo-600 text-white p-2 rounded-full hover:bg-indigo-700 transition-colors"
-                            disabled={loading}
-                        >
-                            <FaCamera size={16} />
-                        </button>
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            className="hidden"
-                            accept="image/*"
-                            onChange={handleImageUpload}
-                        />
                     </div>
-                    <h2 className="mt-4 text-2xl font-bold text-gray-900 dark:text-white">
-                        {user?.firstName} {user?.lastName}
-                    </h2>
-                    <p className="text-gray-600 dark:text-gray-400">{user?.email}</p>
+                    <div className="pt-16 pb-6 px-8">
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                    {user?.firstName} {user?.lastName}
+                                </h1>
+                                <p className="text-gray-600 dark:text-gray-400 flex items-center mt-1">
+                                    <FaEnvelope className="w-4 h-4 mr-2" />
+                                    {user?.email}
+                                </p>
+                            </div>
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => setIsEditing(!isEditing)}
+                                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
+                            >
+                                <FaEdit className="w-4 h-4" />
+                                <span>{isEditing ? 'Cancel' : 'Edit Profile'}</span>
+                            </motion.button>
+                        </div>
+                    </div>
                 </div>
 
-                {message.text && (
-                    <div className={`mb-4 p-3 rounded ${
-                        message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                    }`}>
-                        {message.text}
-                    </div>
-                )}
+                {/* Message Toast */}
+                <AnimatePresence>
+                    {message.text && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className={`mb-6 p-4 rounded-lg shadow-md ${
+                                message.type === 'success' 
+                                    ? 'bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-400' 
+                                    : 'bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                            }`}
+                        >
+                            <div className="flex items-center">
+                                {message.type === 'success' ? (
+                                    <FaCheck className="w-5 h-5 mr-2" />
+                                ) : (
+                                    <FaTimes className="w-5 h-5 mr-2" />
+                                )}
+                                {message.text}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {!isChangingPassword ? (
-                        <>
-                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                {/* Profile Form */}
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        {!isChangingPassword ? (
+                            <motion.div
+                                initial={false}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                            >
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                         First Name
                                     </label>
                                     <input
@@ -150,11 +201,11 @@ export default function UserProfilePage() {
                                         value={formData.firstName}
                                         onChange={handleChange}
                                         disabled={!isEditing}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white transition-colors disabled:opacity-50"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                         Last Name
                                     </label>
                                     <input
@@ -163,131 +214,150 @@ export default function UserProfilePage() {
                                         value={formData.lastName}
                                         onChange={handleChange}
                                         disabled={!isEditing}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white transition-colors disabled:opacity-50"
                                     />
                                 </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Email
-                                </label>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    disabled={!isEditing}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                />
-                            </div>
-                        </>
-                    ) : (
-                        <>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Current Password
-                                </label>
-                                <div className="relative">
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Email
+                                    </label>
                                     <input
-                                        type={showPassword ? "text" : "password"}
-                                        name="currentPassword"
-                                        value={formData.currentPassword}
+                                        type="email"
+                                        name="email"
+                                        value={formData.email}
                                         onChange={handleChange}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                        disabled={!isEditing}
+                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white transition-colors disabled:opacity-50"
                                     />
-                                    <button
-                                        type="button"
-                                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                    >
-                                        {showPassword ? (
-                                            <FaEyeSlash className="h-5 w-5 text-gray-400" />
-                                        ) : (
-                                            <FaEye className="h-5 w-5 text-gray-400" />
-                                        )}
-                                    </button>
                                 </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    New Password
-                                </label>
-                                <input
-                                    type="password"
-                                    name="newPassword"
-                                    value={formData.newPassword}
-                                    onChange={handleChange}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Confirm New Password
-                                </label>
-                                <input
-                                    type="password"
-                                    name="confirmPassword"
-                                    value={formData.confirmPassword}
-                                    onChange={handleChange}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                />
-                            </div>
-                        </>
-                    )}
-
-                    <div className="flex justify-between">
-                        {!isChangingPassword ? (
-                            <>
-                                <button
-                                    type="button"
-                                    onClick={() => setIsChangingPassword(true)}
-                                    className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600"
-                                >
-                                    Change Password
-                                </button>
-                                <button
-                                    type={isEditing ? "submit" : "button"}
-                                    onClick={() => !isEditing && setIsEditing(true)}
-                                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                    disabled={loading}
-                                >
-                                    {loading ? (
-                                        <FaSpinner className="animate-spin mr-2" />
-                                    ) : isEditing ? (
-                                        <FaCheck className="mr-2" />
-                                    ) : null}
-                                    {isEditing ? "Save Changes" : "Edit Profile"}
-                                </button>
-                            </>
+                            </motion.div>
                         ) : (
-                            <>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setIsChangingPassword(false);
-                                        setFormData(prev => ({
-                                            ...prev,
-                                            currentPassword: '',
-                                            newPassword: '',
-                                            confirmPassword: ''
-                                        }));
-                                    }}
-                                    className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                    disabled={loading}
-                                >
-                                    {loading && <FaSpinner className="animate-spin mr-2" />}
-                                    Update Password
-                                </button>
-                            </>
+                            <motion.div
+                                initial={false}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="space-y-6"
+                            >
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Current Password
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            type={showPassword ? "text" : "password"}
+                                            name="currentPassword"
+                                            value={formData.currentPassword}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white pr-10"
+                                        />
+                                        <button
+                                            type="button"
+                                            className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                        >
+                                            {showPassword ? (
+                                                <FaEyeSlash className="h-5 w-5 text-gray-400" />
+                                            ) : (
+                                                <FaEye className="h-5 w-5 text-gray-400" />
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        New Password
+                                    </label>
+                                    <input
+                                        type="password"
+                                        name="newPassword"
+                                        value={formData.newPassword}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Confirm New Password
+                                    </label>
+                                    <input
+                                        type="password"
+                                        name="confirmPassword"
+                                        value={formData.confirmPassword}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                                    />
+                                </div>
+                            </motion.div>
                         )}
-                    </div>
-                </form>
+
+                        <div className="flex justify-between items-center pt-6">
+                            {!isChangingPassword ? (
+                                <>
+                                    <motion.button
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        type="button"
+                                        onClick={() => setIsChangingPassword(true)}
+                                        className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                                    >
+                                        <FaLock className="w-4 h-4 mr-2" />
+                                        Change Password
+                                    </motion.button>
+                                    {isEditing && (
+                                        <motion.button
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            type="submit"
+                                            className="flex items-center px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                                            disabled={loading}
+                                        >
+                                            {loading ? (
+                                                <FaSpinner className="animate-spin w-5 h-5 mr-2" />
+                                            ) : (
+                                                <FaCheck className="w-5 h-5 mr-2" />
+                                            )}
+                                            Save Changes
+                                        </motion.button>
+                                    )}
+                                </>
+                            ) : (
+                                <>
+                                    <motion.button
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        type="button"
+                                        onClick={() => {
+                                            setIsChangingPassword(false);
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                currentPassword: '',
+                                                newPassword: '',
+                                                confirmPassword: ''
+                                            }));
+                                        }}
+                                        className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                                    >
+                                        Cancel
+                                    </motion.button>
+                                    <motion.button
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        type="submit"
+                                        className="flex items-center px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                                        disabled={loading}
+                                    >
+                                        {loading ? (
+                                            <FaSpinner className="animate-spin w-5 h-5 mr-2" />
+                                        ) : (
+                                            <FaCheck className="w-5 h-5 mr-2" />
+                                        )}
+                                        Update Password
+                                    </motion.button>
+                                </>
+                            )}
+                        </div>
+                    </form>
+                </div>
             </motion.div>
         </div>
     );
