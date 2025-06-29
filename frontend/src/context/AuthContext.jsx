@@ -172,7 +172,6 @@ export function AuthProvider({ children }) {
 
             return { success: true };
         } catch (error) {
-            console.error('Password update failed:', error);
             return { success: false, error: error.message };
         }
     };

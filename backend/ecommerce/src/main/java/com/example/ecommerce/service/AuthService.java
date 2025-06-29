@@ -235,11 +235,32 @@ public class AuthService {
             return ResponseEntity.badRequest().body(Map.of("message", "Not authenticated"));
         }
 
+        // Validate new password
+        if (newPassword == null || newPassword.length() < 8) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Password must be at least 8 characters long"));
+        }
+        if (!newPassword.matches(".*[A-Z].*")) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Password must contain at least one uppercase letter"));
+        }
+        if (!newPassword.matches(".*[a-z].*")) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Password must contain at least one lowercase letter"));
+        }
+        if (!newPassword.matches(".*[0-9].*")) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Password must contain at least one number"));
+        }
+        if (!newPassword.matches(".*[!@#$%^&*].*")) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Password must contain at least one special character (!@#$%^&*)"));
+        }
+
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         User user = userRepository.findByEmail(userDetails.getUsername());
 
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Current password is incorrect"));
+            return ResponseEntity.status(401).body(Map.of("message", "Current password is incorrect"));
+        }
+
+        if (passwordEncoder.matches(newPassword, user.getPassword())) {
+            return ResponseEntity.badRequest().body(Map.of("message", "New password must be different from current password"));
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));

@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { FaCamera, FaSpinner, FaCheck, FaEye, FaEyeSlash, FaUserCircle, FaEnvelope, FaLock, FaEdit, FaTimes } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
+import Toast from '../components/Toast';
 
 export default function UserProfilePage() {
     const { user, updateProfile, updatePassword } = useAuth();
@@ -20,6 +21,23 @@ export default function UserProfilePage() {
         newPassword: '',
         confirmPassword: ''
     });
+
+    const [passwordRules, setPasswordRules] = useState([
+        { label: "At least 8 characters long", test: (pass) => pass.length >= 8 },
+        { label: "Contains uppercase letter", test: (pass) => /[A-Z]/.test(pass) },
+        { label: "Contains lowercase letter", test: (pass) => /[a-z]/.test(pass) },
+        { label: "Contains number", test: (pass) => /[0-9]/.test(pass) },
+        { label: "Contains special character (!@#$%^&*)", test: (pass) => /[!@#$%^&*]/.test(pass) }
+    ]);
+
+    const isPasswordValid = (password) => {
+        return passwordRules.every(rule => rule.test(password));
+    };
+
+    const showToast = (message, type = 'success') => {
+        setMessage({ text: message, type, visible: true });
+        setTimeout(() => setMessage(prev => ({ ...prev, visible: false })), 3000);
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -54,10 +72,10 @@ export default function UserProfilePage() {
 
             const data = await response.json();
             updateProfile({ ...user, imageUrl: data.imageUrl });
-            setMessage({ text: 'Profile picture updated successfully!', type: 'success' });
+            showToast('Profile picture updated successfully', 'success');
         } catch (error) {
             console.error('Upload error:', error);
-            setMessage({ text: error.message || 'Failed to upload image', type: 'error' });
+            showToast(error.message || 'Failed to upload image', 'error');
         } finally {
             setLoading(false);
         }
@@ -69,24 +87,54 @@ export default function UserProfilePage() {
 
         try {
             if (isChangingPassword) {
-                if (formData.newPassword !== formData.confirmPassword) {
-                    setMessage({ text: 'Passwords do not match', type: 'error' });
+                // Validate current password is not empty
+                if (!formData.currentPassword.trim()) {
+                    showToast('Current password is required', 'error');
+                    setLoading(false);
                     return;
                 }
-                await updatePassword(formData.currentPassword, formData.newPassword);
-                setMessage({ text: 'Password updated successfully!', type: 'success' });
-                setIsChangingPassword(false);
+
+                // Validate new password meets requirements
+                if (!isPasswordValid(formData.newPassword)) {
+                    showToast('New password does not meet requirements', 'error');
+                    setLoading(false);
+                    return;
+                }
+
+                // Validate passwords match
+                if (formData.newPassword !== formData.confirmPassword) {
+                    showToast('New passwords do not match', 'error');
+                    setLoading(false);
+                    return;
+                }
+
+                // Try to update password
+                const result = await updatePassword(formData.currentPassword, formData.newPassword);
+                
+                if (result.success) {
+                    showToast('Password updated successfully', 'success');
+                    setIsChangingPassword(false);
+                    // Clear password fields
+                    setFormData(prev => ({
+                        ...prev,
+                        currentPassword: '',
+                        newPassword: '',
+                        confirmPassword: ''
+                    }));
+                } else {
+                    showToast(result.error || 'Failed to update password', 'error');
+                }
             } else {
                 await updateProfile({
                     firstName: formData.firstName,
                     lastName: formData.lastName,
                     email: formData.email
                 });
-                setMessage({ text: 'Profile updated successfully!', type: 'success' });
+                showToast('Profile updated successfully', 'success');
                 setIsEditing(false);
             }
         } catch (error) {
-            setMessage({ text: error.message || 'Failed to update profile', type: 'error' });
+            showToast(error.message || 'Failed to update profile', 'error');
         } finally {
             setLoading(false);
         }
@@ -372,6 +420,13 @@ export default function UserProfilePage() {
                     </form>
                 </div>
             </motion.div>
+
+            <Toast
+                message={message.text}
+                type={message.type}
+                isVisible={message.visible}
+                onClose={() => setMessage(prev => ({ ...prev, visible: false }))}
+            />
         </div>
     );
 } 
