@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ThemeSwitcher from './ThemeSwitcher';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { FaShoppingCart, FaUser, FaSignOutAlt, FaCog, FaUserCircle, FaEnvelope, FaHistory, FaHeart } from 'react-icons/fa';
+import { FaShoppingCart, FaUser, FaSignOutAlt, FaCog, FaUserCircle, FaEnvelope, FaHistory, FaHeart, FaMicrochip } from 'react-icons/fa';
 
 const navLinks = [
   { name: 'Home', href: '/' },
@@ -45,9 +45,10 @@ export default function Header() {
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="text-2xl font-bold text-blue-600 dark:text-blue-400"
+              className="flex items-center text-2xl font-bold text-blue-600 dark:text-blue-400"
             >
-              ELEGANCE
+              <FaMicrochip className="w-6 h-6 mr-2" />
+              TECHVERSE
             </motion.div>
           </Link>
 

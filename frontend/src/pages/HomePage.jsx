@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { FaArrowRight, FaLeaf, FaHeart, FaShippingFast } from 'react-icons/fa'
+import { FaArrowRight, FaMicrochip, FaShieldAlt, FaShippingFast, FaHeadset, FaLaptop, FaMobile, FaHeadphones } from 'react-icons/fa'
 
 export default function HomePage() {
   const fadeInUp = {
@@ -19,40 +19,40 @@ export default function HomePage() {
 
   const categories = [
     {
-      id: 'clothing',
-      name: 'Clothing',
-      image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=800',
-      description: 'Timeless pieces for your wardrobe'
+      id: 'laptops',
+      name: 'Laptops',
+      image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800',
+      description: 'Powerful laptops for work and play'
     },
     {
-      id: 'accessories',
-      name: 'Accessories',
-      image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800',
-      description: 'Complete your look with elegant accessories'
+      id: 'smartphones',
+      name: 'Smartphones',
+      image: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=800',
+      description: 'Latest smartphones with cutting-edge features'
     },
     {
-      id: 'footwear',
-      name: 'Footwear',
-      image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800',
-      description: 'Step out in style'
+      id: 'audio',
+      name: 'Audio',
+      image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800',
+      description: 'Premium audio gear for immersive sound'
     }
   ]
 
   const features = [
     {
-      icon: <FaLeaf className="w-6 h-6" />,
-      title: 'Sustainable Fashion',
-      description: 'Eco-friendly materials and ethical production'
+      icon: <FaMicrochip className="w-6 h-6" />,
+      title: 'Latest Technology',
+      description: 'Access to the newest and most innovative tech products'
     },
     {
-      icon: <FaHeart className="w-6 h-6" />,
-      title: 'Quality Craftsmanship',
-      description: 'Carefully selected materials and attention to detail'
+      icon: <FaShieldAlt className="w-6 h-6" />,
+      title: 'Quality Assurance',
+      description: 'All products are tested and certified for quality'
     },
     {
-      icon: <FaShippingFast className="w-6 h-6" />,
-      title: 'Fast Delivery',
-      description: 'Free shipping on orders over $100'
+      icon: <FaHeadset className="w-6 h-6" />,
+      title: '24/7 Tech Support',
+      description: 'Expert technical support whenever you need it'
     }
   ]
 
@@ -68,7 +68,7 @@ export default function HomePage() {
         >
           <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30" />
           <img
-            src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600"
+            src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1600"
             alt="Hero"
             className="w-full h-full object-cover"
           />
@@ -82,19 +82,19 @@ export default function HomePage() {
             className="max-w-xl"
           >
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-              ELEGANCE
+              TECHVERSE
               <span className="block text-2xl md:text-3xl font-light mt-2">
-                Timeless Style, Modern Spirit
+                Tomorrow's Technology Today
               </span>
             </h1>
             <p className="text-lg text-gray-200 mb-8">
-              Discover our curated collection of sustainable fashion that combines timeless elegance with modern comfort.
+              Discover the latest in technology, from cutting-edge laptops to premium audio gear. Your one-stop destination for all things tech.
             </p>
             <Link
               to="/catalog"
-              className="inline-flex items-center px-8 py-3 bg-white text-gray-900 rounded-full font-medium hover:bg-gray-100 transition-colors group"
+              className="inline-flex items-center px-8 py-3 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors group"
             >
-              Shop Now
+              Explore Products
               <FaArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
             </Link>
           </motion.div>
@@ -114,13 +114,13 @@ export default function HomePage() {
             variants={fadeInUp}
             className="text-3xl font-bold text-gray-900 dark:text-white mb-4"
           >
-            Shop by Category
+            Featured Categories
           </motion.h2>
           <motion.p
             variants={fadeInUp}
             className="text-gray-600 dark:text-gray-300"
           >
-            Explore our collections
+            Browse our top product categories
           </motion.p>
         </motion.div>
 
@@ -172,7 +172,7 @@ export default function HomePage() {
               >
                 <motion.div
                   whileHover={{ scale: 1.1 }}
-                  className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400 mb-4"
+                  className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 mb-4"
                 >
                   {feature.icon}
                 </motion.div>
@@ -189,7 +189,7 @@ export default function HomePage() {
       </section>
 
       {/* Newsletter Section */}
-      <section className="py-20 bg-gradient-to-r from-indigo-600 to-purple-600">
+      <section className="py-20 bg-gradient-to-r from-blue-600 to-indigo-600">
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -197,10 +197,10 @@ export default function HomePage() {
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
         >
           <h2 className="text-3xl font-bold text-white mb-4">
-            Join Our Newsletter
+            Stay Updated with Tech News
           </h2>
           <p className="text-gray-200 mb-8">
-            Subscribe to get special offers, free giveaways, and updates.
+            Subscribe to our newsletter for the latest tech updates, product launches, and exclusive deals.
           </p>
           <form className="max-w-md mx-auto flex gap-4">
             <input
@@ -210,7 +210,7 @@ export default function HomePage() {
             />
             <button
               type="submit"
-              className="px-6 py-3 bg-white text-indigo-600 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+              className="px-6 py-3 bg-white text-blue-600 rounded-lg font-medium hover:bg-gray-100 transition-colors"
             >
               Subscribe
             </button>

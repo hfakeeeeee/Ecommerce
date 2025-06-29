@@ -1,4 +1,4 @@
-import { FaGithub, FaTwitter, FaLinkedin, FaInstagram, FaMapMarkerAlt, FaPhone, FaEnvelope, FaHeart, FaFacebook } from 'react-icons/fa';
+import { FaGithub, FaTwitter, FaLinkedin, FaInstagram, FaMapMarkerAlt, FaPhone, FaEnvelope, FaHeart, FaFacebook, FaMicrochip } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 
 export default function Footer() {
@@ -20,16 +20,17 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Section */}
           <div className="col-span-1">
-            <motion.h3 
+            <motion.div 
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              className="text-2xl font-bold text-gray-900 dark:text-white mb-4"
+              className="flex items-center text-2xl font-bold text-gray-900 dark:text-white mb-4"
             >
-              ELEGANCE
-            </motion.h3>
+              <FaMicrochip className="w-6 h-6 mr-2" />
+              TECHVERSE
+            </motion.div>
             <p className="text-gray-600 dark:text-gray-300 text-sm">
-              Timeless Style, Modern Spirit. We believe in sustainable fashion that makes you look and feel amazing.
+              Empowering your digital lifestyle with cutting-edge technology. We bring you the future of tech, today.
             </p>
           </div>
 
@@ -48,13 +49,13 @@ export default function Footer() {
                 </a>
               </motion.li>
               <motion.li whileHover={{ x: 5 }} className="transition-colors">
-                <a href="/sustainability" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
-                  Sustainability
+                <a href="/blog" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+                  Tech Blog
                 </a>
               </motion.li>
               <motion.li whileHover={{ x: 5 }} className="transition-colors">
-                <a href="/size-guide" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
-                  Size Guide
+                <a href="/support" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+                  Tech Support
                 </a>
               </motion.li>
             </ul>
@@ -70,13 +71,13 @@ export default function Footer() {
                 </a>
               </motion.li>
               <motion.li whileHover={{ x: 5 }} className="transition-colors">
-                <a href="/returns" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
-                  Returns & Exchanges
+                <a href="/warranty" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+                  Warranty & Returns
                 </a>
               </motion.li>
               <motion.li whileHover={{ x: 5 }} className="transition-colors">
-                <a href="/care" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
-                  Care Instructions
+                <a href="/setup-guides" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+                  Setup Guides
                 </a>
               </motion.li>
               <motion.li whileHover={{ x: 5 }} className="transition-colors">
@@ -127,7 +128,7 @@ export default function Footer() {
               ))}
             </div>
             <p className="text-gray-500 dark:text-gray-400 text-sm flex items-center">
-              Made with <FaHeart className="text-red-500 mx-1" /> by ELEGANCE © {new Date().getFullYear()}
+              Made with <FaHeart className="text-red-500 mx-1" /> by TECHVERSE © {new Date().getFullYear()}
             </p>
           </div>
         </div>

@@ -1,106 +1,96 @@
 import { motion } from 'framer-motion';
-import { FaLeaf, FaHeart, FaGem } from 'react-icons/fa';
+import { FaCode, FaLightbulb, FaRobot, FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa';
 
 export default function AboutPage() {
-  const fadeInUp = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.6 }
-  };
-
-  const teamMembers = [
+  const values = [
     {
-      name: "Sarah Johnson",
-      role: "Creative Director",
-      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400",
-      description: "With over 15 years in fashion, Sarah brings creative vision to ELEGANCE."
+      icon: <FaCode className="w-6 h-6" />,
+      title: "Innovation",
+      description: "Pushing the boundaries of technology to create cutting-edge solutions."
     },
     {
-      name: "David Chen",
-      role: "Head of Design",
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400",
-      description: "David's innovative designs blend traditional craftsmanship with modern aesthetics."
+      icon: <FaLightbulb className="w-6 h-6" />,
+      title: "Quality",
+      description: "Delivering premium tech products with exceptional performance."
     },
     {
-      name: "Emma Williams",
-      role: "Sustainability Lead",
-      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
-      description: "Emma ensures our commitment to sustainable and ethical fashion practices."
+      icon: <FaRobot className="w-6 h-6" />,
+      title: "Future-Ready",
+      description: "Embracing emerging technologies to shape tomorrow's world."
     }
   ];
 
-  const values = [
+  const teamMembers = [
     {
-      icon: <FaLeaf className="w-8 h-8" />,
-      title: "Sustainability",
-      description: "We're committed to eco-friendly materials and ethical production practices."
+      name: "HFake",
+      role: "Founder & CEO",
+      image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=500",
+      bio: "Visionary leader with a passion for technology and innovation. Driving the future of tech retail.",
+      social: {
+        github: "https://github.com",
+        linkedin: "https://linkedin.com",
+        twitter: "https://twitter.com"
+      }
     },
     {
-      icon: <FaHeart className="w-8 h-8" />,
-      title: "Quality",
-      description: "Each piece is crafted with attention to detail and premium materials."
+      name: "Cursor",
+      role: "Chief Technology Officer",
+      image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=500",
+      bio: "Expert in AI and development tools. Leading the technical innovation at ELEGANCE Tech.",
+      social: {
+        github: "https://github.com/cursor-ai",
+        linkedin: "https://linkedin.com",
+        twitter: "https://twitter.com"
+      }
     },
     {
-      icon: <FaGem className="w-8 h-8" />,
-      title: "Timeless Style",
-      description: "We create enduring pieces that transcend seasonal trends."
+      name: "ChatGPT",
+      role: "AI Solutions Architect",
+      image: "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?w=500",
+      bio: "Pioneering AI integration in e-commerce. Making technology more accessible and intuitive.",
+      social: {
+        github: "https://github.com/openai",
+        linkedin: "https://linkedin.com/company/openai",
+        twitter: "https://twitter.com/openai"
+      }
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 opacity-10 dark:opacity-20" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center"
-          >
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-              Our Story
-            </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              ELEGANCE was founded with a vision to create timeless fashion that respects both people and planet.
-              Our journey began in 2020, and we've been redefining sustainable luxury ever since.
-            </p>
-          </motion.div>
-        </div>
-      </section>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Hero Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-16"
+        >
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            About ELEGANCE Tech
+          </h1>
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+            We're revolutionizing the tech retail experience by bringing you the latest and most innovative technology products with unparalleled service and expertise.
+          </p>
+        </motion.div>
 
-      {/* Values Section */}
-      <section className="py-20 bg-white dark:bg-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Our Values
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300">
-              The principles that guide everything we do
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+        {/* Values Section */}
+        <div className="mb-24">
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
+            Our Values
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {values.map((value, index) => (
               <motion.div
                 key={value.title}
                 initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.2 }}
-                viewport={{ once: true }}
-                className="text-center"
+                className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg hover:shadow-xl transition-shadow"
               >
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400 mb-6">
+                <div className="text-blue-600 dark:text-blue-400 mb-4">
                   {value.icon}
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                   {value.title}
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300">
@@ -110,57 +100,73 @@ export default function AboutPage() {
             ))}
           </div>
         </div>
-      </section>
 
-      {/* Team Section */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Meet Our Team
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300">
-              The creative minds behind ELEGANCE
-            </p>
-          </motion.div>
-
+        {/* Team Section */}
+        <div>
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
+            Meet Our Team
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {teamMembers.map((member, index) => (
               <motion.div
                 key={member.name}
                 initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.2 }}
-                viewport={{ once: true }}
-                className="text-center"
+                className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow"
               >
-                <div className="relative w-48 h-48 mx-auto mb-6">
-                  <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transform rotate-6" />
+                <div className="relative h-64">
                   <img
                     src={member.image}
                     alt={member.name}
-                    className="relative rounded-full w-full h-full object-cover"
+                    className="w-full h-full object-cover"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <h3 className="text-xl font-semibold text-white mb-1">
+                      {member.name}
+                    </h3>
+                    <p className="text-gray-200">
+                      {member.role}
+                    </p>
+                  </div>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                  {member.name}
-                </h3>
-                <p className="text-indigo-600 dark:text-indigo-400 mb-4">
-                  {member.role}
-                </p>
-                <p className="text-gray-600 dark:text-gray-300">
-                  {member.description}
-                </p>
+                <div className="p-6">
+                  <p className="text-gray-600 dark:text-gray-300 mb-4">
+                    {member.bio}
+                  </p>
+                  <div className="flex space-x-4">
+                    <a
+                      href={member.social.github}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
+                    >
+                      <FaGithub className="w-5 h-5" />
+                    </a>
+                    <a
+                      href={member.social.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
+                    >
+                      <FaLinkedin className="w-5 h-5" />
+                    </a>
+                    <a
+                      href={member.social.twitter}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
+                    >
+                      <FaTwitter className="w-5 h-5" />
+                    </a>
+                  </div>
+                </div>
               </motion.div>
             ))}
           </div>
         </div>
-      </section>
+      </div>
     </div>
   );
 } 
