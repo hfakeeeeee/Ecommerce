@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { FaCamera, FaSpinner, FaCheck, FaEye, FaEyeSlash, FaUserCircle, FaEnvelope, FaLock, FaEdit } from 'react-icons/fa';
+import { FaCamera, FaSpinner, FaCheck, FaEye, FaEyeSlash, FaUserCircle, FaEnvelope, FaLock, FaEdit, FaTimes } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function UserProfilePage() {
@@ -38,19 +38,26 @@ export default function UserProfilePage() {
 
         setLoading(true);
         try {
+            const token = localStorage.getItem('token');
             const response = await fetch('/api/auth/upload-avatar', {
                 method: 'POST',
-                body: formData,
-                credentials: 'include'
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
             });
 
-            if (!response.ok) throw new Error('Failed to upload image');
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to upload image');
+            }
 
             const data = await response.json();
             updateProfile({ ...user, imageUrl: data.imageUrl });
             setMessage({ text: 'Profile picture updated successfully!', type: 'success' });
         } catch (error) {
-            setMessage({ text: 'Failed to upload image', type: 'error' });
+            console.error('Upload error:', error);
+            setMessage({ text: error.message || 'Failed to upload image', type: 'error' });
         } finally {
             setLoading(false);
         }
@@ -106,6 +113,12 @@ export default function UserProfilePage() {
                                             src={user.imageUrl}
                                             alt="Profile"
                                             className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                                e.target.onerror = null; // Prevent infinite loop
+                                                e.target.src = ''; // Clear the source
+                                                // Show the default user icon instead
+                                                e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-500"><svg class="text-white w-16 h-16" ... /></div>';
+                                            }}
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-500">

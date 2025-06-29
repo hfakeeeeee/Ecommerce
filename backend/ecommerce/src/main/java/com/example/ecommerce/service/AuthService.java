@@ -189,7 +189,7 @@ public class AuthService {
             Path filePath = uploadPath.resolve(fileName);
             Files.copy(file.getInputStream(), filePath);
 
-            String imageUrl = "/avatars/" + fileName;
+            String imageUrl = "/api/uploads/avatars/" + fileName;
             user.setImageUrl(imageUrl);
             userRepository.save(user);
 
