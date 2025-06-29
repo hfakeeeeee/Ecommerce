@@ -10,6 +10,10 @@ import { useAuth } from './context/AuthContext'
 import UserProfilePage from './pages/UserProfilePage'
 import AboutPage from './pages/AboutPage'
 import ContactPage from './pages/ContactPage'
+import ShippingPage from './pages/ShippingPage'
+import WarrantyPage from './pages/WarrantyPage'
+import SetupGuidesPage from './pages/SetupGuidesPage'
+import FAQPage from './pages/FAQPage'
 
 export default function AppRoutes() {
   const { user, loading } = useAuth()
@@ -27,7 +31,7 @@ export default function AppRoutes() {
 
   // Function to check if the current route requires authentication
   const requiresAuth = (pathname) => {
-    return pathname === '/profile' || pathname === '/checkout';
+    return ['/profile', '/cart'].includes(pathname)
   }
 
   // If trying to access protected routes without being logged in
@@ -49,6 +53,12 @@ export default function AppRoutes() {
 
       {/* Protected Routes - Only accessible when logged in */}
       <Route path="/profile" element={<UserProfilePage />} />
+
+      {/* New customer service pages */}
+      <Route path="/shipping" element={<ShippingPage />} />
+      <Route path="/warranty" element={<WarrantyPage />} />
+      <Route path="/setup-guides" element={<SetupGuidesPage />} />
+      <Route path="/faq" element={<FAQPage />} />
 
       {/* 404 Route */}
       <Route path="*" element={<NotFoundPage />} />

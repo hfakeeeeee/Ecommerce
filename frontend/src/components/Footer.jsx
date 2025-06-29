@@ -1,5 +1,6 @@
 import { FaGithub, FaTwitter, FaLinkedin, FaInstagram, FaMapMarkerAlt, FaPhone, FaEnvelope, FaHeart, FaFacebook, FaMicrochip } from 'react-icons/fa';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 export default function Footer() {
   const socialLinks = [
@@ -19,7 +20,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Section */}
-          <div className="col-span-1">
+          <div className="col-span-1 flex flex-col items-center md:items-start text-center md:text-left">
             <motion.div 
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -35,63 +36,58 @@ export default function Footer() {
           </div>
 
           {/* Quick Links */}
-          <div className="col-span-1">
+          <div className="col-span-1 flex flex-col items-center md:items-start">
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Links</h4>
-            <ul className="space-y-2">
+            <ul className="space-y-2 text-center md:text-left">
               <motion.li whileHover={{ x: 5 }} className="transition-colors">
-                <a href="/about" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+                <Link to="/about" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
                   About Us
-                </a>
+                </Link>
               </motion.li>
               <motion.li whileHover={{ x: 5 }} className="transition-colors">
-                <a href="/catalog" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+                <Link to="/catalog" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
                   Shop
-                </a>
+                </Link>
               </motion.li>
               <motion.li whileHover={{ x: 5 }} className="transition-colors">
-                <a href="/blog" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
-                  Tech Blog
-                </a>
-              </motion.li>
-              <motion.li whileHover={{ x: 5 }} className="transition-colors">
-                <a href="/support" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
-                  Tech Support
-                </a>
+                <Link to="/contact" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+                  Contact
+                </Link>
               </motion.li>
             </ul>
           </div>
 
           {/* Customer Service */}
-          <div className="col-span-1">
+          <div className="col-span-1 flex flex-col items-center md:items-start">
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Customer Service</h4>
-            <ul className="space-y-2">
+            <ul className="space-y-2 text-center md:text-left">
               <motion.li whileHover={{ x: 5 }} className="transition-colors">
-                <a href="/shipping" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+                <Link to="/shipping" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
                   Shipping Information
-                </a>
+                </Link>
               </motion.li>
               <motion.li whileHover={{ x: 5 }} className="transition-colors">
-                <a href="/warranty" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+                <Link to="/warranty" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
                   Warranty & Returns
-                </a>
+                </Link>
               </motion.li>
               <motion.li whileHover={{ x: 5 }} className="transition-colors">
-                <a href="/setup-guides" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+                <Link to="/setup-guides" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
                   Setup Guides
-                </a>
+                </Link>
               </motion.li>
               <motion.li whileHover={{ x: 5 }} className="transition-colors">
-                <a href="/faq" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+                <Link to="/faq" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
                   FAQ
-                </a>
+                </Link>
               </motion.li>
             </ul>
           </div>
 
           {/* Contact Info */}
-          <div className="col-span-1">
+          <div className="col-span-1 flex flex-col items-center md:items-start">
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Contact Us</h4>
-            <ul className="space-y-4">
+            <ul className="space-y-4 text-center md:text-left">
               {contactInfo.map((info, index) => (
                 <motion.li
                   key={index}
