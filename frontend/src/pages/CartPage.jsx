@@ -21,8 +21,7 @@ export default function CartPage() {
       navigate('/login', { state: { from: '/cart' } })
       return
     }
-    // Implement checkout logic here
-    console.log('Proceeding to checkout...')
+    navigate('/payment')
   }
 
   if (cart.length === 0) {

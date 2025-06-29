@@ -6,7 +6,9 @@ import com.example.ecommerce.dto.ResetPasswordRequest;
 import com.example.ecommerce.dto.UpdateProfileRequest;
 import com.example.ecommerce.dto.CompleteResetRequest;
 import com.example.ecommerce.model.User;
+import com.example.ecommerce.model.PasswordResetToken;
 import com.example.ecommerce.repository.UserRepository;
+import com.example.ecommerce.repository.PasswordResetTokenRepository;
 import com.example.ecommerce.security.JwtUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +28,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -38,7 +41,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
     private final JavaMailSender emailSender;
-    private final Map<String, String> resetTokens = new HashMap<>();
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Value("${app.upload.dir:${user.home}}")
     private String uploadDir;
@@ -47,12 +50,14 @@ public class AuthService {
                       PasswordEncoder passwordEncoder,
                       AuthenticationManager authenticationManager,
                       JwtUtils jwtUtils,
-                      JavaMailSender emailSender) {
+                      JavaMailSender emailSender,
+                      PasswordResetTokenRepository passwordResetTokenRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
         this.emailSender = emailSender;
+        this.passwordResetTokenRepository = passwordResetTokenRepository;
     }
 
     public ResponseEntity<?> register(RegisterRequest request) {
@@ -132,8 +137,16 @@ public class AuthService {
             return ResponseEntity.badRequest().body(Map.of("message", "User not found"));
         }
 
+        // Delete any existing tokens for this email
+        passwordResetTokenRepository.deleteByEmail(request.getEmail());
+
+        // Create new token
         String token = UUID.randomUUID().toString();
-        resetTokens.put(token, user.getEmail());
+        PasswordResetToken resetToken = new PasswordResetToken();
+        resetToken.setToken(token);
+        resetToken.setEmail(user.getEmail());
+        resetToken.setExpiryDate(LocalDateTime.now().plusMinutes(30));
+        passwordResetTokenRepository.save(resetToken);
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(user.getEmail());
@@ -153,19 +166,24 @@ public class AuthService {
     }
 
     public ResponseEntity<?> completeReset(CompleteResetRequest request) {
-        String email = resetTokens.get(request.getToken());
-        if (email == null) {
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(request.getToken());
+        if (resetToken == null) {
             return ResponseEntity.badRequest().body(Map.of("message", "Invalid or expired token"));
         }
 
-        User user = userRepository.findByEmail(email);
+        if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            passwordResetTokenRepository.delete(resetToken);
+            return ResponseEntity.badRequest().body(Map.of("message", "Token has expired"));
+        }
+
+        User user = userRepository.findByEmail(resetToken.getEmail());
         if (user == null) {
             return ResponseEntity.badRequest().body(Map.of("message", "User not found"));
         }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
-        resetTokens.remove(request.getToken());
+        passwordResetTokenRepository.delete(resetToken);
 
         return ResponseEntity.ok(Map.of("message", "Password has been reset successfully"));
     }

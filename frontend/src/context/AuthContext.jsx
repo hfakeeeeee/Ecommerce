@@ -2,45 +2,44 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const AuthContext = createContext(null);
+const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
+    const [token, setToken] = useState(localStorage.getItem('token'));
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
-        checkAuthStatus();
-    }, []);
+        if (token) {
+            checkAuthStatus();
+        } else {
+            setLoading(false);
+        }
+    }, [token]);
 
     const checkAuthStatus = async () => {
         try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                setUser(null);
-                setLoading(false);
-                return;
-            }
-
             const response = await fetch('/api/auth/verify', {
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    'Authorization': `Bearer ${token}`
                 }
             });
 
             if (response.ok) {
-                const userData = await response.json();
-                setUser(userData);
+                const data = await response.json();
+                setUser(data);
             } else {
-                console.error('Token verification failed');
-                localStorage.removeItem('token');
+                // If token is invalid, clear everything
                 setUser(null);
+                setToken(null);
+                localStorage.removeItem('token');
             }
         } catch (error) {
-            console.error('Auth status check failed:', error);
-            localStorage.removeItem('token');
+            console.error('Auth check failed:', error);
             setUser(null);
+            setToken(null);
+            localStorage.removeItem('token');
         } finally {
             setLoading(false);
         }
@@ -51,48 +50,46 @@ export function AuthProvider({ children }) {
             const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify({ email, password }),
             });
 
             if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.message || 'Login failed');
-            }
-
-            const contentType = response.headers.get("content-type");
-            if (!contentType || !contentType.includes("application/json")) {
-                throw new Error("Server response was not JSON");
+                const error = await response.json();
+                throw new Error(error.message || 'Login failed');
             }
 
             const data = await response.json();
-
-            if (!data.token) {
-                throw new Error('No token received from server');
-            }
-
-            localStorage.setItem('token', data.token);
-            setUser({
-                firstName: data.firstName,
-                lastName: data.lastName,
-                email: data.email,
-                imageUrl: data.imageUrl
+            const newToken = data.token;
+            
+            localStorage.setItem('token', newToken);
+            setToken(newToken);
+            
+            // Fetch user details with the new token
+            const userResponse = await fetch('/api/auth/verify', {
+                headers: {
+                    'Authorization': `Bearer ${newToken}`
+                }
             });
 
-            return { success: true };
+            if (userResponse.ok) {
+                const userData = await userResponse.json();
+                setUser(userData);
+                return { success: true };
+            } else {
+                throw new Error('Failed to fetch user details');
+            }
         } catch (error) {
-            console.error('Login failed:', error);
-            return { 
-                success: false, 
-                error: error.message || 'An unexpected error occurred during login'
-            };
+            console.error('Login error:', error);
+            return { success: false, error: error.message };
         }
     };
 
     const logout = () => {
-        localStorage.removeItem('token');
         setUser(null);
+        setToken(null);
+        localStorage.removeItem('token');
         navigate('/login');
     };
 
@@ -199,28 +196,23 @@ export function AuthProvider({ children }) {
         }
     };
 
-    const value = {
-        user,
-        loading,
-        login,
-        logout,
-        register,
-        resetPassword,
-        updateProfile,
-        updatePassword
-    };
-
     return (
-        <AuthContext.Provider value={value}>
+        <AuthContext.Provider value={{
+            user,
+            token,
+            loading,
+            login,
+            logout,
+            register,
+            updateProfile,
+            updatePassword,
+            resetPassword
+        }}>
             {children}
         </AuthContext.Provider>
     );
 }
 
 export function useAuth() {
-    const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error('useAuth must be used within an AuthProvider');
-    }
-    return context;
+    return useContext(AuthContext);
 } 
