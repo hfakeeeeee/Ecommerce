@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 
 export default function LoginPage() {
     const [formData, setFormData] = useState({
@@ -11,7 +11,9 @@ export default function LoginPage() {
     });
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const { login } = useAuth();
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -19,13 +21,26 @@ export default function LoginPage() {
             ...prev,
             [name]: value
         }));
+        setError(''); // Clear error when user types
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const result = await login(formData.email, formData.password);
-        if (!result.success) {
-            setError(result.error);
+        setIsLoading(true);
+        setError('');
+
+        try {
+            const result = await login(formData.email, formData.password);
+            if (result.success) {
+                navigate('/');
+            } else {
+                setError(result.error || 'Login failed. Please try again.');
+            }
+        } catch (err) {
+            console.error('Login error:', err);
+            setError('An unexpected error occurred. Please try again.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -50,6 +65,7 @@ export default function LoginPage() {
                                 placeholder="Email address"
                                 value={formData.email}
                                 onChange={handleChange}
+                                disabled={isLoading}
                             />
                         </div>
                         <div className="relative">
@@ -61,11 +77,13 @@ export default function LoginPage() {
                                 placeholder="Password"
                                 value={formData.password}
                                 onChange={handleChange}
+                                disabled={isLoading}
                             />
                             <button
                                 type="button"
                                 className="absolute inset-y-0 right-0 pr-3 flex items-center"
                                 onClick={() => setShowPassword(!showPassword)}
+                                disabled={isLoading}
                             >
                                 {showPassword ? (
                                     <FaEyeSlash className="h-5 w-5 text-gray-400" />
@@ -77,7 +95,7 @@ export default function LoginPage() {
                     </div>
 
                     {error && (
-                        <div className="text-red-500 text-sm text-center">
+                        <div className="text-red-500 text-sm text-center bg-red-50 dark:bg-red-900/20 p-3 rounded-md">
                             {error}
                         </div>
                     )}
@@ -85,9 +103,17 @@ export default function LoginPage() {
                     <div>
                         <button
                             type="submit"
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={isLoading}
                         >
-                            Sign in
+                            {isLoading ? (
+                                <>
+                                    <FaSpinner className="animate-spin mr-2" />
+                                    Signing in...
+                                </>
+                            ) : (
+                                "Sign in"
+                            )}
                         </button>
                     </div>
 

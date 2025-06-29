@@ -30,6 +30,9 @@ public class User {
     @Size(min = 6, max = 100)
     private String password;
 
+    @Size(max = 255)
+    private String imageUrl;
+
     // Getters and Setters
     public Long getId() {
         return id;
@@ -69,5 +72,13 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 } 

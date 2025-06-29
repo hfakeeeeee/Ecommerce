@@ -3,10 +3,12 @@ package com.example.ecommerce.controller;
 import com.example.ecommerce.dto.LoginRequest;
 import com.example.ecommerce.dto.RegisterRequest;
 import com.example.ecommerce.dto.ResetPasswordRequest;
+import com.example.ecommerce.dto.UpdateProfileRequest;
 import com.example.ecommerce.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
@@ -33,11 +35,29 @@ public class AuthController {
 
     @GetMapping("/verify")
     public ResponseEntity<?> verifyToken() {
-        return ResponseEntity.ok(Map.of("status", "valid"));
+        return authService.verifyToken();
     }
 
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         return authService.resetPassword(request);
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(@Valid @RequestBody UpdateProfileRequest request) {
+        return authService.updateProfile(request);
+    }
+
+    @PostMapping("/upload-avatar")
+    public ResponseEntity<?> uploadAvatar(@RequestParam("image") MultipartFile file) {
+        return authService.uploadAvatar(file);
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> request) {
+        return authService.changePassword(
+            request.get("currentPassword"),
+            request.get("newPassword")
+        );
     }
 } 

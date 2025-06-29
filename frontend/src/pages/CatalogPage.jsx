@@ -1,176 +1,183 @@
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { useSearchParams, Link } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { products, categories } from '../data/products'
+import { FaSearch, FaArrowRight } from 'react-icons/fa'
 
 export default function CatalogPage() {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const [selectedCategory, setSelectedCategory] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage] = useState(8)
+  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [loadedImages, setLoadedImages] = useState({})
+  const [searchQuery, setSearchQuery] = useState('')
+  const navigate = useNavigate()
+  const productsPerPage = 8
 
-  // Get category from URL or default to 'all'
-  useEffect(() => {
-    const category = searchParams.get('category') || 'all'
-    setSelectedCategory(category)
-    setCurrentPage(1)
-  }, [searchParams])
-
-  // Filter products by category
-  const filteredProducts = selectedCategory === 'all'
-    ? products
-    : products.filter(p => p.category === selectedCategory)
+  // Filter products by category and search query
+  const filteredProducts = products.filter(product => {
+    const matchesCategory = selectedCategory === 'all' || 
+      product.category.toLowerCase() === selectedCategory.toLowerCase()
+    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchQuery.toLowerCase())
+    return matchesCategory && matchesSearch
+  })
 
   // Calculate pagination
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + itemsPerPage)
+  const indexOfLastProduct = currentPage * productsPerPage
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage
+  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct)
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage)
 
-  // Handle category change
-  const handleCategoryChange = (categoryId) => {
-    setSearchParams({ category: categoryId })
+  const handleCategoryChange = (category) => {
+    setSelectedCategory(category)
+    setCurrentPage(1)
   }
 
-  // Generate page numbers array
-  const getPageNumbers = () => {
-    const pageNumbers = []
-    const maxVisiblePages = 5
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2))
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1)
+  const handleImageLoad = (productId) => {
+    setLoadedImages(prev => ({ ...prev, [productId]: true }))
+  }
 
-    if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1)
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-      pageNumbers.push(i)
-    }
-
-    return pageNumbers
+  const handleProductClick = (productId) => {
+    navigate(`/product/${productId}`)
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
-      <div className="container mx-auto px-4 py-12">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-12"
-        >
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header Section */}
+        <div className="text-center mb-12">
+          <motion.h1 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-4xl font-bold text-gray-900 dark:text-white mb-4"
+          >
             Our Products
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Browse through our collection of carefully curated products
+          </motion.h1>
+          <p className="text-lg text-gray-600 dark:text-gray-300">
+            Discover our collection of high-quality products
           </p>
-        </motion.div>
+        </div>
 
-        {/* Categories */}
-        <div className="flex flex-wrap justify-center gap-4 mb-12">
-          {categories.map((category, index) => (
-            <motion.button
-              key={category.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-              onClick={() => handleCategoryChange(category.id)}
-              className={`px-6 py-2 rounded-full text-sm font-medium transition-all
-                ${selectedCategory === category.id
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-                }`}
-            >
-              {category.name}
-            </motion.button>
-          ))}
+        {/* Search and Filter Section */}
+        <div className="mb-8 flex flex-col md:flex-row gap-4 items-center justify-between">
+          <div className="relative w-full md:w-96">
+            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:text-white"
+            />
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-2 w-full md:w-auto">
+            {categories.map(category => (
+              <button
+                key={category.id}
+                onClick={() => handleCategoryChange(category.id)}
+                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors
+                  ${selectedCategory === category.id
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                  }`}
+              >
+                {category.name}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-12">
-          <AnimatePresence mode="popLayout">
-            {paginatedProducts.map((product, index) => (
-              <motion.div
-                key={product.id}
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
-                <Link
-                  to={`/product/${product.id}`}
-                  className="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 flex-col h-full block transform hover:-translate-y-1"
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {currentProducts.map(product => (
+            <motion.div
+              key={product.id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              whileHover={{ y: -5 }}
+              onClick={() => handleProductClick(product.id)}
+              className="group relative bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden cursor-pointer transform transition-all duration-300 hover:shadow-2xl"
+            >
+              <div className="relative pb-[100%] overflow-hidden">
+                {!loadedImages[product.id] && (
+                  <div className="absolute inset-0 bg-gray-200 dark:bg-gray-700 animate-pulse" />
+                )}
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  onLoad={() => handleImageLoad(product.id)}
+                  className={`absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 ${
+                    loadedImages[product.id] ? 'opacity-100' : 'opacity-0'
+                  }`}
+                />
+                {product.badge && (
+                  <span className="absolute top-2 right-2 bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
+                    {product.badge}
+                  </span>
+                )}
+                {product.stock <= 5 && product.stock > 0 && (
+                  <span className="absolute top-2 left-2 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
+                    Only {product.stock} left
+                  </span>
+                )}
+                {product.stock === 0 && (
+                  <span className="absolute top-2 left-2 bg-gray-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
+                    Out of Stock
+                  </span>
+                )}
+              </div>
+              <div className="p-4">
+                <div className="mb-2">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-medium">
+                    {product.category}
+                  </p>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1 line-clamp-1">
+                    {product.name}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mb-2 line-clamp-2">
+                    {product.description}
+                  </p>
+                </div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
+                    ${product.price}
+                  </span>
+                  {product.oldPrice && (
+                    <span className="text-sm text-gray-400 line-through">
+                      ${product.oldPrice}
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleProductClick(product.id)
+                  }}
+                  className="w-full bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 group-hover:shadow-lg"
                 >
-                  <div className="relative aspect-square overflow-hidden">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-300"
-                    />
-                    {product.badge && (
-                      <span className="absolute top-4 right-4 bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                        {product.badge}
-                      </span>
-                    )}
-                  </div>
-                  <div className="p-6 flex flex-col flex-grow">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-1">
-                      {product.name}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2 flex-grow">
-                      {product.description}
-                    </p>
-                    <div className="flex items-center justify-between mt-auto">
-                      <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
-                        ${product.price}
-                      </span>
-                      <span className="btn-primary px-4 py-2 text-sm pointer-events-none">
-                        View Details
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </AnimatePresence>
+                  View Details
+                  <FaArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            </motion.div>
+          ))}
         </div>
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex justify-center items-center space-x-2">
-            <button
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
-              className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 
-                disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-            >
-              Previous
-            </button>
-            
-            {getPageNumbers().map(number => (
+          <div className="mt-8 flex justify-center gap-2">
+            {[...Array(totalPages)].map((_, index) => (
               <button
-                key={number}
-                onClick={() => setCurrentPage(number)}
-                className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors
-                  ${currentPage === number
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                key={index}
+                onClick={() => setCurrentPage(index + 1)}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors
+                  ${currentPage === index + 1
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                   }`}
               >
-                {number}
+                {index + 1}
               </button>
             ))}
-            
-            <button
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-              disabled={currentPage === totalPages}
-              className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 
-                disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-            >
-              Next
-            </button>
           </div>
         )}
       </div>

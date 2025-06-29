@@ -4,41 +4,50 @@ import { motion } from 'framer-motion'
 import { products } from '../data/products'
 import { useCart } from '../context/CartContext'
 import Toast from '../components/Toast'
+import { FaPlus, FaMinus, FaShoppingCart } from 'react-icons/fa'
 
 export default function ProductDetailsPage() {
-  const { productId } = useParams()
+  const { id } = useParams()
   const navigate = useNavigate()
   const { addToCart } = useCart()
   const [quantity, setQuantity] = useState(1)
   const [showToast, setShowToast] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
   
   // Find the product by ID
-  const product = products.find(p => p.id === parseInt(productId))
+  const product = products.find(p => p.id === parseInt(id))
   
   const handleQuantityChange = (delta) => {
-    setQuantity(prev => Math.max(1, prev + delta))
+    const newQuantity = quantity + delta
+    if (newQuantity >= 1 && newQuantity <= product.stock) {
+      setQuantity(newQuantity)
+    }
   }
 
   const handleAddToCart = () => {
     addToCart(product, quantity)
+    setToastMessage('Added to cart successfully!')
     setShowToast(true)
-    // Hide toast after 3 seconds
     setTimeout(() => setShowToast(false), 3000)
+  }
+
+  const handleBuyNow = () => {
+    addToCart(product, quantity)
+    navigate('/cart')
   }
   
   // Handle product not found
   if (!product) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Product Not Found</h2>
-          <button
-            onClick={() => navigate('/catalog')}
-            className="btn-primary px-6 py-2"
-          >
-            Back to Catalog
-          </button>
-        </div>
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
+        <p className="text-gray-600">The product you're looking for doesn't exist.</p>
+        <button
+          onClick={() => navigate('/catalog')}
+          className="mt-4 bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700"
+        >
+          Return to Catalog
+        </button>
       </div>
     )
   }
@@ -46,7 +55,8 @@ export default function ProductDetailsPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 py-12">
       <Toast
-        message="Added to cart successfully!"
+        message={toastMessage}
+        type="cart"
         isVisible={showToast}
         onClose={() => setShowToast(false)}
       />
@@ -117,21 +127,22 @@ export default function ProductDetailsPage() {
               </div>
               <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                 <h3 className="font-medium text-gray-900 dark:text-white mb-1">Stock Status</h3>
-                <p className="text-green-600 dark:text-green-400">In Stock</p>
+                <p className={product.stock > 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}>
+                  {product.stock > 0 ? `In Stock (${product.stock} available)` : 'Out of Stock'}
+                </p>
               </div>
             </div>
 
-            {/* Add to Cart Section */}
-            <div className="mt-auto">
-              <div className="flex gap-4">
+            {/* Quantity and Add to Cart Section */}
+            <div className="mt-auto space-y-4">
+              <div className="flex items-center gap-4">
                 <div className="flex items-center border border-gray-300 dark:border-gray-700 rounded-lg">
                   <button 
                     onClick={() => handleQuantityChange(-1)}
                     className="p-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    disabled={quantity <= 1}
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-                    </svg>
+                    <FaMinus className={quantity <= 1 ? "text-gray-300" : "text-gray-600"} />
                   </button>
                   <span className="px-4 py-2 text-lg font-medium min-w-[3rem] text-center">
                     {quantity}
@@ -139,19 +150,35 @@ export default function ProductDetailsPage() {
                   <button 
                     onClick={() => handleQuantityChange(1)}
                     className="p-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    disabled={quantity >= product.stock}
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
+                    <FaPlus className={quantity >= product.stock ? "text-gray-300" : "text-gray-600"} />
                   </button>
                 </div>
-                <button 
-                  onClick={handleAddToCart}
-                  className="btn-primary flex-1 text-lg hover:bg-blue-700 dark:hover:bg-blue-500 transition-colors"
+              </div>
+
+              <div className="flex gap-4">
+                <button
+                  onClick={handleBuyNow}
+                  className="flex-1 bg-indigo-600 text-white px-6 py-3 rounded-md hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+                  disabled={product.stock === 0}
                 >
+                  Buy Now
+                </button>
+                <button
+                  onClick={handleAddToCart}
+                  className="flex-1 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white px-6 py-3 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
+                  disabled={product.stock === 0}
+                >
+                  <FaShoppingCart className="w-5 h-5" />
                   Add to Cart
                 </button>
               </div>
+              {product.stock === 0 && (
+                <p className="text-red-600 dark:text-red-400 text-center">
+                  This product is currently out of stock
+                </p>
+              )}
             </div>
           </motion.div>
         </div>

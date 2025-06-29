@@ -1,12 +1,40 @@
-import { Link } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
-import ThemeSwitcher from './ThemeSwitcher'
-import { useCart } from '../context/CartContext'
-import { useAuth } from '../context/AuthContext'
+import { useState, useRef, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import ThemeSwitcher from './ThemeSwitcher';
+import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { FaShoppingCart, FaUser, FaSignOutAlt, FaCog } from 'react-icons/fa';
+
+const navLinks = [
+  { name: 'Home', href: '/' },
+  { name: 'Catalog', href: '/catalog' },
+  { name: 'About', href: '/about' },
+  { name: 'Contact', href: '/contact' },
+];
 
 export default function Header() {
-  const { getCartItemCount } = useCart()
-  const { isAuthenticated, userEmail, logout } = useAuth()
+  const { getCartItemCount } = useCart();
+  const { user, logout } = useAuth();
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileMenuRef = useRef(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setShowProfileMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
     <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50">
@@ -42,68 +70,62 @@ export default function Header() {
             
             {/* Cart Button */}
             <Link to="/cart" className="relative">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-6 h-6 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                />
-              </svg>
-              <AnimatePresence mode="wait">
-                {getCartItemCount() > 0 && (
-                  <motion.div
-                    key="cart-badge"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    exit={{ scale: 0 }}
-                    className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
-                  >
-                    {getCartItemCount()}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <FaShoppingCart className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+              {getCartItemCount() > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                  {getCartItemCount()}
+                </span>
+              )}
             </Link>
 
-            {/* Mobile Menu Button */}
-            <button
-              className="md:hidden p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
-              aria-label="Menu"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-6 h-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-                />
-              </svg>
-            </button>
-
-            {/* Auth Buttons */}
-            {isAuthenticated ? (
-              <div className="flex items-center space-x-4">
-                <span className="text-gray-600 dark:text-gray-300">{userEmail}</span>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={logout}
-                  className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+            {/* Auth/Profile Section */}
+            {user ? (
+              <div className="relative" ref={profileMenuRef}>
+                <button
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  className="flex items-center space-x-2 focus:outline-none"
                 >
-                  Logout
-                </motion.button>
+                  <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
+                    {user.imageUrl ? (
+                      <img
+                        src={user.imageUrl}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <FaUser className="text-gray-400" />
+                      </div>
+                    )}
+                  </div>
+                </button>
+
+                {showProfileMenu && (
+                  <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5">
+                    <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-200 dark:border-gray-600">
+                      <div className="font-medium">{user.firstName} {user.lastName}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{user.email}</div>
+                    </div>
+                    <Link
+                      to="/profile"
+                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
+                      onClick={() => setShowProfileMenu(false)}
+                    >
+                      <FaCog className="inline-block mr-2" />
+                      Profile Settings
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        handleLogout();
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
+                    >
+                      <FaSignOutAlt className="inline-block mr-2" />
+                      Sign out
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="flex items-center space-x-4">
@@ -129,12 +151,5 @@ export default function Header() {
         </div>
       </div>
     </header>
-  )
-}
-
-const navLinks = [
-  { name: 'Home', href: '/' },
-  { name: 'Catalog', href: '/catalog' },
-  { name: 'About', href: '/about' },
-  { name: 'Contact', href: '/contact' },
-] 
+  );
+} 

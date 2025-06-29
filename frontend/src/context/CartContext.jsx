@@ -1,37 +1,70 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useState, useEffect } from 'react'
+import Toast from '../components/Toast'
 
-const CartContext = createContext()
+const CartContext = createContext(null)
 
 export function CartProvider({ children }) {
-  const [cartItems, setCartItems] = useState([])
+  const [cart, setCart] = useState([])
+  const [showToast, setShowToast] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
 
-  const addToCart = (product, quantity) => {
-    setCartItems(prevItems => {
-      const existingItem = prevItems.find(item => item.id === product.id)
+  // Load cart from localStorage on mount
+  useEffect(() => {
+    const savedCart = localStorage.getItem('cart')
+    if (savedCart) {
+      try {
+        setCart(JSON.parse(savedCart))
+      } catch (error) {
+        console.error('Failed to parse cart from localStorage:', error)
+        setCart([])
+      }
+    }
+  }, [])
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart))
+  }, [cart])
+
+  const showNotification = (message) => {
+    setToastMessage(message)
+    setShowToast(true)
+    setTimeout(() => setShowToast(false), 3000)
+  }
+
+  const addToCart = (product, quantity = 1) => {
+    setCart(currentCart => {
+      const existingItem = currentCart.find(item => item.id === product.id)
       
       if (existingItem) {
-        // Update quantity if item exists
-        return prevItems.map(item =>
+        showNotification(`Updated ${product.name} quantity in cart`)
+        return currentCart.map(item =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + quantity }
             : item
         )
       }
       
-      // Add new item if it doesn't exist
-      return [...prevItems, { ...product, quantity }]
+      showNotification(`Added ${product.name} to cart`)
+      return [...currentCart, { ...product, quantity }]
     })
   }
 
   const removeFromCart = (productId) => {
-    setCartItems(prevItems => prevItems.filter(item => item.id !== productId))
+    setCart(currentCart => {
+      const product = currentCart.find(item => item.id === productId)
+      if (product) {
+        showNotification(`Removed ${product.name} from cart`)
+      }
+      return currentCart.filter(item => item.id !== productId)
+    })
   }
 
   const updateQuantity = (productId, quantity) => {
     if (quantity < 1) return
 
-    setCartItems(prevItems =>
-      prevItems.map(item =>
+    setCart(currentCart =>
+      currentCart.map(item =>
         item.id === productId
           ? { ...item, quantity }
           : item
@@ -40,28 +73,38 @@ export function CartProvider({ children }) {
   }
 
   const clearCart = () => {
-    setCartItems([])
+    setCart([])
+    showNotification('Cart has been cleared')
   }
 
   const getCartTotal = () => {
-    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0)
+    return cart.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2)
   }
 
   const getCartItemCount = () => {
-    return cartItems.reduce((total, item) => total + item.quantity, 0)
+    return cart.reduce((total, item) => total + item.quantity, 0)
+  }
+
+  const value = {
+    cart,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    getCartTotal,
+    getCartItemCount
   }
 
   return (
-    <CartContext.Provider value={{
-      cartItems,
-      addToCart,
-      removeFromCart,
-      updateQuantity,
-      clearCart,
-      getCartTotal,
-      getCartItemCount
-    }}>
+    <CartContext.Provider value={value}>
       {children}
+      <Toast
+        message={toastMessage}
+        type="cart"
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
+        action="cart"
+      />
     </CartContext.Provider>
   )
 }
