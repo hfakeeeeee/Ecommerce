@@ -47,7 +47,7 @@ export default function Header() {
               whileTap={{ scale: 0.95 }}
               className="text-2xl font-bold text-blue-600 dark:text-blue-400"
             >
-              Your Store
+              ELEGANCE
             </motion.div>
           </Link>
 

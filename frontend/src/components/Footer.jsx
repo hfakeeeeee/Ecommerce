@@ -1,81 +1,135 @@
-import { FaGithub, FaTwitter, FaLinkedin, FaInstagram } from 'react-icons/fa';
+import { FaGithub, FaTwitter, FaLinkedin, FaInstagram, FaMapMarkerAlt, FaPhone, FaEnvelope, FaHeart, FaFacebook } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 
 export default function Footer() {
+  const socialLinks = [
+    { icon: <FaFacebook />, href: 'https://www.facebook.com/HFakeee/', label: 'Facebook' },
+    { icon: <FaInstagram />, href: 'https://www.instagram.com/hfakeeeeee/', label: 'Instagram' },
+    { icon: <FaLinkedin />, href: 'https://www.linkedin.com/in/hfake/', label: 'LinkedIn' }
+  ];
+
+  const contactInfo = [
+    { icon: <FaMapMarkerAlt />, text: 'TMA Solutions Lab 6' },
+    { icon: <FaPhone />, text: '+84 902355669' },
+    { icon: <FaEnvelope />, text: 'huynguyenquoc.work@gmail.com' }
+  ];
+
   return (
     <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* About Section */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">About Us</h3>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {/* Brand Section */}
+          <div className="col-span-1">
+            <motion.h3 
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="text-2xl font-bold text-gray-900 dark:text-white mb-4"
+            >
+              ELEGANCE
+            </motion.h3>
             <p className="text-gray-600 dark:text-gray-300 text-sm">
-              We are dedicated to providing high-quality products and exceptional customer service.
-              Our mission is to make your shopping experience enjoyable and convenient.
+              Timeless Style, Modern Spirit. We believe in sustainable fashion that makes you look and feel amazing.
             </p>
           </div>
 
           {/* Quick Links */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Links</h3>
+          <div className="col-span-1">
+            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Links</h4>
             <ul className="space-y-2">
-              <li>
-                <a href="/about" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-sm">
+              <motion.li whileHover={{ x: 5 }} className="transition-colors">
+                <a href="/about" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
                   About Us
                 </a>
-              </li>
-              <li>
-                <a href="/contact" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-sm">
-                  Contact
+              </motion.li>
+              <motion.li whileHover={{ x: 5 }} className="transition-colors">
+                <a href="/catalog" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+                  Shop
                 </a>
-              </li>
-              <li>
-                <a href="/shipping" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-sm">
+              </motion.li>
+              <motion.li whileHover={{ x: 5 }} className="transition-colors">
+                <a href="/sustainability" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+                  Sustainability
+                </a>
+              </motion.li>
+              <motion.li whileHover={{ x: 5 }} className="transition-colors">
+                <a href="/size-guide" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+                  Size Guide
+                </a>
+              </motion.li>
+            </ul>
+          </div>
+
+          {/* Customer Service */}
+          <div className="col-span-1">
+            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Customer Service</h4>
+            <ul className="space-y-2">
+              <motion.li whileHover={{ x: 5 }} className="transition-colors">
+                <a href="/shipping" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
                   Shipping Information
                 </a>
-              </li>
-              <li>
-                <a href="/returns" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-sm">
-                  Returns Policy
+              </motion.li>
+              <motion.li whileHover={{ x: 5 }} className="transition-colors">
+                <a href="/returns" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+                  Returns & Exchanges
                 </a>
-              </li>
+              </motion.li>
+              <motion.li whileHover={{ x: 5 }} className="transition-colors">
+                <a href="/care" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+                  Care Instructions
+                </a>
+              </motion.li>
+              <motion.li whileHover={{ x: 5 }} className="transition-colors">
+                <a href="/faq" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+                  FAQ
+                </a>
+              </motion.li>
             </ul>
           </div>
 
           {/* Contact Info */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Contact Us</h3>
-            <ul className="space-y-2">
-              <li className="text-gray-600 dark:text-gray-300 text-sm">
-                Email: support@example.com
-              </li>
-              <li className="text-gray-600 dark:text-gray-300 text-sm">
-                Phone: (555) 123-4567
-              </li>
-              <li className="text-gray-600 dark:text-gray-300 text-sm">
-                Address: 123 Commerce St, City, State 12345
-              </li>
+          <div className="col-span-1">
+            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Contact Us</h4>
+            <ul className="space-y-4">
+              {contactInfo.map((info, index) => (
+                <motion.li
+                  key={index}
+                  initial={{ opacity: 0, x: -10 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="flex items-center text-gray-600 dark:text-gray-300"
+                >
+                  <span className="text-indigo-600 dark:text-indigo-400 mr-3">
+                    {info.icon}
+                  </span>
+                  <span className="text-sm">{info.text}</span>
+                </motion.li>
+              ))}
             </ul>
-            <div className="mt-4 flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
-                <FaTwitter className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
-                <FaGithub className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
-                <FaLinkedin className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
-                <FaInstagram className="w-5 h-5" />
-              </a>
-            </div>
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-800">
-          <p className="text-center text-gray-500 dark:text-gray-400 text-sm">
-            © {new Date().getFullYear()} Your Company Name. All rights reserved.
-          </p>
+        {/* Social Links & Copyright */}
+        <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex flex-col md:flex-row items-center justify-between">
+            <div className="flex space-x-6 mb-4 md:mb-0">
+              {socialLinks.map((social, index) => (
+                <motion.a
+                  key={index}
+                  href={social.href}
+                  whileHover={{ y: -3 }}
+                  className="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                  aria-label={social.label}
+                >
+                  {social.icon}
+                </motion.a>
+              ))}
+            </div>
+            <p className="text-gray-500 dark:text-gray-400 text-sm flex items-center">
+              Made with <FaHeart className="text-red-500 mx-1" /> by ELEGANCE © {new Date().getFullYear()}
+            </p>
+          </div>
         </div>
       </div>
     </footer>

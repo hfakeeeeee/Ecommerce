@@ -8,6 +8,8 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import { useAuth } from './context/AuthContext'
 import UserProfilePage from './pages/UserProfilePage'
+import AboutPage from './pages/AboutPage'
+import ContactPage from './pages/ContactPage'
 
 export default function AppRoutes() {
   const { user, loading } = useAuth()
@@ -42,6 +44,8 @@ export default function AppRoutes() {
       <Route path="/cart" element={<CartPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/contact" element={<ContactPage />} />
 
       {/* Protected Routes - Only accessible when logged in */}
       <Route path="/profile" element={<UserProfilePage />} />

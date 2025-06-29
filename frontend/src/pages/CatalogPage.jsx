@@ -95,9 +95,9 @@ export default function CatalogPage() {
               animate={{ opacity: 1, scale: 1 }}
               whileHover={{ y: -5 }}
               onClick={() => handleProductClick(product.id)}
-              className="group relative bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden cursor-pointer transform transition-all duration-300 hover:shadow-2xl"
+              className="group relative bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden cursor-pointer transform transition-all duration-300 hover:shadow-2xl h-[450px] flex flex-col"
             >
-              <div className="relative pb-[100%] overflow-hidden">
+              <div className="relative h-[250px] overflow-hidden">
                 {!loadedImages[product.id] && (
                   <div className="absolute inset-0 bg-gray-200 dark:bg-gray-700 animate-pulse" />
                 )}
@@ -125,38 +125,40 @@ export default function CatalogPage() {
                   </span>
                 )}
               </div>
-              <div className="p-4">
-                <div className="mb-2">
+              <div className="p-4 flex flex-col flex-grow">
+                <div className="flex-grow">
                   <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-medium">
                     {product.category}
                   </p>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1 line-clamp-1">
                     {product.name}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-300 text-sm mb-2 line-clamp-2">
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mb-2 line-clamp-2 h-10">
                     {product.description}
                   </p>
                 </div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
-                    ${product.price}
-                  </span>
-                  {product.oldPrice && (
-                    <span className="text-sm text-gray-400 line-through">
-                      ${product.oldPrice}
+                <div className="mt-auto">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
+                      ${product.price}
                     </span>
-                  )}
+                    {product.oldPrice && (
+                      <span className="text-sm text-gray-400 line-through">
+                        ${product.oldPrice}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleProductClick(product.id)
+                    }}
+                    className="w-full bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 group-hover:shadow-lg"
+                  >
+                    View Details
+                    <FaArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
+                  </button>
                 </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleProductClick(product.id)
-                  }}
-                  className="w-full bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 group-hover:shadow-lg"
-                >
-                  View Details
-                  <FaArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
-                </button>
               </div>
             </motion.div>
           ))}
