@@ -34,7 +34,7 @@ const cardStyle = {
 function CheckoutForm({ shippingInfo, setLoading, showToast, clearCart, navigate, token }) {
     const stripe = useStripe();
     const elements = useElements();
-    const { cart, getCartTotal } = useCart();
+    const { items, getCartTotal } = useCart();
     const [isProcessing, setIsProcessing] = useState(false);
 
     useEffect(() => {
@@ -72,12 +72,12 @@ function CheckoutForm({ shippingInfo, setLoading, showToast, clearCart, navigate
                     amount: getCartTotal() * 100, // Convert to cents
                     currency: 'usd',
                     shipping: shippingInfo,
-                    items: cart.map(item => ({
-                        id: item.id,
-                        name: item.name,
+                    items: items.map(item => ({
+                        id: item.productId,
+                        name: item.productName,
                         price: item.price,
                         quantity: item.quantity,
-                        image: item.image
+                        image: item.productImage
                     }))
                 }),
             });
@@ -164,7 +164,7 @@ function CheckoutForm({ shippingInfo, setLoading, showToast, clearCart, navigate
 
 export default function PaymentPage() {
     const navigate = useNavigate();
-    const { cart, getCartTotal, clearCart } = useCart();
+    const { items, getCartTotal, clearCart } = useCart();
     const { user, token } = useAuth();
     const [loading, setLoading] = useState(false);
     const [toast, setToast] = useState({ message: '', type: '', visible: false });
@@ -230,7 +230,7 @@ export default function PaymentPage() {
         return true;
     };
 
-    if (cart.length === 0) {
+    if (items.length === 0) {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-7xl mx-auto text-center">
@@ -268,11 +268,11 @@ export default function PaymentPage() {
                         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
                             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Order Summary</h2>
                             <div className="space-y-4">
-                                {cart.map((item) => (
-                                    <div key={item.id} className="flex items-center space-x-4">
-                                        <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded" />
+                                {items.map((item) => (
+                                    <div key={item.productId} className="flex items-center space-x-4">
+                                        <img src={item.productImage} alt={item.productName} className="w-16 h-16 object-cover rounded" />
                                         <div className="flex-1">
-                                            <h3 className="text-sm font-medium text-gray-900 dark:text-white">{item.name}</h3>
+                                            <h3 className="text-sm font-medium text-gray-900 dark:text-white">{item.productName}</h3>
                                             <p className="text-sm text-gray-500 dark:text-gray-400">Quantity: {item.quantity}</p>
                                         </div>
                                         <p className="text-sm font-medium text-gray-900 dark:text-white">

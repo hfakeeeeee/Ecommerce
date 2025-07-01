@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { FaTrash, FaMinus, FaPlus } from 'react-icons/fa'
 
 export default function CartPage() {
-  const { cart, removeFromCart, updateQuantity, getCartTotal, clearCart } = useCart()
+  const { items, removeFromCart, updateQuantity, getCartTotal, clearCart } = useCart()
   const { user } = useAuth()
   const navigate = useNavigate()
 
@@ -24,7 +24,7 @@ export default function CartPage() {
     navigate('/payment')
   }
 
-  if (cart.length === 0) {
+  if (!items || items.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
@@ -47,7 +47,7 @@ export default function CartPage() {
         
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
           <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-            {cart.map((item) => (
+            {items.map((item) => (
               <motion.li
                 key={item.id}
                 initial={{ opacity: 0 }}
@@ -57,12 +57,12 @@ export default function CartPage() {
               >
                 <div className="flex items-center space-x-4">
                   <img
-                    src={item.image}
-                    alt={item.name}
+                    src={item.productImage}
+                    alt={item.productName}
                     className="w-16 h-16 object-cover rounded"
                   />
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">{item.name}</h3>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">{item.productName}</h3>
                     <p className="text-gray-500 dark:text-gray-400">${item.price}</p>
                   </div>
                 </div>
@@ -70,21 +70,21 @@ export default function CartPage() {
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2">
                     <button
-                      onClick={() => handleQuantityChange(item.id, item.quantity, -1)}
+                      onClick={() => handleQuantityChange(item.productId, item.quantity, -1)}
                       className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                     >
                       <FaMinus />
                     </button>
                     <span className="text-gray-900 dark:text-white">{item.quantity}</span>
                     <button
-                      onClick={() => handleQuantityChange(item.id, item.quantity, 1)}
+                      onClick={() => handleQuantityChange(item.productId, item.quantity, 1)}
                       className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                     >
                       <FaPlus />
                     </button>
                   </div>
                   <button
-                    onClick={() => removeFromCart(item.id)}
+                    onClick={() => removeFromCart(item.productId)}
                     className="text-red-500 hover:text-red-700"
                   >
                     <FaTrash />

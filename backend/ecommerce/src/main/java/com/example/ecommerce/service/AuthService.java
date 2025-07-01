@@ -23,11 +23,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -216,34 +218,46 @@ public class AuthService {
     }
 
     public ResponseEntity<?> uploadAvatar(MultipartFile file) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Not authenticated"));
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body("Please select a file to upload");
         }
 
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        User user = userRepository.findByEmail(userDetails.getUsername());
-
         try {
-            String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-            Path uploadPath = Paths.get(uploadDir, "avatars");
+            // Get current user
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String userEmail = authentication.getName();
+            User user = userRepository.findByEmail(userEmail);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            }
+
+            // Create uploads directory if it doesn't exist
+            Path uploadPath = Paths.get(uploadDir, "uploads");
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
 
-            Path filePath = uploadPath.resolve(fileName);
-            Files.copy(file.getInputStream(), filePath);
+            // Generate unique filename
+            String originalFilename = file.getOriginalFilename();
+            String fileExtension = originalFilename != null ? originalFilename.substring(originalFilename.lastIndexOf(".")) : ".jpg";
+            String filename = UUID.randomUUID().toString() + fileExtension;
 
-            String imageUrl = "/api/uploads/avatars/" + fileName;
+            // Save file
+            Path filePath = uploadPath.resolve(filename);
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            // Update user's imageUrl - use the correct path that matches WebConfig
+            String imageUrl = "/uploads/" + filename;
             user.setImageUrl(imageUrl);
             userRepository.save(user);
 
-            return ResponseEntity.ok(Map.of(
-                "message", "Avatar uploaded successfully",
-                "imageUrl", imageUrl
-            ));
+            Map<String, String> response = new HashMap<>();
+            response.put("imageUrl", imageUrl);
+            return ResponseEntity.ok(response);
+
         } catch (IOException e) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Failed to upload avatar"));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to upload file: " + e.getMessage());
         }
     }
 

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Toast from '../components/Toast';
 
 export default function UserProfilePage() {
-    const { user, updateProfile, updatePassword } = useAuth();
+    const { user, setUser, updateProfile, updatePassword } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
     const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -71,8 +71,22 @@ export default function UserProfilePage() {
             }
 
             const data = await response.json();
-            updateProfile({ ...user, imageUrl: data.imageUrl });
+            setUser(prevUser => ({
+                ...prevUser,
+                imageUrl: data.imageUrl
+            }));
             showToast('Profile picture updated successfully', 'success');
+
+            const verifyResponse = await fetch('/api/auth/verify', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (verifyResponse.ok) {
+                const userData = await verifyResponse.json();
+                setUser(userData);
+            }
         } catch (error) {
             console.error('Upload error:', error);
             showToast(error.message || 'Failed to upload image', 'error');
@@ -162,10 +176,12 @@ export default function UserProfilePage() {
                                             alt="Profile"
                                             className="w-full h-full object-cover"
                                             onError={(e) => {
-                                                e.target.onerror = null; // Prevent infinite loop
-                                                e.target.src = ''; // Clear the source
-                                                // Show the default user icon instead
-                                                e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-500"><svg class="text-white w-16 h-16" ... /></div>';
+                                                e.target.onerror = null;
+                                                e.target.style.display = 'none';
+                                                const defaultIcon = document.createElement('div');
+                                                defaultIcon.className = 'w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-500';
+                                                defaultIcon.innerHTML = '<svg class="w-16 h-16 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>';
+                                                e.target.parentElement.appendChild(defaultIcon);
                                             }}
                                         />
                                     ) : (

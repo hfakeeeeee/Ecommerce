@@ -28,7 +28,12 @@ export function AuthProvider({ children }) {
 
             if (response.ok) {
                 const data = await response.json();
-                setUser(data);
+                setUser({
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    email: data.email,
+                    imageUrl: data.imageUrl || null
+                });
             } else {
                 // If token is invalid, clear everything
                 setUser(null);
@@ -66,20 +71,15 @@ export function AuthProvider({ children }) {
             localStorage.setItem('token', newToken);
             setToken(newToken);
             
-            // Fetch user details with the new token
-            const userResponse = await fetch('/api/auth/verify', {
-                headers: {
-                    'Authorization': `Bearer ${newToken}`
-                }
+            // Set user data directly from login response
+            setUser({
+                firstName: data.firstName,
+                lastName: data.lastName,
+                email: data.email,
+                imageUrl: data.imageUrl || null
             });
-
-            if (userResponse.ok) {
-                const userData = await userResponse.json();
-                setUser(userData);
-                return { success: true };
-            } else {
-                throw new Error('Failed to fetch user details');
-            }
+            
+            return { success: true };
         } catch (error) {
             console.error('Login error:', error);
             return { success: false, error: error.message };
@@ -199,6 +199,7 @@ export function AuthProvider({ children }) {
     return (
         <AuthContext.Provider value={{
             user,
+            setUser,
             token,
             loading,
             login,
