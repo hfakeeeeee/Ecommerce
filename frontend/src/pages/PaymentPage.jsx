@@ -185,7 +185,7 @@ export default function PaymentPage() {
         city: '',
         state: '',
         zipCode: '',
-        country: 'United States'
+        country: 'VN'
     });
 
     useEffect(() => {
