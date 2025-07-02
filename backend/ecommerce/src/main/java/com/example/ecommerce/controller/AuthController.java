@@ -15,7 +15,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost"}, allowCredentials = "true")
+@CrossOrigin(origins = {"http://localhost:5173", "http://192.168.76.75:5173", "http://localhost:80"}, allowCredentials = "true")
 public class AuthController {
 
     private final AuthService authService;
@@ -70,4 +70,4 @@ public class AuthController {
         String newPassword = request.get("newPassword");
         return authService.changePassword(currentPassword, newPassword);
     }
-} 
+}

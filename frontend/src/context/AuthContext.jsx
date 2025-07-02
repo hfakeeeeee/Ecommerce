@@ -183,10 +183,19 @@ export function AuthProvider({ children }) {
                 body: JSON.stringify({ email })
             });
 
-            const data = await response.json();
+            let data;
+            try {
+                data = await response.json();
+            } catch (e) {
+                // If the response is not JSON, create a default error message
+                data = { message: 'Invalid server response' };
+            }
 
             if (!response.ok) {
-                throw new Error(data.message || 'Password reset request failed');
+                return { 
+                    success: false, 
+                    error: data.message || `Password reset failed (${response.status})` 
+                };
             }
 
             return { success: true };
@@ -216,4 +225,4 @@ export function AuthProvider({ children }) {
 
 export function useAuth() {
     return useContext(AuthContext);
-} 
+}

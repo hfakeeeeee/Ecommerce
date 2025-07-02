@@ -22,6 +22,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.HttpStatus;
 
@@ -136,6 +137,7 @@ public class AuthService {
         return ResponseEntity.badRequest().body(Map.of("message", "Invalid token"));
     }
 
+    @Transactional
     public ResponseEntity<?> resetPassword(ResetPasswordRequest request) {
         User user = userRepository.findByEmail(request.getEmail());
         if (user == null) {
@@ -159,7 +161,7 @@ public class AuthService {
         message.setText(
             "Hello " + user.getFirstName() + " " + user.getLastName() + ",\n\n" +
             "You have requested to reset your password. Click the link below to reset your password:\n\n" +
-            "http://localhost:5173/forgot-password?token=" + token + "\n\n" +
+            appUrl + "/forgot-password?token=" + token + "\n\n" +
             "If you did not request this password reset, please ignore this email.\n\n" +
             "This link will expire in 30 minutes for security reasons.\n\n" +
             "Best regards,\n" +
@@ -170,6 +172,7 @@ public class AuthService {
         return ResponseEntity.ok(Map.of("message", "Password reset email sent"));
     }
 
+    @Transactional
     public ResponseEntity<?> completeReset(CompleteResetRequest request) {
         PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(request.getToken());
         if (resetToken == null) {
@@ -193,6 +196,7 @@ public class AuthService {
         return ResponseEntity.ok(Map.of("message", "Password has been reset successfully"));
     }
 
+    @Transactional
     public ResponseEntity<?> updateProfile(UpdateProfileRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -303,4 +307,4 @@ public class AuthService {
 
         return ResponseEntity.ok(Map.of("message", "Password updated successfully"));
     }
-} 
+}
