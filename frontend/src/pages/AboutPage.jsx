@@ -24,7 +24,7 @@ export default function AboutPage() {
     {
       name: "HFake",
       role: "Founder & CEO",
-      image: "https://i.postimg.cc/1t0XwGwM/a92a6ff89cb4b524e66dc64d38f73bd6.jpg?w=500",
+      image: "https://iili.io/FYnEPl2.png",
       bio: "Visionary leader with a passion for technology and innovation. Driving the future of tech retail.",
       social: {
         github: "https://github.com",
