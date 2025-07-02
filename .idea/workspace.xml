@@ -5,10 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e11c235e-8710-473d-bcd3-ef3a8652d56c" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/ecommerce/src/main/java/com/example/ecommerce/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/ecommerce/src/main/java/com/example/ecommerce/controller/AuthController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/ecommerce/src/main/java/com/example/ecommerce/security/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/ecommerce/src/main/java/com/example/ecommerce/security/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/ecommerce/src/main/java/com/example/ecommerce/service/AuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/ecommerce/src/main/java/com/example/ecommerce/service/AuthService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/ecommerce/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/ecommerce/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/PaymentPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/PaymentPage.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/vite.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/vite.config.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

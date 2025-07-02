@@ -45,8 +45,11 @@ public class AuthService {
     private final JavaMailSender emailSender;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
 
-    @Value("${app.upload.dir:${user.home}}")
+    @Value("${app.upload.dir:/app/uploads}")
     private String uploadDir;
+
+    @Value("${APP_URL:http://localhost}")
+    private String appUrl;
 
     public AuthService(UserRepository userRepository, 
                       PasswordEncoder passwordEncoder,
