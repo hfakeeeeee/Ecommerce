@@ -31,6 +31,15 @@ public class SecurityConfig {
     @Value("${app.upload.dir:${user.home}}")
     private String uploadDir;
 
+    @Value("${frontend.host:localhost}")
+    private String frontendHost;
+
+    @Value("${frontend.port:3000}")
+    private String frontendPort;
+
+    @Value("${cors.additional.origins:}")
+    private String additionalOrigins;
+
     public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
     }
@@ -58,7 +67,26 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://192.168.76.75:5173", "http://localhost"));
+        
+        // Build the primary frontend URL
+        String primaryFrontendUrl = "http://" + frontendHost + ":" + frontendPort;
+        
+        // Create list of allowed origins
+        java.util.List<String> allowedOriginsList = new java.util.ArrayList<>();
+        allowedOriginsList.add(primaryFrontendUrl);
+        
+        // Add additional origins if provided
+        if (additionalOrigins != null && !additionalOrigins.trim().isEmpty()) {
+            String[] additionalOriginsArray = additionalOrigins.split(",");
+            for (String origin : additionalOriginsArray) {
+                String trimmedOrigin = origin.trim();
+                if (!trimmedOrigin.isEmpty()) {
+                    allowedOriginsList.add(trimmedOrigin);
+                }
+            }
+        }
+        
+        configuration.setAllowedOrigins(allowedOriginsList);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"));
         configuration.setExposedHeaders(Arrays.asList("Authorization"));
@@ -67,7 +95,8 @@ public class SecurityConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
-        logger.info("CORS configuration applied");
+        logger.info("CORS configuration applied with primary origin: {} and additional origins: {}", 
+                   primaryFrontendUrl, allowedOriginsList);
         return source;
     }
 

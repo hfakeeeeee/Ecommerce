@@ -49,8 +49,11 @@ public class AuthService {
     @Value("${app.upload.dir:/app/uploads}")
     private String uploadDir;
 
-    @Value("${APP_URL:http://localhost}")
-    private String appUrl;
+    @Value("${FRONTEND_HOST}")
+    private String frontend_host;
+
+    @Value("${FRONTEND_PORT}")
+    private String frontendPort;
 
     public AuthService(UserRepository userRepository, 
                       PasswordEncoder passwordEncoder,
@@ -161,7 +164,7 @@ public class AuthService {
         message.setText(
             "Hello " + user.getFirstName() + " " + user.getLastName() + ",\n\n" +
             "You have requested to reset your password. Click the link below to reset your password:\n\n" +
-            appUrl + "/forgot-password?token=" + token + "\n\n" +
+            frontend_host + ":" + frontendPort + "/forgot-password?token=" + token + "\n\n" +
             "If you did not request this password reset, please ignore this email.\n\n" +
             "This link will expire in 30 minutes for security reasons.\n\n" +
             "Best regards,\n" +
