@@ -5,12 +5,16 @@ import com.example.ecommerce.dto.LoginRequest;
 import com.example.ecommerce.dto.RegisterRequest;
 import com.example.ecommerce.dto.ResetPasswordRequest;
 import com.example.ecommerce.dto.UpdateProfileRequest;
+import com.example.ecommerce.model.User;
 import com.example.ecommerce.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.access.prepost.PreAuthorize;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 
 @RestController
@@ -69,5 +73,35 @@ public class AuthController {
         String currentPassword = request.get("currentPassword");
         String newPassword = request.get("newPassword");
         return authService.changePassword(currentPassword, newPassword);
+    }
+
+    @GetMapping("/admin/users")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<User>> getAllUsers() {
+        return ResponseEntity.ok(authService.getAllUsers());
+    }
+
+    @GetMapping("/admin/users/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+        return authService.getUserById(id)
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/admin/users/{id}/role")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateUserRole(@PathVariable Long id, @RequestBody String role) {
+        boolean success = authService.updateUserRole(id, role.replaceAll("\"", ""));
+        if (success) return ResponseEntity.ok().build();
+        return ResponseEntity.badRequest().body("Invalid role or user not found");
+    }
+
+    @PostMapping("/admin/users/{id}/reset-password")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> resetUserPassword(@PathVariable Long id) {
+        boolean success = authService.resetUserPassword(id, "user1234");
+        if (success) return ResponseEntity.ok().body("Password reset to 'user1234'");
+        return ResponseEntity.badRequest().body("User not found");
     }
 }

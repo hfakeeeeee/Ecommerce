@@ -35,6 +35,15 @@ public class User {
     @Size(max = 255)
     private String imageUrl;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
+    public enum Role {
+        USER,
+        ADMIN
+    }
+
     // Getters and Setters
     public Long getId() {
         return id;
@@ -82,5 +91,13 @@ public class User {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
     }
 } 

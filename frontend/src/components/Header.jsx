@@ -161,6 +161,16 @@ export default function Header() {
                           <FaHistory className="w-4 h-4 mr-3" />
                           Order History
                         </Link>
+                        {user.role === 'ADMIN' && (
+                          <Link
+                            to="/admin"
+                            className="flex items-center px-4 py-2 text-sm text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                            onClick={() => setShowProfileMenu(false)}
+                          >
+                            <FaUser className="w-4 h-4 mr-3" />
+                            Admin Dashboard
+                          </Link>
+                        )}
                         <button
                           onClick={() => {
                             setShowProfileMenu(false);

@@ -17,6 +17,7 @@ import FAQPage from './pages/FAQPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import PaymentPage from './pages/PaymentPage'
 import OrderHistoryPage from './pages/OrderHistoryPage'
+import AdminDashboardPage from './pages/AdminDashboardPage'
 
 export default function AppRoutes() {
   const { user, loading } = useAuth()
@@ -59,6 +60,9 @@ export default function AppRoutes() {
       <Route path="/profile" element={<UserProfilePage />} />
       <Route path="/payment" element={<PaymentPage />} />
       <Route path="/orders" element={<OrderHistoryPage />} />
+
+      {/* Admin Route - Only accessible to admin users */}
+      <Route path="/admin" element={user && user.role === 'ADMIN' ? <AdminDashboardPage /> : <Navigate to="/" replace />} />
 
       {/* New customer service pages */}
       <Route path="/shipping" element={<ShippingPage />} />

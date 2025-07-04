@@ -5,8 +5,10 @@ import com.example.ecommerce.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
+import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/api/products")
@@ -58,5 +60,26 @@ public class ProductController {
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/admin/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Product>> getAllProductsForAdmin() {
+        // TODO: Implement fetching all products for admin
+        return ResponseEntity.ok(new ArrayList<>());
+    }
+
+    @PostMapping("/admin/add")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> addProduct(@RequestBody Product product) {
+        // TODO: Implement add product logic
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/admin/edit/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> editProduct(@PathVariable Long id, @RequestBody Product product) {
+        // TODO: Implement edit product logic
+        return ResponseEntity.ok().build();
     }
 } 

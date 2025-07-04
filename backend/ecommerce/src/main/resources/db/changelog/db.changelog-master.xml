@@ -12,5 +12,6 @@
     <include file="db/changelog/004-create-order-items-table.xml"/>
     <include file="db/changelog/005-create-cart-tables.xml"/>
     <include file="db/changelog/006-create-products-table.xml"/>
+    <include file="db/changelog/007-add-role-and-default-admin.xml"/>
 
 </databaseChangeLog>

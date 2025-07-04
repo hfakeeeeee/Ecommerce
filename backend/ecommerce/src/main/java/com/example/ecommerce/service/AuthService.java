@@ -35,6 +35,8 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AuthService {
@@ -79,6 +81,7 @@ public class AuthService {
         user.setLastName(request.getLastName());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(User.Role.USER);
 
         userRepository.save(user);
         return ResponseEntity.ok(Map.of("message", "User registered successfully"));
@@ -309,5 +312,55 @@ public class AuthService {
         userRepository.save(user);
 
         return ResponseEntity.ok(Map.of("message", "Password updated successfully"));
+    }
+
+    // ADMIN: Get all users
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    // ADMIN: Get user by ID
+    public Optional<User> getUserById(Long id) {
+        return userRepository.findById(id);
+    }
+
+    // ADMIN: Update user role
+    @Transactional
+    public boolean updateUserRole(Long id, String role) {
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            try {
+                user.setRole(User.Role.valueOf(role));
+                userRepository.save(user);
+                return true;
+            } catch (IllegalArgumentException e) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    // ADMIN: Reset user password (set to default and email user)
+    @Transactional
+    public boolean resetUserPassword(Long id, String defaultPassword) {
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setPassword(passwordEncoder.encode(defaultPassword));
+            userRepository.save(user);
+            // Optionally, email the user about the reset
+            try {
+                SimpleMailMessage message = new SimpleMailMessage();
+                message.setTo(user.getEmail());
+                message.setSubject("Your password has been reset");
+                message.setText("Hello " + user.getFirstName() + ",\n\nYour password has been reset by an admin. Your new password is: " + defaultPassword + "\nPlease log in and change it as soon as possible.\n\nBest regards,\nAdmin Team");
+                emailSender.send(message);
+            } catch (Exception e) {
+                // Ignore email errors for now
+            }
+            return true;
+        }
+        return false;
     }
 }
