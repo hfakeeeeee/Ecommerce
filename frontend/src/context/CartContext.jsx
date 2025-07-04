@@ -11,6 +11,7 @@ export function CartProvider({ children }) {
 
   // Fetch cart from backend when authenticated
   useEffect(() => {
+    console.log('CartContext: Auth state changed', { hasUser: !!user, hasToken: !!token });
     if (token && user) {
       fetchCart();
     } else {
@@ -20,26 +21,32 @@ export function CartProvider({ children }) {
 
   const fetchCart = async () => {
     if (!token) {
+      console.log('CartContext: No token available, clearing cart');
       setItems([]);
       return;
     }
 
     try {
+      console.log('CartContext: Fetching cart with token:', token.substring(0, 20) + '...');
       const response = await fetch('/api/cart', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
+      console.log('CartContext: Cart response status:', response.status);
       if (!response.ok) {
         throw new Error('Failed to fetch cart');
       }
 
       const contentType = response.headers.get("content-type");
+      console.log('CartContext: Response content type:', contentType);
       if (contentType && contentType.includes("application/json")) {
         const data = await response.json();
+        console.log('CartContext: Cart data received:', data);
         setItems(data.items || []);
       } else {
+        console.log('CartContext: No JSON content received');
         setItems([]);
       }
     } catch (error) {

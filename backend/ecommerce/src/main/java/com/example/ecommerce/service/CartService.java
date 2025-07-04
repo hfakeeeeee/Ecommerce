@@ -19,13 +19,12 @@ public class CartService {
 
     @Transactional
     public Cart getOrCreateCart(User user) {
-        Cart cart = cartRepository.findByUser(user);
-        if (cart == null) {
-            cart = new Cart();
-            cart.setUser(user);
-            cart = cartRepository.save(cart);
-        }
-        return cart;
+        return cartRepository.findLatestByUser(user)
+                .orElseGet(() -> {
+                    Cart cart = new Cart();
+                    cart.setUser(user);
+                    return cartRepository.save(cart);
+                });
     }
 
     @Transactional
@@ -90,6 +89,6 @@ public class CartService {
     }
 
     public Cart getCart(User user) {
-        return cartRepository.findByUser(user);
+        return getOrCreateCart(user);
     }
 } 

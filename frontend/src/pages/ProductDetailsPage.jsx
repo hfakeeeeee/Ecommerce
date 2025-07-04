@@ -1,40 +1,47 @@
-import { useState, useMemo, useEffect } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
-import { products } from '../data/products'
+import { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { useCart } from '../context/CartContext'
 import Toast from '../components/Toast'
-import { FaPlus, FaMinus, FaShoppingCart, FaArrowRight, FaStar, FaRegStar, FaHeart } from 'react-icons/fa'
+import { FaPlus, FaMinus, FaShoppingCart } from 'react-icons/fa'
 
 export default function ProductDetailsPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { addToCart, loading } = useCart()
+  const { addToCart } = useCart()
+  const [product, setProduct] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [quantity, setQuantity] = useState(1)
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   
-  // Find the product by ID
-  const product = products.find(p => p.id === parseInt(id))
-  
-  // Get recommended products (same category, different product)
-  const recommendedProducts = useMemo(() => {
-    if (!product) return []
-    return products
-      .filter(p => p.category === product.category && p.id !== product.id)
-      .sort(() => 0.5 - Math.random()) // Shuffle array
-      .slice(0, 4) // Take only first 4 items
-  }, [product])
-  
-  // Scroll to top when product ID changes
   useEffect(() => {
-    window.scrollTo(0, 0);
+    setLoading(true)
+    setError(null)
+    fetch(`/api/products/${id}`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Product not found')
+        return res.json()
+      })
+      .then((data) => {
+        setProduct(data)
+        setLoading(false)
+      })
+      .catch((err) => {
+        setError('Product not found')
+        setLoading(false)
+      })
+  }, [id])
+  
+  useEffect(() => {
+    window.scrollTo(0, 0)
   }, [id])
   
   const handleQuantityChange = (delta) => {
     const newQuantity = quantity + delta
-    if (newQuantity >= 1 && newQuantity <= product.stock) {
+    if (product && newQuantity >= 1 && newQuantity <= product.stock) {
       setQuantity(newQuantity)
     }
   }
@@ -55,13 +62,15 @@ export default function ProductDetailsPage() {
     navigate('/cart')
   }
   
-  // Scroll to top when product ID changes
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [id]);
-  
-  // Handle product not found
-  if (!product) {
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    )
+  }
+
+  if (error || !product) {
     return (
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
@@ -206,160 +215,6 @@ export default function ProductDetailsPage() {
             </div>
           </motion.div>
         </div>
-
-        {/* Additional Details */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="mt-16"
-        >
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-            Product Details
-          </h2>
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-6">
-            <div className="prose dark:prose-invert max-w-none">
-              <p className="text-gray-600 dark:text-gray-400">
-                {product.description}
-              </p>
-              {/* Add more details here as needed */}
-            </div>
-          </div>
-        </motion.div>
-        
-        {/* Recommended Products Section */}
-        {recommendedProducts.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="mt-24 max-w-6xl mx-auto px-4 text-center"
-          >
-            <div className="flex flex-col items-center mb-10 relative">
-              <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mb-4"></div>
-              <motion.h2 
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 text-center mb-3"
-              >
-                Recommended For You
-              </motion.h2>
-              <p className="text-gray-600 dark:text-gray-300 text-center max-w-md mb-6">
-                Products you might love based on your interests
-              </p>
-              <Link 
-                to="/catalog"
-                className="relative group px-6 py-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium flex items-center overflow-hidden"
-              >
-                <span className="relative z-10">Explore More</span>
-                <motion.div
-                  initial={{ x: -100 }}
-                  whileHover={{ x: 0 }}
-                  className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                />
-                <motion.span
-                  initial={{ x: 0 }}
-                  whileHover={{ x: 5 }}
-                  transition={{ repeat: Infinity, repeatType: "mirror", duration: 0.6 }}
-                  className="ml-2 relative z-10"
-                >
-                  <FaArrowRight className="h-3 w-3" />
-                </motion.span>
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10 relative z-10 justify-items-center mx-auto">
-              {recommendedProducts.map((item, index) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.1 * index }}
-                  whileHover={{ y: -8, scale: 1.02 }}
-                  className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl overflow-hidden 
-                            border border-white/20 dark:border-gray-700/30 shadow-xl 
-                            hover:shadow-blue-500/10 dark:hover:shadow-purple-500/10 transition-all duration-300"
-                >
-                  <div className="relative aspect-square overflow-hidden group">
-                    <img 
-                      src={item.image} 
-                      alt={item.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    
-                    <Link to={`/product/${item.id}`} className="block">
-                      <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        whileHover={{ opacity: 1, y: 0 }}
-                        className="absolute inset-0 flex items-center justify-center"
-                      >
-                        <span className="px-5 py-2.5 bg-white/20 backdrop-blur-md border border-white/30 
-                                        rounded-full text-white font-medium shadow-lg 
-                                        flex items-center gap-2 transition-all">
-                          View Details
-                          <motion.span
-                            animate={{ x: [0, 3, 0] }}
-                            transition={{ repeat: Infinity, duration: 1.5 }}
-                          >
-                            <FaArrowRight className="ml-1 h-3 w-3" />
-                          </motion.span>
-                        </span>
-                      </motion.div>
-                    </Link>
-                    
-                    {/* Price tag */}
-                    <div className="absolute top-3 right-3 bg-white/80 dark:bg-black/50 backdrop-blur-md 
-                                   px-3 py-1.5 rounded-full text-sm font-bold text-gray-900 dark:text-white 
-                                   shadow-lg border border-white/30 dark:border-gray-800/50">
-                      ${item.price.toFixed(2)}
-                    </div>
-                    
-                    {/* Category badge */}
-                    <div className="absolute top-3 left-3 bg-gradient-to-r from-blue-600/90 to-purple-600/90 
-                                   px-3 py-1 rounded-full text-xs font-medium text-white 
-                                   shadow-lg backdrop-blur-md">
-                      {item.category}
-                    </div>
-                  </div>
-                  
-                  <div className="p-5 text-center">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate mb-2">
-                      {item.name}
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-4 h-10 mx-auto">
-                      {item.description}
-                    </p>
-                    
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        addToCart(item, 1);
-                        setToastMessage(`Added ${item.name} to cart`);
-                        setShowToast(true);
-                        setTimeout(() => setShowToast(false), 3000);
-                      }}
-                      className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 
-                                text-white rounded-xl flex items-center justify-center gap-2 
-                                transition-all duration-300 transform hover:scale-[1.02] font-medium"
-                    >
-                      <FaShoppingCart className="h-4 w-4" />
-                      Add to Cart
-                      <motion.span
-                        initial={{ opacity: 0, scale: 0 }}
-                        whileHover={{ opacity: 1, scale: 1 }}
-                        className="bg-white/30 rounded-full p-1 ml-1"
-                      >
-                        +1
-                      </motion.span>
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        )}
       </div>
     </div>
   )

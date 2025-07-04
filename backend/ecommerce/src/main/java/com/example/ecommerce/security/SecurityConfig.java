@@ -50,8 +50,8 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/register", "/api/auth/login", 
-                               "/api/auth/reset-password", "/api/auth/complete-reset").permitAll()
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/products/**").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
                 .requestMatchers("/api/cart/**").authenticated()
                 .anyRequest().authenticated()
@@ -69,7 +69,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         
         // Build the primary frontend URL
-        String primaryFrontendUrl = "http://" + frontendHost + ":" + frontendPort;
+        String primaryFrontendUrl = frontendHost + ":" + frontendPort;
         
         // Create list of allowed origins
         java.util.List<String> allowedOriginsList = new java.util.ArrayList<>();

@@ -32,29 +32,41 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         try {
+            // Log the request details
+            logger.info("Processing request: {} {}", request.getMethod(), request.getRequestURI());
+            
             String jwt = parseJwt(request);
-            logger.debug("JWT Token: {}", jwt != null ? "present" : "not present");
+            logger.info("JWT Token present: {}", jwt != null);
 
-            if (jwt != null && jwtUtils.validateToken(jwt)) {
-                String username = jwtUtils.getUsernameFromToken(jwt);
-                logger.debug("Username from token: {}", username);
+            if (jwt != null) {
+                logger.info("Validating token...");
+                boolean isValid = jwtUtils.validateToken(jwt);
+                logger.info("Token validation result: {}", isValid);
 
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                if (userDetails != null) {
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                if (isValid) {
+                    String username = jwtUtils.getUsernameFromToken(jwt);
+                    logger.info("Username from token: {}", username);
 
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                    logger.debug("Successfully set authentication in SecurityContext for user: {}", username);
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    if (userDetails != null) {
+                        logger.info("User details loaded successfully for: {}", username);
+                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.getAuthorities());
+                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                        logger.info("Authentication set in SecurityContext for user: {}", username);
+                    } else {
+                        logger.error("UserDetails not found for username: {}", username);
+                    }
                 } else {
-                    logger.error("UserDetails not found for username: {}", username);
+                    logger.error("Token validation failed");
                 }
-            } else if (jwt != null) {
-                logger.error("Invalid JWT token");
+            } else {
+                logger.info("No JWT token found in request");
             }
         } catch (Exception e) {
-            logger.error("Cannot set user authentication: {}", e.getMessage());
+            logger.error("Authentication error: {}", e.getMessage(), e);
         }
 
         filterChain.doFilter(request, response);
@@ -62,10 +74,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private String parseJwt(HttpServletRequest request) {
         String headerAuth = request.getHeader("Authorization");
-        logger.debug("Authorization header: {}", headerAuth != null ? "present" : "not present");
-
-        if (headerAuth != null && headerAuth.startsWith("Bearer ")) {
-            return headerAuth.substring(7);
+        logger.info("Authorization header present: {}", headerAuth != null);
+        
+        if (headerAuth != null) {
+            logger.info("Authorization header starts with 'Bearer ': {}", headerAuth.startsWith("Bearer "));
+            if (headerAuth.startsWith("Bearer ")) {
+                String token = headerAuth.substring(7);
+                logger.info("Extracted token length: {}", token.length());
+                return token;
+            }
         }
 
         return null;
