@@ -70,6 +70,18 @@ public class OrderService {
     }
 
     @Transactional
+    public Order updateOrderStatusByAdmin(String orderNumber, String newStatus) {
+        Order order = orderRepository.findByOrderNumber(orderNumber);
+        if (order == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found");
+        }
+
+        // Admin can set any status
+        order.setStatus(newStatus);
+        return orderRepository.save(order);
+    }
+
+    @Transactional
     public Order cancelOrder(String orderNumber) {
         Order order = orderRepository.findByOrderNumber(orderNumber);
         if (order == null) {
@@ -99,9 +111,9 @@ public class OrderService {
 
         switch (currentStatus.toUpperCase()) {
             case "PENDING":
-                return newStatus.equals("PROCESSING") || newStatus.equals("CANCELLED");
-            case "PROCESSING":
-                return newStatus.equals("SHIPPED");
+                return newStatus.equals("CONFIRMED") || newStatus.equals("CANCELLED");
+            case "CONFIRMED":
+                return newStatus.equals("SHIPPED") || newStatus.equals("CANCELLED");
             case "SHIPPED":
                 return newStatus.equals("DELIVERED");
             case "DELIVERED":

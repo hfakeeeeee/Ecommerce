@@ -45,6 +45,16 @@ public class OrderController {
         return ResponseEntity.ok(updatedOrder);
     }
 
+    @PutMapping("/admin/{orderNumber}/status")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Order> updateOrderStatusByAdmin(
+            @PathVariable String orderNumber,
+            @RequestBody Map<String, String> payload) {
+        String newStatus = payload.get("status");
+        Order updatedOrder = orderService.updateOrderStatusByAdmin(orderNumber, newStatus);
+        return ResponseEntity.ok(updatedOrder);
+    }
+
     @PostMapping("/{orderNumber}/cancel")
     public ResponseEntity<Order> cancelOrder(@PathVariable String orderNumber) {
         Order cancelledOrder = orderService.cancelOrder(orderNumber);
