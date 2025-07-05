@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/products")
@@ -65,21 +65,34 @@ public class ProductController {
     @GetMapping("/admin/all")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Product>> getAllProductsForAdmin() {
-        // TODO: Implement fetching all products for admin
-        return ResponseEntity.ok(new ArrayList<>());
+        return ResponseEntity.ok(productService.getAllProducts());
     }
 
     @PostMapping("/admin/add")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> addProduct(@RequestBody Product product) {
-        // TODO: Implement add product logic
-        return ResponseEntity.ok().build();
+        try {
+            Product savedProduct = productService.saveProduct(product);
+            return ResponseEntity.ok(savedProduct);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Failed to add product: " + e.getMessage());
+        }
     }
 
     @PutMapping("/admin/edit/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> editProduct(@PathVariable Long id, @RequestBody Product product) {
-        // TODO: Implement edit product logic
-        return ResponseEntity.ok().build();
+        try {
+            Optional<Product> existingProduct = productService.getProductById(id);
+            if (existingProduct.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            product.setId(id);
+            Product updatedProduct = productService.saveProduct(product);
+            return ResponseEntity.ok(updatedProduct);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Failed to update product: " + e.getMessage());
+        }
     }
 } 

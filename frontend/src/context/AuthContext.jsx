@@ -32,7 +32,8 @@ export function AuthProvider({ children }) {
                     firstName: data.firstName,
                     lastName: data.lastName,
                     email: data.email,
-                    imageUrl: data.imageUrl || null
+                    imageUrl: data.imageUrl || null,
+                    role: data.role
                 });
             } else {
                 // If token is invalid, clear everything
@@ -76,7 +77,8 @@ export function AuthProvider({ children }) {
                 firstName: data.firstName,
                 lastName: data.lastName,
                 email: data.email,
-                imageUrl: data.imageUrl || null
+                imageUrl: data.imageUrl || null,
+                role: data.role
             });
             
             return { success: true };

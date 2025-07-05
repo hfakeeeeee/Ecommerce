@@ -15,9 +15,9 @@
 
     <changeSet id="007-insert-default-admin" author="ecommerce-dev">
         <preConditions onFail="MARK_RAN">
-            <not>
-                <tableExists tableName="users"/>
-            </not>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM users WHERE email = 'admin@example.com'
+            </sqlCheck>
         </preConditions>
         <!-- TODO: Replace the password below with a real bcrypt hash -->
         <insert tableName="users">

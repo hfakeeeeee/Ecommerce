@@ -14,7 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 
 @RestController
@@ -103,5 +102,11 @@ public class AuthController {
         boolean success = authService.resetUserPassword(id, "user1234");
         if (success) return ResponseEntity.ok().body("Password reset to 'user1234'");
         return ResponseEntity.badRequest().body("User not found");
+    }
+
+    @PutMapping("/admin/users/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody Map<String, String> userData) {
+        return authService.updateUserByAdmin(id, userData);
     }
 }

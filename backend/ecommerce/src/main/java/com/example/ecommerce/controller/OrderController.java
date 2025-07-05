@@ -3,6 +3,7 @@ package com.example.ecommerce.controller;
 import com.example.ecommerce.model.Order;
 import com.example.ecommerce.service.OrderService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,6 +28,12 @@ public class OrderController {
     @GetMapping("/{orderNumber}")
     public ResponseEntity<Order> getOrderByNumber(@PathVariable String orderNumber) {
         return ResponseEntity.ok(orderService.getOrderByNumber(orderNumber));
+    }
+
+    @GetMapping("/admin/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Order>> getAllOrdersForAdmin() {
+        return ResponseEntity.ok(orderService.getAllOrdersForAdmin());
     }
 
     @PutMapping("/{orderNumber}/status")

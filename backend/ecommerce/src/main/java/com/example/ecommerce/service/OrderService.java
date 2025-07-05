@@ -44,6 +44,10 @@ public class OrderService {
         return orderRepository.findByUserOrderByOrderDateDesc(user);
     }
 
+    public List<Order> getAllOrdersForAdmin() {
+        return orderRepository.findAllByOrderByOrderDateDesc();
+    }
+
     public Order getOrderByNumber(String orderNumber) {
         return orderRepository.findByOrderNumber(orderNumber);
     }

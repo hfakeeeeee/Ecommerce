@@ -114,6 +114,7 @@ public class AuthService {
             response.put("lastName", user.getLastName());
             response.put("email", user.getEmail());
             response.put("imageUrl", user.getImageUrl() != null ? user.getImageUrl() : "");
+            response.put("role", user.getRole().toString());
 
             return ResponseEntity.ok(response);
 
@@ -137,7 +138,8 @@ public class AuthService {
                 "firstName", user.getFirstName(),
                 "lastName", user.getLastName(),
                 "email", user.getEmail(),
-                "imageUrl", user.getImageUrl() != null ? user.getImageUrl() : ""
+                "imageUrl", user.getImageUrl() != null ? user.getImageUrl() : "",
+                "role", user.getRole().toString()
             ));
         }
         return ResponseEntity.badRequest().body(Map.of("message", "Invalid token"));
@@ -362,5 +364,43 @@ public class AuthService {
             return true;
         }
         return false;
+    }
+
+    // ADMIN: Update user by admin
+    @Transactional
+    public ResponseEntity<?> updateUserByAdmin(Long id, Map<String, String> userData) {
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        User user = userOpt.get();
+        
+        // Check if email is being changed and if it's already taken
+        String newEmail = userData.get("email");
+        if (newEmail != null && !newEmail.equals(user.getEmail()) && userRepository.existsByEmail(newEmail)) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Email is already taken"));
+        }
+
+        // Update user fields
+        if (userData.get("firstName") != null) {
+            user.setFirstName(userData.get("firstName"));
+        }
+        if (userData.get("lastName") != null) {
+            user.setLastName(userData.get("lastName"));
+        }
+        if (newEmail != null) {
+            user.setEmail(newEmail);
+        }
+
+        userRepository.save(user);
+        
+        return ResponseEntity.ok(Map.of(
+            "message", "User updated successfully",
+            "firstName", user.getFirstName(),
+            "lastName", user.getLastName(),
+            "email", user.getEmail(),
+            "role", user.getRole().toString()
+        ));
     }
 }
