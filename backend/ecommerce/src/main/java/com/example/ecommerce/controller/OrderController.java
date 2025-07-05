@@ -60,4 +60,14 @@ public class OrderController {
         Order cancelledOrder = orderService.cancelOrder(orderNumber);
         return ResponseEntity.ok(cancelledOrder);
     }
+    
+    // Manual trigger for testing order automation (admin only)
+    @PostMapping("/admin/trigger-automation")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, String>> triggerOrderAutomation() {
+        orderService.processPendingOrders();
+        orderService.processProcessingOrders();
+        orderService.processShippedOrders();
+        return ResponseEntity.ok(Map.of("message", "Order automation triggered successfully"));
+    }
 } 

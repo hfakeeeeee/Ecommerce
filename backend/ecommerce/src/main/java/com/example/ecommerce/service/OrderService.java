@@ -1,9 +1,11 @@
 package com.example.ecommerce.service;
 
+import com.example.ecommerce.config.OrderConfig;
 import com.example.ecommerce.model.Order;
 import com.example.ecommerce.model.User;
 import com.example.ecommerce.repository.OrderRepository;
 import com.example.ecommerce.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,10 +21,13 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
+    private final OrderConfig orderConfig;
 
-    public OrderService(OrderRepository orderRepository, UserRepository userRepository) {
+    @Autowired
+    public OrderService(OrderRepository orderRepository, UserRepository userRepository, OrderConfig orderConfig) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
+        this.orderConfig = orderConfig;
     }
 
     @Transactional
@@ -111,8 +116,8 @@ public class OrderService {
 
         switch (currentStatus.toUpperCase()) {
             case "PENDING":
-                return newStatus.equals("CONFIRMED") || newStatus.equals("CANCELLED");
-            case "CONFIRMED":
+                return newStatus.equals("PROCESSING") || newStatus.equals("CANCELLED");
+            case "PROCESSING":
                 return newStatus.equals("SHIPPED") || newStatus.equals("CANCELLED");
             case "SHIPPED":
                 return newStatus.equals("DELIVERED");
@@ -126,5 +131,45 @@ public class OrderService {
 
     private String generateOrderNumber() {
         return "ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+    
+    // Automated status update methods
+    @Transactional
+    public void processPendingOrders() {
+        LocalDateTime cutoffTime = LocalDateTime.now().minusSeconds(orderConfig.getPendingToProcessingSeconds());
+        List<Order> pendingOrders = orderRepository.findPendingOrdersReadyForProcessing(cutoffTime);
+        
+        for (Order order : pendingOrders) {
+            order.setStatus("PROCESSING");
+            orderRepository.save(order);
+        }
+    }
+    
+    @Transactional
+    public void processProcessingOrders() {
+        LocalDateTime cutoffTime = LocalDateTime.now().minusSeconds(
+            orderConfig.getPendingToProcessingSeconds() + orderConfig.getProcessingToShippedSeconds()
+        );
+        List<Order> processingOrders = orderRepository.findProcessingOrdersReadyForShipping(cutoffTime);
+        
+        for (Order order : processingOrders) {
+            order.setStatus("SHIPPED");
+            orderRepository.save(order);
+        }
+    }
+    
+    @Transactional
+    public void processShippedOrders() {
+        LocalDateTime cutoffTime = LocalDateTime.now().minusSeconds(
+            orderConfig.getPendingToProcessingSeconds() + 
+            orderConfig.getProcessingToShippedSeconds() + 
+            orderConfig.getShippedToDeliveredSeconds()
+        );
+        List<Order> shippedOrders = orderRepository.findShippedOrdersReadyForDelivery(cutoffTime);
+        
+        for (Order order : shippedOrders) {
+            order.setStatus("DELIVERED");
+            orderRepository.save(order);
+        }
     }
 } 

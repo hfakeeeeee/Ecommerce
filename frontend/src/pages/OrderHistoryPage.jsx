@@ -5,9 +5,9 @@ import { FaSpinner, FaBox, FaTruck, FaCheck, FaClock, FaExclamationTriangle } fr
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ORDER_STATES = {
-    PENDING: { next: 'PROCESSING', color: 'yellow', icon: FaClock, delay: 30000 }, // 30 seconds
-    PROCESSING: { next: 'SHIPPED', color: 'blue', icon: FaBox, delay: 60000 }, // 60 seconds
-    SHIPPED: { next: 'DELIVERED', color: 'green', icon: FaTruck, delay: 90000 }, // 90 seconds
+    PENDING: { next: 'PROCESSING', color: 'yellow', icon: FaClock },
+    PROCESSING: { next: 'SHIPPED', color: 'blue', icon: FaBox },
+    SHIPPED: { next: 'DELIVERED', color: 'green', icon: FaTruck },
     DELIVERED: { next: null, color: 'green', icon: FaCheck },
     CANCELLED: { next: null, color: 'red', icon: FaExclamationTriangle }
 };
@@ -37,64 +37,16 @@ export default function OrderHistoryPage() {
         }
     }, [token]);
 
-    // Auto update order states
+    // Refresh orders periodically to get updated status from backend automation
     useEffect(() => {
-        const updateOrderStatus = async (order) => {
-            const currentState = order.status.toUpperCase();
-            const nextState = ORDER_STATES[currentState]?.next;
-            
-            if (nextState && !['DELIVERED', 'CANCELLED'].includes(currentState)) {
-                try {
-                    const response = await fetch(`/api/orders/${order.orderNumber}/status`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify({ status: nextState })
-                    });
-
-                    if (response.ok) {
-                        const updatedOrder = await response.json();
-                        return updatedOrder;
-                    }
-                } catch (error) {
-                    console.error('Failed to update order status:', error);
-                }
+        const interval = setInterval(() => {
+            if (token) {
+                fetchOrders();
             }
-            return order;
-        };
-
-        const interval = setInterval(async () => {
-            const updatedOrders = await Promise.all(
-                orders.map(async (order) => {
-                    const orderState = ORDER_STATES[order.status.toUpperCase()];
-                    if (orderState?.next && orderState?.delay) {
-                        const orderDate = new Date(order.orderDate);
-                        const now = new Date();
-                        const timeDiff = now - orderDate;
-                        
-                        // Calculate total delay for current state
-                        let totalDelay = 0;
-                        let currentState = 'PENDING';
-                        while (currentState !== order.status.toUpperCase()) {
-                            totalDelay += ORDER_STATES[currentState].delay;
-                            currentState = ORDER_STATES[currentState].next;
-                        }
-                        
-                        // Check if enough time has passed for the current state
-                        if (timeDiff >= totalDelay + orderState.delay) {
-                            return await updateOrderStatus(order);
-                        }
-                    }
-                    return order;
-                })
-            );
-            setOrders(updatedOrders);
-        }, 1000); // Check every second
+        }, 5000); // Refresh every 5 seconds
 
         return () => clearInterval(interval);
-    }, [orders, token]);
+    }, [token]);
 
     const fetchOrders = async () => {
         try {

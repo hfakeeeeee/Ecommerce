@@ -390,15 +390,7 @@ const AdminDashboardPage = () => {
     }
   };
 
-  // Stable onChange handlers
-  const handleUserSearchChange = React.useCallback((val) => {
-    console.log('User search input:', val);
-    setUserSearch(String(val));
-  }, []);
-  const handleProductSearchChange = React.useCallback((val) => {
-    console.log('Product search input:', val);
-    setProductSearch(String(val));
-  }, []);
+
 
   const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => (
     <AnimatePresence initial={false}>
@@ -509,10 +501,7 @@ const AdminDashboardPage = () => {
                     <input
                       type="text"
                       value={userSearch}
-                      onChange={e => {
-                        console.log('User search input:', e.target.value);
-                        setUserSearch(e.target.value);
-                      }}
+                      onChange={(e) => setUserSearch(e.target.value)}
                       placeholder="Search users..."
                       className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                     />
@@ -647,10 +636,7 @@ const AdminDashboardPage = () => {
                     <input
                       type="text"
                       value={productSearch}
-                      onChange={e => {
-                        console.log('Product search input:', e.target.value);
-                        setProductSearch(e.target.value);
-                      }}
+                      onChange={(e) => setProductSearch(e.target.value)}
                       placeholder="Search products..."
                       className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                     />
@@ -885,9 +871,7 @@ const AdminDashboardPage = () => {
                               <span className="text-sm font-medium text-gray-900 dark:text-white">
                                 {order.user?.firstName} {order.user?.lastName}
                               </span>
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {order.user?.email}
-                              </span>
+                              <p className="text-gray-600 dark:text-gray-400 break-all">{order.user?.email}</p>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 dark:text-white">
@@ -909,7 +893,7 @@ const AdminDashboardPage = () => {
                             <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
                               order.status === 'PENDING' 
                                 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                : order.status === 'CONFIRMED'
+                                : order.status === 'PROCESSING'
                                 ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
                                 : order.status === 'SHIPPED'
                                 ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
@@ -1116,16 +1100,13 @@ const AdminDashboardPage = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Name
                 </label>
-                <input
-                  type="text"
-                  value={productForm.name}
-                  onChange={e => {
-                    console.log('Product name input:', e.target.value);
-                    setProductForm({ ...productForm, name: e.target.value });
-                  }}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors"
-                  required
-                />
+                                  <input
+                    type="text"
+                    value={productForm.name}
+                    onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors"
+                    required
+                  />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -1296,7 +1277,7 @@ const AdminDashboardPage = () => {
                 className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors"
               >
                 <option value="PENDING">Pending</option>
-                <option value="CONFIRMED">Confirmed</option>
+                <option value="PROCESSING">Processing</option>
                 <option value="SHIPPED">Shipped</option>
                 <option value="DELIVERED">Delivered</option>
                 <option value="CANCELLED">Cancelled</option>
@@ -1383,7 +1364,7 @@ const AdminDashboardPage = () => {
                   <span className={`inline-flex items-center px-4 py-2 text-sm font-semibold rounded-full ${
                     selectedOrder.status === 'PENDING' 
                       ? 'bg-yellow-400 text-yellow-900'
-                      : selectedOrder.status === 'CONFIRMED'
+                      : selectedOrder.status === 'PROCESSING'
                       ? 'bg-blue-400 text-blue-900'
                       : selectedOrder.status === 'SHIPPED'
                       ? 'bg-purple-400 text-purple-900'
@@ -1394,7 +1375,7 @@ const AdminDashboardPage = () => {
                     <div className={`w-2 h-2 rounded-full mr-2 ${
                       selectedOrder.status === 'PENDING' 
                         ? 'bg-yellow-700'
-                        : selectedOrder.status === 'CONFIRMED'
+                        : selectedOrder.status === 'PROCESSING'
                         ? 'bg-blue-700'
                         : selectedOrder.status === 'SHIPPED'
                         ? 'bg-purple-700'
@@ -1437,7 +1418,7 @@ const AdminDashboardPage = () => {
                         <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
                           {selectedOrder.user?.firstName} {selectedOrder.user?.lastName}
                         </h4>
-                        <p className="text-gray-600 dark:text-gray-400">{selectedOrder.user?.email}</p>
+                        <p className="text-gray-600 dark:text-gray-400 break-all">{selectedOrder.user?.email}</p>
                       </div>
                     </div>
                   </div>
