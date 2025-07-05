@@ -1,31 +1,41 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaShoppingCart, FaStar, FaRegStar, FaStarHalfAlt } from 'react-icons/fa'
+import { FaShoppingCart, FaStar, FaRegStar, FaStarHalfAlt, FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 import { useProducts } from '../context/ProductContext'
 import { useCart } from '../context/CartContext'
 import { categories } from '../data/products'
 
 const CatalogPage = () => {
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const { products, loading, error, fetchProductsByCategory } = useProducts()
+  const [currentPage, setCurrentPage] = useState(0)
+  const { products, loading, error, pagination, fetchProductsByCategory } = useProducts()
   const { addToCart } = useCart()
   const [notification, setNotification] = useState({ show: false, message: '' })
 
   // Memoize the fetchProductsByCategory call
   const fetchProducts = useCallback(() => {
     const category = selectedCategory === 'all' ? '' : selectedCategory
-    fetchProductsByCategory(category)
-  }, [selectedCategory, fetchProductsByCategory])
+    fetchProductsByCategory(category, currentPage, 12)
+  }, [selectedCategory, currentPage, fetchProductsByCategory])
 
   useEffect(() => {
     fetchProducts()
   }, [fetchProducts])
 
+  // Reset to first page when category changes
+  useEffect(() => {
+    setCurrentPage(0)
+  }, [selectedCategory])
+
   const handleAddToCart = (product) => {
     addToCart(product)
     setNotification({ show: true, message: `${product.name} added to cart!` })
     setTimeout(() => setNotification({ show: false, message: '' }), 3000)
+  }
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage)
   }
 
   // Helper for star rating (static 4.5 for demo)
@@ -41,6 +51,86 @@ const CatalogPage = () => {
       }
     }
     return <span className="flex items-center text-yellow-400">{stars}</span>
+  }
+
+  // Pagination component
+  const Pagination = () => {
+    if (pagination.totalPages <= 1) return null
+
+    const pages = []
+    const maxVisiblePages = 5
+    let startPage = Math.max(0, pagination.currentPage - Math.floor(maxVisiblePages / 2))
+    let endPage = Math.min(pagination.totalPages - 1, startPage + maxVisiblePages - 1)
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(0, endPage - maxVisiblePages + 1)
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i)
+    }
+
+    return (
+      <div className="flex justify-center items-center space-x-2 mt-8">
+        <button
+          onClick={() => handlePageChange(pagination.currentPage - 1)}
+          disabled={pagination.currentPage === 0}
+          className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          <FaChevronLeft className="w-4 h-4" />
+        </button>
+
+        {startPage > 0 && (
+          <>
+            <button
+              onClick={() => handlePageChange(0)}
+              className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              1
+            </button>
+            {startPage > 1 && (
+              <span className="px-2 text-gray-500 dark:text-gray-400">...</span>
+            )}
+          </>
+        )}
+
+        {pages.map((page) => (
+          <button
+            key={page}
+            onClick={() => handlePageChange(page)}
+            className={`px-3 py-2 rounded-lg border transition-colors ${
+              page === pagination.currentPage
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+            }`}
+          >
+            {page + 1}
+          </button>
+        ))}
+
+        {endPage < pagination.totalPages - 1 && (
+          <>
+            {endPage < pagination.totalPages - 2 && (
+              <span className="px-2 text-gray-500 dark:text-gray-400">...</span>
+            )}
+            <button
+              onClick={() => handlePageChange(pagination.totalPages - 1)}
+              className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              {pagination.totalPages}
+            </button>
+          </>
+        )}
+
+        <button
+          onClick={() => handlePageChange(pagination.currentPage + 1)}
+          disabled={pagination.currentPage === pagination.totalPages - 1}
+          className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          <FaChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+    )
   }
 
   if (loading) {
@@ -106,6 +196,15 @@ const CatalogPage = () => {
             ))}
           </div>
         </div>
+
+        {/* Results Info */}
+        {pagination.totalElements > 0 && (
+          <div className="text-center mb-6 text-gray-600 dark:text-gray-400">
+            Showing {pagination.currentPage * pagination.size + 1} to{' '}
+            {Math.min((pagination.currentPage + 1) * pagination.size, pagination.totalElements)} of{' '}
+            {pagination.totalElements} products
+          </div>
+        )}
 
         {/* Product Grid */}
         <motion.div
@@ -177,6 +276,9 @@ const CatalogPage = () => {
             </motion.div>
           ))}
         </motion.div>
+
+        {/* Pagination */}
+        <Pagination />
 
         {/* Empty State */}
         {products.length === 0 && (

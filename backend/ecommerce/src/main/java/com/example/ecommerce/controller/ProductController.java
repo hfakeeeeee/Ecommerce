@@ -3,6 +3,9 @@ package com.example.ecommerce.controller;
 import com.example.ecommerce.model.Product;
 import com.example.ecommerce.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,7 +25,16 @@ public class ProductController {
     }
 
     @GetMapping
-    public List<Product> getAllProducts() {
+    public ResponseEntity<Page<Product>> getAllProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Product> products = productService.getAllProductsPaginated(pageable);
+        return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/all")
+    public List<Product> getAllProductsUnpaginated() {
         return productService.getAllProducts();
     }
 
@@ -34,7 +46,17 @@ public class ProductController {
     }
 
     @GetMapping("/category/{category}")
-    public List<Product> getProductsByCategory(@PathVariable String category) {
+    public ResponseEntity<Page<Product>> getProductsByCategory(
+            @PathVariable String category,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Product> products = productService.getProductsByCategoryPaginated(category, pageable);
+        return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/category/{category}/all")
+    public List<Product> getProductsByCategoryUnpaginated(@PathVariable String category) {
         return productService.getProductsByCategory(category);
     }
 

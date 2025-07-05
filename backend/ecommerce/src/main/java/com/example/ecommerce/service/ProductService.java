@@ -3,6 +3,8 @@ package com.example.ecommerce.service;
 import com.example.ecommerce.model.Product;
 import com.example.ecommerce.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
@@ -27,12 +29,20 @@ public class ProductService {
         return productRepository.findAll();
     }
 
+    public Page<Product> getAllProductsPaginated(Pageable pageable) {
+        return productRepository.findAll(pageable);
+    }
+
     public Optional<Product> getProductById(Long id) {
         return productRepository.findById(id);
     }
 
     public List<Product> getProductsByCategory(String category) {
         return productRepository.findByCategory(category);
+    }
+
+    public Page<Product> getProductsByCategoryPaginated(String category, Pageable pageable) {
+        return productRepository.findByCategory(category, pageable);
     }
 
     public Product saveProduct(Product product) {

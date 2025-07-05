@@ -10,18 +10,30 @@ export const ProductProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [pagination, setPagination] = useState({
+    currentPage: 0,
+    totalPages: 0,
+    totalElements: 0,
+    size: 12
+  });
 
-  const fetchProducts = useCallback(async () => {
+  const fetchProducts = useCallback(async (page = 0, size = 12) => {
     try {
       setLoading(true);
-      const response = await fetch('/api/products');
+      const response = await fetch(`/api/products?page=${page}&size=${size}`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
-      setProducts(data);
+      setProducts(data.content || data);
+      setPagination({
+        currentPage: data.number || 0,
+        totalPages: data.totalPages || 0,
+        totalElements: data.totalElements || 0,
+        size: data.size || 12
+      });
       setError(null);
     } catch (err) {
       setError('Failed to fetch products');
@@ -31,10 +43,10 @@ export const ProductProvider = ({ children }) => {
     }
   }, []);
 
-  const fetchProductsByCategory = useCallback(async (category) => {
+  const fetchProductsByCategory = useCallback(async (category, page = 0, size = 12) => {
     try {
       setLoading(true);
-      const url = category ? `/api/products/category/${category}` : '/api/products';
+      const url = category ? `/api/products/category/${category}?page=${page}&size=${size}` : `/api/products?page=${page}&size=${size}`;
       const response = await fetch(url);
       
       if (!response.ok) {
@@ -42,7 +54,13 @@ export const ProductProvider = ({ children }) => {
       }
       
       const data = await response.json();
-      setProducts(data);
+      setProducts(data.content || data);
+      setPagination({
+        currentPage: data.number || 0,
+        totalPages: data.totalPages || 0,
+        totalElements: data.totalElements || 0,
+        size: data.size || 12
+      });
       setError(null);
     } catch (err) {
       setError('Failed to fetch products');
@@ -60,6 +78,7 @@ export const ProductProvider = ({ children }) => {
     products,
     loading,
     error,
+    pagination,
     fetchProducts,
     fetchProductsByCategory
   };
