@@ -12,26 +12,27 @@ import { loadStripe } from '@stripe/stripe-js';
 const stripePromise = loadStripe('pk_test_51RfHKTDGjgknPqtPnU07aiEbHLA0Awz1VZVu8qRTahPr8usnGluqQMCqPkxbFeG4j6ROaCHBTQWUW7apnPRrawci00mMDyyuuP');
 
 // Stripe Card Element styles
-const cardStyle = {
+const getCardStyle = (isDark) => ({
     style: {
         base: {
-            color: '#32325d',
+            color: isDark ? '#f3f4f6' : '#32325d',
             fontFamily: 'Arial, sans-serif',
             fontSmoothing: 'antialiased',
             fontSize: '16px',
             '::placeholder': {
-                color: '#32325d'
-            }
+                color: isDark ? '#d1d5db' : '#32325d',
+            },
+            backgroundColor: isDark ? '#374151' : '#fff',
         },
         invalid: {
             color: '#fa755a',
-            iconColor: '#fa755a'
-        }
-    }
-};
+            iconColor: '#fa755a',
+        },
+    },
+});
 
 // Checkout form component that uses Stripe
-function CheckoutForm({ shippingInfo, setLoading, showToast, clearCart, navigate, token }) {
+function CheckoutForm({ shippingInfo, setLoading, showToast, clearCart, navigate, token, isDark, shippingFee, getCartTotalWithShipping }) {
     const stripe = useStripe();
     const elements = useElements();
     const { items, getCartTotal } = useCart();
@@ -69,7 +70,7 @@ function CheckoutForm({ shippingInfo, setLoading, showToast, clearCart, navigate
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    amount: getCartTotal() * 100, // Convert to cents
+                    amount: getCartTotalWithShipping() * 100, // Convert to cents
                     currency: 'usd',
                     shipping: shippingInfo,
                     items: items.map(item => ({
@@ -134,8 +135,8 @@ function CheckoutForm({ shippingInfo, setLoading, showToast, clearCart, navigate
         <form onSubmit={handleSubmit}>
             <div className="mb-8">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Card Information</h2>
-                <div className="p-4 border border-gray-300 dark:border-gray-600 rounded-lg">
-                    <CardElement options={cardStyle} />
+                <div className="p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
+                    <CardElement options={getCardStyle(isDark)} />
                 </div>
             </div>
             <div className="flex items-center justify-between">
@@ -154,7 +155,7 @@ function CheckoutForm({ shippingInfo, setLoading, showToast, clearCart, navigate
                             Processing...
                         </>
                     ) : (
-                        `Pay $${getCartTotal().toFixed(2)}`
+                        `Pay $${getCartTotalWithShipping().toFixed(2)}`
                     )}
                 </button>
             </div>
@@ -185,7 +186,7 @@ export default function PaymentPage() {
         city: '',
         state: '',
         zipCode: '',
-        country: 'VN'
+        country: 'VN',
     });
 
     useEffect(() => {
@@ -221,14 +222,64 @@ export default function PaymentPage() {
     };
 
     const validateShippingInfo = () => {
+        // Address: required, min 5 chars
+        if (!shippingInfo.address.trim() || shippingInfo.address.trim().length < 5) {
+            showToast('Please enter a valid address (at least 5 characters)', 'error');
+            return false;
+        }
+        // City: required, min 2 chars, only letters, spaces, hyphens, apostrophes
+        if (!shippingInfo.city.trim() || shippingInfo.city.trim().length < 2 || !/^[a-zA-Z\s\-']+$/.test(shippingInfo.city.trim())) {
+            showToast('Please enter a valid city (letters, spaces, hyphens, apostrophes only)', 'error');
+            return false;
+        }
+        // State: required, min 2 chars, only letters, spaces, hyphens, apostrophes
+        if (!shippingInfo.state.trim() || shippingInfo.state.trim().length < 2 || !/^[a-zA-Z\s\-']+$/.test(shippingInfo.state.trim())) {
+            showToast('Please enter a valid state (letters, spaces, hyphens, apostrophes only)', 'error');
+            return false;
+        }
+        // ZIP Code: required, format depends on country
+        if (!shippingInfo.zipCode.trim()) {
+            showToast('Please enter a ZIP/Postal code', 'error');
+            return false;
+        }
+        if (shippingInfo.country === 'US') {
+            if (!/^\d{5}(-\d{4})?$/.test(shippingInfo.zipCode.trim())) {
+                showToast('Please enter a valid US ZIP code (12345 or 12345-6789)', 'error');
+                return false;
+            }
+        } else {
+            if (!/^[a-zA-Z0-9\s\-]{3,10}$/.test(shippingInfo.zipCode.trim())) {
+                showToast('Please enter a valid postal code (3-10 alphanumeric characters)', 'error');
+                return false;
+            }
+        }
+        // All other fields (firstName, lastName, email) already checked for non-empty
         for (const [key, value] of Object.entries(shippingInfo)) {
-            if (!value.trim()) {
+            if (!value.trim() && !['address','city','state','zipCode'].includes(key)) {
                 showToast(`Please fill in your ${key.replace(/([A-Z])/g, ' $1').toLowerCase()}`, 'error');
                 return false;
             }
         }
         return true;
     };
+
+    // Country dropdown options
+    const countryOptions = [
+        { label: 'Vietnam', value: 'VN' },
+        { label: 'United States', value: 'US' },
+        { label: 'Singapore', value: 'SG' },
+        { label: 'Malaysia', value: 'MY' },
+    ];
+
+    // Shipping fee logic
+    let shippingFee = 0;
+    if (shippingInfo.country === 'US') shippingFee = 50.0;
+    else if (shippingInfo.country === 'MY' || shippingInfo.country === 'SG') shippingFee = 20.0;
+    else shippingFee = 0;
+    const getCartTotalWithShipping = () => getCartTotal() + shippingFee;
+
+    // Detect dark mode
+    const isDark = document.documentElement.classList.contains('dark');
 
     if (items.length === 0) {
         return (
@@ -287,11 +338,11 @@ export default function PaymentPage() {
                                     </div>
                                     <div className="flex justify-between mt-2">
                                         <span className="text-base font-medium text-gray-900 dark:text-white">Shipping</span>
-                                        <span className="text-base font-medium text-gray-900 dark:text-white">Free</span>
+                                        <span className="text-base font-medium text-gray-900 dark:text-white">{shippingFee === 0 ? 'Free' : `$${shippingFee.toFixed(2)}`}</span>
                                     </div>
                                     <div className="flex justify-between mt-2">
                                         <span className="text-lg font-semibold text-gray-900 dark:text-white">Total</span>
-                                        <span className="text-lg font-semibold text-gray-900 dark:text-white">${getCartTotal().toFixed(2)}</span>
+                                        <span className="text-lg font-semibold text-gray-900 dark:text-white">${getCartTotalWithShipping().toFixed(2)}</span>
                                     </div>
                                 </div>
                             </div>
@@ -384,14 +435,17 @@ export default function PaymentPage() {
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Country</label>
-                                        <input
-                                            type="text"
+                                        <select
                                             name="country"
                                             value={shippingInfo.country}
                                             onChange={handleShippingInfoChange}
                                             className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
                                             required
-                                        />
+                                        >
+                                            {countryOptions.map(option => (
+                                                <option key={option.value} value={option.value}>{option.label} ({option.value})</option>
+                                            ))}
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -405,6 +459,9 @@ export default function PaymentPage() {
                                     clearCart={clearCart}
                                     navigate={navigate}
                                     token={token}
+                                    isDark={isDark}
+                                    shippingFee={shippingFee}
+                                    getCartTotalWithShipping={getCartTotalWithShipping}
                                 />
                             </Elements>
                         </div>
