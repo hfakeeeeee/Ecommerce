@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ProductService {
@@ -100,5 +101,44 @@ public class ProductService {
             return productRepository.save(product);
         }
         return null;
+    }
+
+    // Stock management methods
+    public boolean isStockAvailable(Long productId, Integer quantity) {
+        Optional<Product> product = productRepository.findById(productId);
+        return product.isPresent() && product.get().getStock() >= quantity;
+    }
+
+    public Integer getProductStock(Long productId) {
+        Optional<Product> product = productRepository.findById(productId);
+        return product.map(Product::getStock).orElse(0);
+    }
+
+    @Transactional
+    public void reduceStock(Long productId, Integer quantity) {
+        Optional<Product> productOpt = productRepository.findById(productId);
+        if (productOpt.isPresent()) {
+            Product product = productOpt.get();
+            if (product.getStock() >= quantity) {
+                product.setStock(product.getStock() - quantity);
+                productRepository.save(product);
+            } else {
+                throw new RuntimeException("Insufficient stock for product ID: " + productId);
+            }
+        } else {
+            throw new RuntimeException("Product not found with ID: " + productId);
+        }
+    }
+
+    @Transactional
+    public void restoreStock(Long productId, Integer quantity) {
+        Optional<Product> productOpt = productRepository.findById(productId);
+        if (productOpt.isPresent()) {
+            Product product = productOpt.get();
+            product.setStock(product.getStock() + quantity);
+            productRepository.save(product);
+        } else {
+            throw new RuntimeException("Product not found with ID: " + productId);
+        }
     }
 } 

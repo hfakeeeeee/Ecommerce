@@ -22,12 +22,14 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final OrderConfig orderConfig;
+    private final ProductService productService;
 
     @Autowired
-    public OrderService(OrderRepository orderRepository, UserRepository userRepository, OrderConfig orderConfig) {
+    public OrderService(OrderRepository orderRepository, UserRepository userRepository, OrderConfig orderConfig, ProductService productService) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.orderConfig = orderConfig;
+        this.productService = productService;
     }
 
     @Transactional
@@ -81,6 +83,13 @@ public class OrderService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found");
         }
 
+        String currentStatus = order.getStatus();
+        
+        // If changing from a non-cancelled status to cancelled, restore stock
+        if (!"CANCELLED".equals(currentStatus) && "CANCELLED".equals(newStatus)) {
+            restoreStockForOrder(order);
+        }
+
         // Admin can set any status
         order.setStatus(newStatus);
         return orderRepository.save(order);
@@ -105,8 +114,24 @@ public class OrderService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not authorized to cancel this order");
         }
 
+        // Restore stock for cancelled order
+        restoreStockForOrder(order);
+
         order.setStatus("CANCELLED");
         return orderRepository.save(order);
+    }
+
+    private void restoreStockForOrder(Order order) {
+        if (order.getItems() != null) {
+            for (var item : order.getItems()) {
+                try {
+                    productService.restoreStock(item.getProductId(), item.getQuantity());
+                } catch (Exception e) {
+                    // Log the error but don't fail the cancellation
+                    System.err.println("Failed to restore stock for product " + item.getProductId() + ": " + e.getMessage());
+                }
+            }
+        }
     }
 
     private boolean isValidStatusTransition(String currentStatus, String newStatus) {

@@ -12,7 +12,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/products")
@@ -52,6 +54,20 @@ public class ProductController {
         return productService.getProductById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/{id}/stock")
+    public ResponseEntity<Map<String, Object>> getProductStock(@PathVariable Long id) {
+        Optional<Product> product = productService.getProductById(id);
+        if (product.isPresent()) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("productId", id);
+            response.put("productName", product.get().getName());
+            response.put("stock", product.get().getStock());
+            response.put("available", product.get().getStock() > 0);
+            return ResponseEntity.ok(response);
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @GetMapping("/category/{category}")

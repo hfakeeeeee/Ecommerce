@@ -9,6 +9,7 @@ import com.stripe.model.PaymentIntent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import jakarta.annotation.PostConstruct;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,9 +22,11 @@ public class PaymentService {
     private String stripeSecretKey;
 
     private final OrderService orderService;
+    private final ProductService productService;
 
-    public PaymentService(OrderService orderService) {
+    public PaymentService(OrderService orderService, ProductService productService) {
         this.orderService = orderService;
+        this.productService = productService;
     }
 
     @PostConstruct
@@ -35,6 +38,9 @@ public class PaymentService {
         // Extract amount from payload
         Double amount = Double.parseDouble(payload.get("amount").toString());
         
+        // Validate stock availability before creating payment intent
+        validateStockAvailability(payload);
+        
         // Create payment intent parameters
         Map<String, Object> params = new HashMap<>();
         params.put("amount", amount.longValue()); // amount in cents
@@ -44,12 +50,28 @@ public class PaymentService {
         // Create payment intent
         PaymentIntent paymentIntent = PaymentIntent.create(params);
 
-        // Create order
+        // Create order and reduce stock
         createOrder(payload, paymentIntent.getId(), amount / 100.0, user); // Convert cents back to dollars
         
         return paymentIntent.getClientSecret();
     }
 
+    private void validateStockAvailability(Map<String, Object> payload) {
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> items = (List<Map<String, Object>>) payload.get("items");
+        if (items != null) {
+            for (Map<String, Object> item : items) {
+                Long productId = Long.parseLong(item.get("id").toString());
+                Integer quantity = Integer.parseInt(item.get("quantity").toString());
+                
+                if (!productService.isStockAvailable(productId, quantity)) {
+                    throw new RuntimeException("Insufficient stock for product ID: " + productId);
+                }
+            }
+        }
+    }
+
+    @Transactional
     private void createOrder(Map<String, Object> payload, String paymentIntentId, Double totalAmount, User user) {
         Order order = new Order();
         order.setPaymentIntentId(paymentIntentId);
@@ -70,18 +92,24 @@ public class PaymentService {
         );
         order.setShippingAddress(shippingAddress);
 
-        // Add order items
+        // Add order items and reduce stock
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> items = (List<Map<String, Object>>) payload.get("items");
         if (items != null) {
             for (Map<String, Object> item : items) {
                 OrderItem orderItem = new OrderItem();
-                orderItem.setProductId(Long.parseLong(item.get("id").toString()));
+                Long productId = Long.parseLong(item.get("id").toString());
+                Integer quantity = Integer.parseInt(item.get("quantity").toString());
+                
+                orderItem.setProductId(productId);
                 orderItem.setProductName((String) item.get("name"));
                 orderItem.setPrice(Double.parseDouble(item.get("price").toString()));
-                orderItem.setQuantity(Integer.parseInt(item.get("quantity").toString()));
+                orderItem.setQuantity(quantity);
                 orderItem.setProductImage((String) item.get("image"));
                 order.getItems().add(orderItem);
+                
+                // Reduce stock for this product
+                productService.reduceStock(productId, quantity);
             }
         }
 

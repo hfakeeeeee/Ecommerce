@@ -12,9 +12,11 @@ import java.util.Optional;
 @Service
 public class CartService {
     private final CartRepository cartRepository;
+    private final ProductService productService;
 
-    public CartService(CartRepository cartRepository) {
+    public CartService(CartRepository cartRepository, ProductService productService) {
         this.cartRepository = cartRepository;
+        this.productService = productService;
     }
 
     @Transactional
@@ -29,6 +31,11 @@ public class CartService {
 
     @Transactional
     public Cart addToCart(User user, Long productId, String productName, String productImage, Double price, Integer quantity) {
+        // Validate stock availability before adding to cart
+        if (!productService.isStockAvailable(productId, quantity)) {
+            throw new RuntimeException("Insufficient stock for product: " + productName);
+        }
+        
         Cart cart = getOrCreateCart(user);
         
         Optional<CartItem> existingItem = cart.getItems().stream()
@@ -37,6 +44,10 @@ public class CartService {
 
         if (existingItem.isPresent()) {
             CartItem item = existingItem.get();
+            // Check if the new total quantity is available
+            if (!productService.isStockAvailable(productId, item.getQuantity() + quantity)) {
+                throw new RuntimeException("Insufficient stock for product: " + productName);
+            }
             item.setQuantity(item.getQuantity() + quantity);
         } else {
             CartItem newItem = new CartItem();
@@ -62,6 +73,10 @@ public class CartService {
                     if (quantity <= 0) {
                         cart.removeItem(item);
                     } else {
+                        // Validate stock availability for new quantity
+                        if (!productService.isStockAvailable(productId, quantity)) {
+                            throw new RuntimeException("Insufficient stock for product: " + item.getProductName());
+                        }
                         item.setQuantity(quantity);
                     }
                 });
