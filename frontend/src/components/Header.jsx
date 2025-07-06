@@ -68,7 +68,6 @@ export default function Header() {
           {/* Actions */}
           <div className="flex items-center space-x-4">
             <ThemeSwitcher />
-            
             {/* Cart Button */}
             <Link to="/cart" className="relative">
               <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
@@ -160,6 +159,14 @@ export default function Header() {
                         >
                           <FaHistory className="w-4 h-4 mr-3" />
                           Order History
+                        </Link>
+                        <Link
+                          to="/favourites"
+                          className="flex items-center px-4 py-2 text-sm text-pink-600 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/20 transition-colors"
+                          onClick={() => setShowProfileMenu(false)}
+                        >
+                          <FaHeart className="w-4 h-4 mr-3" />
+                          Favourites
                         </Link>
                         {user.role === 'ADMIN' && (
                           <Link

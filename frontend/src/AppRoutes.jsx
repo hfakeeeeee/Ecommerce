@@ -18,6 +18,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import PaymentPage from './pages/PaymentPage'
 import OrderHistoryPage from './pages/OrderHistoryPage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
+import FavouritesPage from './pages/FavouritesPage'
 
 export default function AppRoutes() {
   const { user, loading } = useAuth()
@@ -69,6 +70,7 @@ export default function AppRoutes() {
       <Route path="/warranty" element={<WarrantyPage />} />
       <Route path="/setup-guides" element={<SetupGuidesPage />} />
       <Route path="/faq" element={<FAQPage />} />
+      <Route path="/favourites" element={<FavouritesPage />} />
 
       {/* 404 Route */}
       <Route path="*" element={<NotFoundPage />} />
