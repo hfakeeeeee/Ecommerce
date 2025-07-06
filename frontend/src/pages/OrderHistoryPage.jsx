@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FaSpinner, FaBox, FaTruck, FaCheck, FaClock, FaExclamationTriangle } from 'react-icons/fa';
+import { FaSpinner, FaBox, FaTruck, FaCheck, FaClock, FaExclamationTriangle, FaShoppingBag, FaCalendarAlt, FaMapMarkerAlt } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ORDER_STATES = {
@@ -75,11 +75,11 @@ export default function OrderHistoryPage() {
         const color = ORDER_STATES[statusKey]?.color || 'gray';
         
         const colorClasses = {
-            yellow: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-            blue: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-            green: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-            red: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
-            gray: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300'
+            yellow: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800',
+            blue: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+            green: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-800',
+            red: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-800',
+            gray: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300 border-gray-200 dark:border-gray-800'
         };
 
         return {
@@ -136,84 +136,119 @@ export default function OrderHistoryPage() {
         setShowCancelDialog(true);
     };
 
-    // Cancel Dialog Component
+    // Enhanced Cancel Dialog Component
     const CancelDialog = () => (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                    Cancel Order
-                </h3>
-                <div className="space-y-3">
-                    {CANCELLATION_REASONS.map((reason) => (
-                        <div
-                            key={reason.id}
-                            className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                                cancelReason === reason.id
-                                    ? 'bg-red-100 dark:bg-red-900 border-2 border-red-500'
-                                    : 'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600'
-                            }`}
-                            onClick={() => setCancelReason(reason.id)}
-                        >
-                            <div className="flex items-center">
-                                <div className="flex-shrink-0">
-                                    <div className={`w-4 h-4 rounded-full border-2 ${
-                                        cancelReason === reason.id
-                                            ? 'border-red-500 bg-red-500'
-                                            : 'border-gray-400'
-                                    }`}>
-                                        {cancelReason === reason.id && (
-                                            <div className="w-full h-full flex items-center justify-center">
-                                                <div className="w-2 h-2 bg-white rounded-full"></div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="ml-3">
-                                    <label className="text-sm font-medium text-gray-900 dark:text-white cursor-pointer">
-                                        {reason.label}
-                                    </label>
-                                </div>
+        <AnimatePresence>
+            {showCancelDialog && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                    onClick={() => {
+                        setShowCancelDialog(false);
+                        setCancelReason('');
+                        setSelectedOrderNumber(null);
+                    }}
+                >
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.9, opacity: 0 }}
+                        className="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl border border-gray-200 dark:border-gray-700"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="text-center mb-6">
+                            <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <FaExclamationTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
                             </div>
+                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                                Cancel Order
+                            </h3>
+                            <p className="text-gray-600 dark:text-gray-400">
+                                Please select a reason for cancellation
+                            </p>
                         </div>
-                    ))}
-                </div>
-                <div className="flex justify-end space-x-3 mt-6">
-                    <button
-                        onClick={() => {
-                            setShowCancelDialog(false);
-                            setCancelReason('');
-                            setSelectedOrderNumber(null);
-                        }}
-                        className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
-                    >
-                        Back
-                    </button>
-                    <button
-                        onClick={handleCancelOrder}
-                        disabled={!cancelReason}
-                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Confirm Cancel
-                    </button>
-                </div>
-            </div>
-        </div>
+                        
+                        <div className="space-y-3 mb-8">
+                            {CANCELLATION_REASONS.map((reason) => (
+                                <motion.div
+                                    key={reason.id}
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className={`p-4 rounded-2xl cursor-pointer transition-all duration-200 border-2 ${
+                                        cancelReason === reason.id
+                                            ? 'bg-red-50 dark:bg-red-900/20 border-red-500 shadow-lg'
+                                            : 'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border-gray-200 dark:border-gray-600'
+                                    }`}
+                                    onClick={() => setCancelReason(reason.id)}
+                                >
+                                    <div className="flex items-center">
+                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mr-3 ${
+                                            cancelReason === reason.id
+                                                ? 'border-red-500 bg-red-500'
+                                                : 'border-gray-400'
+                                        }`}>
+                                            {cancelReason === reason.id && (
+                                                <div className="w-2 h-2 bg-white rounded-full"></div>
+                                            )}
+                                        </div>
+                                        <label className="text-sm font-medium text-gray-900 dark:text-white cursor-pointer">
+                                            {reason.label}
+                                        </label>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                        
+                        <div className="flex gap-4">
+                            <button
+                                onClick={() => {
+                                    setShowCancelDialog(false);
+                                    setCancelReason('');
+                                    setSelectedOrderNumber(null);
+                                }}
+                                className="flex-1 px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-semibold rounded-2xl border-2 border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleCancelOrder}
+                                disabled={!cancelReason}
+                                className="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-2xl hover:from-red-700 hover:to-red-800 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
+                            >
+                                Confirm Cancel
+                            </button>
+                        </div>
+                    </motion.div>
+                </motion.div>
+            )}
+        </AnimatePresence>
     );
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
-                <FaSpinner className="animate-spin text-4xl text-indigo-600" />
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-16 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="relative">
+                        <FaSpinner className="animate-spin text-6xl text-blue-600 mx-auto mb-4" />
+                        <div className="absolute inset-0 rounded-full border-4 border-blue-200 animate-pulse"></div>
+                    </div>
+                    <p className="text-xl text-gray-600 dark:text-gray-300">Loading your orders...</p>
+                </div>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-16 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-7xl mx-auto text-center">
-                    <h2 className="text-2xl font-bold text-red-600 mb-4">Error</h2>
-                    <p className="text-gray-600 dark:text-gray-400">{error}</p>
+                    <div className="bg-red-50 dark:bg-red-900/20 rounded-3xl p-12 border border-red-200 dark:border-red-800">
+                        <FaExclamationTriangle className="w-16 h-16 text-red-500 mx-auto mb-6" />
+                        <h2 className="text-3xl font-bold text-red-600 dark:text-red-400 mb-4">Error Loading Orders</h2>
+                        <p className="text-gray-600 dark:text-gray-400 text-lg">{error}</p>
+                    </div>
                 </div>
             </div>
         );
@@ -221,21 +256,30 @@ export default function OrderHistoryPage() {
 
     if (!Array.isArray(orders) || orders.length === 0) {
         return (
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-16 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-7xl mx-auto text-center">
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
+                        transition={{ duration: 0.8 }}
+                        className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl p-16 shadow-xl border border-gray-200/50 dark:border-gray-700/50"
                     >
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">No Orders Yet</h2>
-                        <p className="text-gray-600 dark:text-gray-400 mb-8">You haven't placed any orders yet.</p>
-                        <button
+                        <div className="w-24 h-24 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-8">
+                            <FaShoppingBag className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">No Orders Yet</h2>
+                        <p className="text-xl text-gray-600 dark:text-gray-400 mb-12 max-w-md mx-auto">
+                            You haven't placed any orders yet. Start shopping to see your order history here.
+                        </p>
+                        <motion.button
                             onClick={() => navigate('/catalog')}
-                            className="inline-block bg-indigo-600 text-white px-6 py-3 rounded-md hover:bg-indigo-700 transition-colors"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300"
                         >
+                            <FaShoppingBag />
                             Start Shopping
-                        </button>
+                        </motion.button>
                     </motion.div>
                 </div>
             </div>
@@ -243,74 +287,92 @@ export default function OrderHistoryPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-            {showCancelDialog && <CancelDialog />}
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-16 px-4 sm:px-6 lg:px-8">
+            <CancelDialog />
             <div className="max-w-7xl mx-auto">
+                {/* Header */}
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="flex justify-between items-center mb-8"
+                    transition={{ duration: 0.8 }}
+                    className="text-center mb-16"
                 >
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Order History</h1>
-                    <button
-                        onClick={() => navigate('/catalog')}
-                        className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors text-sm"
-                    >
-                        Continue Shopping
-                    </button>
+                    <div className="inline-flex items-center gap-3 mb-6">
+                        <FaShoppingBag className="w-12 h-12 text-blue-600" />
+                        <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-blue-600 dark:from-white dark:to-blue-400">
+                            Order History
+                        </h1>
+                    </div>
+                    <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                        Track your orders and view your purchase history
+                    </p>
                 </motion.div>
 
-                <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-1">
+                {/* Orders Grid */}
+                <div className="space-y-8">
                     <AnimatePresence>
                         {orders.map((order, index) => {
                             const { Icon, className } = getStatusDetails(order.status);
                             return (
                                 <motion.div
                                     key={order.id}
-                                    initial={{ opacity: 0, y: 20 }}
+                                    initial={{ opacity: 0, y: 30 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                                    className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transform hover:scale-[1.02] transition-transform"
+                                    transition={{ delay: index * 0.1, duration: 0.6 }}
+                                    whileHover={{ y: -4 }}
+                                    className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-200/50 dark:border-gray-700/50"
                                 >
-                                    <div className="p-6">
-                                        <div className="flex items-center justify-between mb-6">
-                                            <div>
-                                                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                                                    Order #{order.orderNumber}
-                                                </h2>
-                                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                                    {formatDate(order.orderDate)}
-                                                </p>
+                                    {/* Order Header */}
+                                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 p-6 border-b border-gray-200 dark:border-gray-600">
+                                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                                                    <FaBox className="w-6 h-6" />
+                                                </div>
+                                                <div>
+                                                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                                        Order #{order.orderNumber}
+                                                    </h2>
+                                                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 mt-1">
+                                                        <FaCalendarAlt className="w-4 h-4" />
+                                                        <span>{formatDate(order.orderDate)}</span>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="flex items-center space-x-4">
-                                                <div className={`flex items-center space-x-2 px-4 py-2 rounded-full ${className}`}>
+                                            <div className="flex items-center gap-4">
+                                                <div className={`flex items-center gap-2 px-4 py-2 rounded-full border ${className}`}>
                                                     <Icon className="w-4 h-4" />
-                                                    <span className="text-sm font-medium">
+                                                    <span className="font-semibold">
                                                         {order.status}
                                                     </span>
                                                 </div>
                                                 {order.status === 'PENDING' && (
-                                                    <button
+                                                    <motion.button
                                                         onClick={() => openCancelDialog(order.orderNumber)}
-                                                        className="px-4 py-2 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 rounded-full hover:bg-red-200 dark:hover:bg-red-800 transition-colors text-sm font-medium"
+                                                        whileHover={{ scale: 1.05 }}
+                                                        whileTap={{ scale: 0.95 }}
+                                                        className="px-4 py-2 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded-full hover:bg-red-200 dark:hover:bg-red-900/50 transition-all duration-200 font-semibold border border-red-200 dark:border-red-800"
                                                     >
                                                         Cancel Order
-                                                    </button>
+                                                    </motion.button>
                                                 )}
                                             </div>
                                         </div>
+                                    </div>
 
-                                        <div className="space-y-4">
+                                    {/* Order Content */}
+                                    <div className="p-6">
+                                        {/* Order Items */}
+                                        <div className="space-y-4 mb-8">
                                             {order.items.map((item, itemIndex) => (
                                                 <motion.div
                                                     key={itemIndex}
                                                     initial={{ opacity: 0, x: -20 }}
                                                     animate={{ opacity: 1, x: 0 }}
                                                     transition={{ duration: 0.3, delay: itemIndex * 0.1 }}
-                                                    className="flex items-center space-x-4 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg"
+                                                    className="flex items-center gap-4 bg-gray-50 dark:bg-gray-700/50 p-4 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200"
                                                 >
-                                                    <div className="flex-shrink-0 w-20 h-20 overflow-hidden rounded-lg">
+                                                    <div className="flex-shrink-0 w-20 h-20 overflow-hidden rounded-xl shadow-md">
                                                         <img
                                                             src={item.productImage}
                                                             alt={item.productName}
@@ -318,37 +380,59 @@ export default function OrderHistoryPage() {
                                                         />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate mb-1">
                                                             {item.productName}
                                                         </h3>
-                                                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                            Quantity: {item.quantity}
+                                                        <p className="text-gray-600 dark:text-gray-400">
+                                                            Quantity: <span className="font-semibold">{item.quantity}</span>
                                                         </p>
                                                     </div>
-                                                    <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                                        ${(item.price * item.quantity).toFixed(2)}
+                                                    <div className="text-right">
+                                                        <div className="text-xl font-bold text-gray-900 dark:text-white">
+                                                            ${(item.price * item.quantity).toFixed(2)}
+                                                        </div>
+                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                            ${item.price.toFixed(2)} each
+                                                        </div>
                                                     </div>
                                                 </motion.div>
                                             ))}
                                         </div>
 
-                                        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                                            <div className="flex justify-between items-center mb-4">
-                                                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                                    Total Amount
-                                                </span>
-                                                <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                                                    ${order.totalAmount.toFixed(2)}
-                                                </span>
+                                        {/* Order Summary */}
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                            {/* Total Amount */}
+                                            <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-6 border border-green-200 dark:border-green-800">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <p className="text-green-700 dark:text-green-300 font-semibold mb-1">
+                                                            Total Amount
+                                                        </p>
+                                                        <p className="text-3xl font-bold text-green-800 dark:text-green-200">
+                                                            ${order.totalAmount.toFixed(2)}
+                                                        </p>
+                                                    </div>
+                                                    <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
+                                                        <FaCheck className="w-6 h-6 text-green-600 dark:text-green-400" />
+                                                    </div>
+                                                </div>
                                             </div>
 
-                                            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                                                <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                                                    Shipping Address
-                                                </h4>
-                                                <p className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-line">
-                                                    {order.shippingAddress}
-                                                </p>
+                                            {/* Shipping Address */}
+                                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-blue-200 dark:border-blue-800">
+                                                <div className="flex items-start gap-3">
+                                                    <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                                                        <FaMapMarkerAlt className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <h4 className="text-blue-700 dark:text-blue-300 font-semibold mb-2">
+                                                            Shipping Address
+                                                        </h4>
+                                                        <p className="text-blue-800 dark:text-blue-200 whitespace-pre-line leading-relaxed">
+                                                            {order.shippingAddress}
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -357,7 +441,26 @@ export default function OrderHistoryPage() {
                         })}
                     </AnimatePresence>
                 </div>
+
+                {/* Continue Shopping Button */}
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.8 }}
+                    className="text-center mt-16"
+                >
+                    <motion.button
+                        onClick={() => navigate('/catalog')}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                    >
+                        <FaShoppingBag />
+                        Continue Shopping
+                    </motion.button>
+                </motion.div>
             </div>
         </div>
     );
-} 
+}
