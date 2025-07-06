@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, memo, useCallback } from 'react';
 import { 
   FaEdit, FaTrash, FaUserEdit, FaKey, FaUserShield, FaPlus, FaSpinner, 
   FaTimes, FaSave, FaSearch, FaImage, FaChevronLeft, FaChevronRight,
@@ -58,7 +58,8 @@ const AdminDashboardPage = () => {
     status: ''
   });
 
-
+  // Replace showProductModal and showAddProductModal with a single modal mode
+  const [productModalMode, setProductModalMode] = useState('none'); // 'none' | 'add' | 'edit' | 'delete'
 
   useEffect(() => {
     fetchData();
@@ -201,44 +202,38 @@ const AdminDashboardPage = () => {
     setShowUserModal(true);
   };
 
-  const handleProductAction = (action, product) => {
+  const handleProductAction = useCallback((action, product) => {
     setSelectedProduct(product);
     setActionType(action);
     if (action === 'edit') {
-      setProductForm({
+      setProductForm(prev => ({
+        ...prev,
         name: product.name,
         description: product.description || '',
         price: product.price.toString(),
         category: product.category || '',
         image: product.image || '',
         stock: product.stock || 0
-      });
-
-    } else {
-      setProductForm({
-        name: '',
-        description: '',
-        price: '',
-        category: '',
-        image: '',
-        stock: 0
-      });
+      }));
+      setProductModalMode('edit');
+    } else if (action === 'delete') {
+      setProductModalMode('delete');
     }
-    setShowProductModal(true);
-  };
+  }, []);
 
-  const handleAddProduct = () => {
+  const handleAddProduct = useCallback(() => {
     setActionType('add');
-    setProductForm({
+    setProductForm(prev => ({
+      ...prev,
       name: '',
       description: '',
       price: '',
       category: '',
       image: '',
       stock: 0
-    });
-    setShowAddProductModal(true);
-  };
+    }));
+    setProductModalMode('add');
+  }, []);
 
   const handleOrderAction = (action, order) => {
     setSelectedOrder(order);
@@ -341,8 +336,7 @@ const AdminDashboardPage = () => {
       if (response.ok) {
         showToast(`Product ${actionType} successful`, 'success');
         fetchData();
-        setShowProductModal(false);
-        setShowAddProductModal(false);
+        setProductModalMode('none');
       } else {
         const error = await response.json();
         showToast(error.message || `Failed to ${actionType} product`, 'error');
@@ -389,8 +383,6 @@ const AdminDashboardPage = () => {
       showToast(`Error ${actionType} order`, 'error');
     }
   };
-
-
 
   const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => (
     <AnimatePresence initial={false}>
@@ -450,6 +442,147 @@ const AdminDashboardPage = () => {
       </div>
     </div>
   );
+
+  // Memoized ProductForm component with local state
+  const ProductForm = memo(function ProductForm({ initialProduct, onSubmit, onCancel, actionType }) {
+    const [form, setForm] = React.useState(() => ({ ...initialProduct }));
+
+    React.useEffect(() => {
+      setForm({ ...initialProduct });
+    }, [initialProduct]);
+
+    const handleChange = (field, value) => {
+      setForm(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      onSubmit(form);
+    };
+
+    return (
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Name
+            </label>
+            <input
+              type="text"
+              value={form.name}
+              onChange={e => handleChange('name', e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Price
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              value={form.price}
+              onChange={e => handleChange('price', e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors"
+              required
+            />
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Description
+          </label>
+          <textarea
+            value={form.description}
+            onChange={e => handleChange('description', e.target.value)}
+            rows="3"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors"
+          />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Category
+            </label>
+            <input
+              type="text"
+              value={form.category}
+              onChange={e => handleChange('category', e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Stock
+            </label>
+            <input
+              type="number"
+              value={form.stock}
+              onChange={e => handleChange('stock', parseInt(e.target.value) || 0)}
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Product Image URL
+            </label>
+            <input
+              type="url"
+              value={String(form.image)}
+              onChange={e => handleChange('image', e.target.value)}
+              placeholder="https://example.com/image.jpg"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors"
+            />
+            {form.image && (
+              <div className="w-20 h-20 rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 mt-2">
+                <img
+                  src={form.image}
+                  alt="Preview"
+                  className="w-full h-full object-cover"
+                  onError={e => {
+                    e.target.src = 'https://via.placeholder.com/80x80?text=No+Image';
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="flex justify-end space-x-3 pt-6">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-6 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-6 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 flex items-center"
+          >
+            <FaSave className="w-4 h-4 mr-2" />
+            {actionType === 'add' ? 'Add Product' : 'Update Product'}
+          </button>
+        </div>
+      </form>
+    );
+  });
+
+  // Memoize setProductForm for ProductForm to prevent focus loss
+  const stableSetProductForm = useCallback((updater) => {
+    setProductForm(prev => {
+      if (typeof updater === 'function') {
+        return updater(prev);
+      }
+      return updater;
+    });
+  }, []);
+
+  // Memoize onCancel handler for ProductForm
+  const handleProductFormCancel = useCallback(() => {
+    setProductModalMode('none');
+    setSelectedProduct(null);
+  }, []);
 
   if (loading) {
     return (
@@ -549,9 +682,18 @@ const AdminDashboardPage = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-center">
                           <div className="flex items-center justify-center">
                             <div className="flex-shrink-0 h-10 w-10">
-                              <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
-                                {user.firstName.charAt(0)}{user.lastName.charAt(0)}
-                              </div>
+                              {user.imageUrl ? (
+                                <img
+                                  src={user.imageUrl}
+                                  alt={user.firstName + ' ' + user.lastName}
+                                  className="h-10 w-10 rounded-full object-cover border border-gray-300 dark:border-gray-700"
+                                  onError={e => { e.target.src = 'https://via.placeholder.com/80x80?text=No+Image'; }}
+                                />
+                              ) : (
+                                <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
+                                  {user.firstName.charAt(0)}{user.lastName.charAt(0)}
+                                </div>
+                              )}
                             </div>
                             <div className="ml-4">
                               <div className="text-sm font-medium text-gray-900 dark:text-white">
@@ -1010,6 +1152,28 @@ const AdminDashboardPage = () => {
                   required
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Avatar URL
+                </label>
+                <input
+                  type="url"
+                  value={userForm.imageUrl || ''}
+                  onChange={e => setUserForm({ ...userForm, imageUrl: e.target.value })}
+                  placeholder="https://example.com/avatar.jpg"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors"
+                />
+                {userForm.imageUrl && (
+                  <div className="w-16 h-16 rounded-full overflow-hidden border border-gray-300 dark:border-gray-600 mt-2">
+                    <img
+                      src={userForm.imageUrl}
+                      alt="Avatar Preview"
+                      className="w-full h-full object-cover"
+                      onError={e => { e.target.src = 'https://via.placeholder.com/80x80?text=No+Image'; }}
+                    />
+                  </div>
+                )}
+              </div>
             </>
           )}
           {actionType === 'change-role' && (
@@ -1058,17 +1222,18 @@ const AdminDashboardPage = () => {
         </form>
       </Modal>
 
-      {/* Product Modal */}
+      {/* Product Modal - always mounted, content changes by mode */}
       <Modal
-        isOpen={showProductModal || showAddProductModal}
-        onClose={() => {
-          setShowProductModal(false);
-          setShowAddProductModal(false);
-        }}
-        title={`${actionType === 'add' ? 'Add' : actionType === 'edit' ? 'Edit' : 'Delete'} Product`}
+        isOpen={productModalMode !== 'none'}
+        onClose={handleProductFormCancel}
+        title={
+          productModalMode === 'add' ? 'Add Product' :
+          productModalMode === 'edit' ? 'Edit Product' :
+          productModalMode === 'delete' ? 'Delete Product' : ''
+        }
         size="lg"
       >
-        {actionType === 'delete' ? (
+        {productModalMode === 'delete' ? (
           <div className="text-center">
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
               <p className="text-red-800 dark:text-red-200 mb-4">
@@ -1080,7 +1245,7 @@ const AdminDashboardPage = () => {
             </div>
             <div className="flex justify-end space-x-3">
               <button
-                onClick={() => setShowProductModal(false)}
+                onClick={handleProductFormCancel}
                 className="px-6 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors"
               >
                 Cancel
@@ -1093,118 +1258,67 @@ const AdminDashboardPage = () => {
               </button>
             </div>
           </div>
-        ) : (
-          <form onSubmit={handleProductSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Name
-                </label>
-                                  <input
-                    type="text"
-                    value={productForm.name}
-                    onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors"
-                    required
-                  />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Price
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={productForm.price}
-                  onChange={(e) => setProductForm({...productForm, price: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors"
-                  required
-                />
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Description
-              </label>
-              <textarea
-                value={productForm.description}
-                onChange={(e) => setProductForm({...productForm, description: e.target.value})}
-                rows="3"
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors"
-              />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Category
-                </label>
-                <input
-                  type="text"
-                  value={productForm.category}
-                  onChange={(e) => setProductForm({...productForm, category: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Stock
-                </label>
-                <input
-                  type="number"
-                  value={productForm.stock}
-                  onChange={(e) => setProductForm({...productForm, stock: parseInt(e.target.value) || 0})}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Product Image URL
-                </label>
-                <input
-                  type="url"
-                  value={String(productForm.image)}
-                  onChange={e => setProductForm({ ...productForm, image: e.target.value })}
-                  placeholder="https://example.com/image.jpg"
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors"
-                />
-                {productForm.image && (
-                  <div className="w-20 h-20 rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 mt-2">
-                    <img
-                      src={productForm.image}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
-                      onError={e => {
-                        e.target.src = 'https://via.placeholder.com/80x80?text=No+Image';
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            <div className="flex justify-end space-x-3 pt-6">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowProductModal(false);
-                  setShowAddProductModal(false);
-                }}
-                className="px-6 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-6 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 flex items-center"
-              >
-                <FaSave className="w-4 h-4 mr-2" />
-                {actionType === 'add' ? 'Add Product' : 'Update Product'}
-              </button>
-            </div>
-          </form>
-        )}
+        ) : productModalMode === 'add' || productModalMode === 'edit' ? (
+          <ProductForm
+            initialProduct={productModalMode === 'edit' && selectedProduct ? {
+              name: selectedProduct.name,
+              description: selectedProduct.description || '',
+              price: selectedProduct.price?.toString() || '',
+              category: selectedProduct.category || '',
+              image: selectedProduct.image || '',
+              stock: selectedProduct.stock || 0
+            } : {
+              name: '',
+              description: '',
+              price: '',
+              category: '',
+              image: '',
+              stock: 0
+            }}
+            onSubmit={async (formData) => {
+              try {
+                const token = localStorage.getItem('token');
+                const productData = {
+                  ...formData,
+                  price: parseFloat(formData.price),
+                  stock: formData.stock || 0
+                };
+                let response;
+                if (productModalMode === 'add') {
+                  response = await fetch('/api/products/admin/add', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(productData)
+                  });
+                } else if (productModalMode === 'edit' && selectedProduct) {
+                  response = await fetch(`/api/products/admin/edit/${selectedProduct.id}`, {
+                    method: 'PUT',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(productData)
+                  });
+                }
+                if (response && response.ok) {
+                  showToast(`Product ${productModalMode} successful`, 'success');
+                  fetchData();
+                  handleProductFormCancel();
+                } else {
+                  const error = response ? await response.json() : {};
+                  showToast(error.message || `Failed to ${productModalMode} product`, 'error');
+                }
+              } catch (error) {
+                showToast(`Error ${productModalMode} product`, 'error');
+              }
+            }}
+            onCancel={handleProductFormCancel}
+            actionType={productModalMode}
+          />
+        ) : null}
       </Modal>
 
       {/* Image Modal */}
@@ -1411,8 +1525,17 @@ const AdminDashboardPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <div className="flex items-center mb-4">
-                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-lg mr-4">
-                        {selectedOrder.user?.firstName?.charAt(0)}{selectedOrder.user?.lastName?.charAt(0)}
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-lg mr-4 bg-gradient-to-r from-blue-500 to-purple-500 overflow-hidden border border-gray-300 dark:border-gray-700">
+                        {selectedOrder.user?.imageUrl ? (
+                          <img
+                            src={selectedOrder.user.imageUrl}
+                            alt={selectedOrder.user?.firstName + ' ' + selectedOrder.user?.lastName}
+                            className="w-12 h-12 object-cover"
+                            onError={e => { e.target.src = 'https://via.placeholder.com/80x80?text=No+Image'; }}
+                          />
+                        ) : (
+                          <span>{selectedOrder.user?.firstName?.charAt(0)}{selectedOrder.user?.lastName?.charAt(0)}</span>
+                        )}
                       </div>
                       <div>
                         <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
