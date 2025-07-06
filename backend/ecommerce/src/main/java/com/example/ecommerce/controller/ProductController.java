@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,10 +28,18 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<Page<Product>> getAllProducts(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "12") int size) {
+            @RequestParam(defaultValue = "12") int size,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Product> products = productService.getAllProductsPaginated(pageable);
-        return ResponseEntity.ok(products);
+        
+        if (minPrice != null && maxPrice != null) {
+            Page<Product> products = productService.getProductsByPriceRange(minPrice, maxPrice, pageable);
+            return ResponseEntity.ok(products);
+        } else {
+            Page<Product> products = productService.getAllProductsPaginated(pageable);
+            return ResponseEntity.ok(products);
+        }
     }
 
     @GetMapping("/all")
@@ -49,10 +58,18 @@ public class ProductController {
     public ResponseEntity<Page<Product>> getProductsByCategory(
             @PathVariable String category,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "12") int size) {
+            @RequestParam(defaultValue = "12") int size,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Product> products = productService.getProductsByCategoryPaginated(category, pageable);
-        return ResponseEntity.ok(products);
+        
+        if (minPrice != null && maxPrice != null) {
+            Page<Product> products = productService.getProductsByCategoryAndPriceRange(category, minPrice, maxPrice, pageable);
+            return ResponseEntity.ok(products);
+        } else {
+            Page<Product> products = productService.getProductsByCategoryPaginated(category, pageable);
+            return ResponseEntity.ok(products);
+        }
     }
 
     @GetMapping("/category/{category}/all")

@@ -17,10 +17,15 @@ export const ProductProvider = ({ children }) => {
     size: 12
   });
 
-  const fetchProducts = useCallback(async (page = 0, size = 12) => {
+  const fetchProducts = useCallback(async (page = 0, size = 12, minPrice = null, maxPrice = null) => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/products?page=${page}&size=${size}`);
+      let url = `/api/products?page=${page}&size=${size}`;
+      if (minPrice !== null && maxPrice !== null) {
+        url += `&minPrice=${minPrice}&maxPrice=${maxPrice}`;
+      }
+      
+      const response = await fetch(url);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -43,10 +48,14 @@ export const ProductProvider = ({ children }) => {
     }
   }, []);
 
-  const fetchProductsByCategory = useCallback(async (category, page = 0, size = 12) => {
+  const fetchProductsByCategory = useCallback(async (category, page = 0, size = 12, minPrice = null, maxPrice = null) => {
     try {
       setLoading(true);
-      const url = category ? `/api/products/category/${category}?page=${page}&size=${size}` : `/api/products?page=${page}&size=${size}`;
+      let url = category ? `/api/products/category/${category}?page=${page}&size=${size}` : `/api/products?page=${page}&size=${size}`;
+      if (minPrice !== null && maxPrice !== null) {
+        url += `&minPrice=${minPrice}&maxPrice=${maxPrice}`;
+      }
+      
       const response = await fetch(url);
       
       if (!response.ok) {

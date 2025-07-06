@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FaShoppingCart, FaChevronLeft, FaChevronRight, FaSort, FaSortUp, FaSortDown, FaFilter } from 'react-icons/fa'
@@ -6,12 +6,56 @@ import { useProducts } from '../context/ProductContext'
 import { useCart } from '../context/CartContext'
 import { categories } from '../data/products'
 
+// Memoized PriceRangeInput component
+const PriceRangeInput = React.memo(function PriceRangeInput({ priceStats, priceRange, onChange, onApply, onKeyDown }) {
+  return (
+    <div className="relative">
+      <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
+        <FaFilter className="text-blue-500" />
+        Price Range
+      </label>
+      <div className="flex gap-3">
+        <div className="flex-1">
+          <input
+            type="number"
+            placeholder={`Min $${priceStats.min}`}
+            value={priceRange.min}
+            onChange={(e) => onChange('min', e.target.value)}
+            onKeyDown={onKeyDown}
+            className="w-full px-4 py-3 border border-white/30 dark:border-gray-600/50 rounded-xl bg-white/20 dark:bg-gray-800/20 backdrop-blur-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-200"
+          />
+        </div>
+        <div className="flex items-center text-gray-500 dark:text-gray-400">
+          <span className="text-lg">-</span>
+        </div>
+        <div className="flex-1">
+          <input
+            type="number"
+            placeholder={`Max $${priceStats.max}`}
+            value={priceRange.max}
+            onChange={(e) => onChange('max', e.target.value)}
+            onKeyDown={onKeyDown}
+            className="w-full px-4 py-3 border border-white/30 dark:border-gray-600/50 rounded-xl bg-white/20 dark:bg-gray-800/20 backdrop-blur-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-200"
+          />
+        </div>
+        <button
+          onClick={onApply}
+          className="px-6 py-3 bg-gradient-to-r from-blue-600/90 to-blue-700/90 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 backdrop-blur-sm hover:shadow-xl hover:from-blue-700/90 hover:to-blue-800/90 transition-all duration-200"
+        >
+          Apply
+        </button>
+      </div>
+    </div>
+  )
+})
+
 const CatalogPage = () => {
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [currentPage, setCurrentPage] = useState(0)
   const [sortBy, setSortBy] = useState('name')
   const [sortOrder, setSortOrder] = useState('asc')
   const [priceRange, setPriceRange] = useState({ min: '', max: '' })
+  const [appliedPriceRange, setAppliedPriceRange] = useState({ min: '', max: '' })
   const { products, loading, error, pagination, fetchProductsByCategory } = useProducts()
   const { addToCart } = useCart()
   const [notification, setNotification] = useState({ show: false, message: '' })
@@ -25,17 +69,19 @@ const CatalogPage = () => {
   // Memoize the fetchProductsByCategory call
   const fetchProducts = useCallback(() => {
     const category = selectedCategory === 'all' ? '' : selectedCategory
-    fetchProductsByCategory(category, currentPage, 12)
-  }, [selectedCategory, currentPage, fetchProductsByCategory])
+    const minPrice = appliedPriceRange.min ? parseFloat(appliedPriceRange.min) : null
+    const maxPrice = appliedPriceRange.max ? parseFloat(appliedPriceRange.max) : null
+    fetchProductsByCategory(category, currentPage, 12, minPrice, maxPrice)
+  }, [selectedCategory, currentPage, fetchProductsByCategory, appliedPriceRange])
 
   useEffect(() => {
     fetchProducts()
   }, [fetchProducts])
 
-  // Reset to first page when category, sort, or price range changes
+  // Reset to first page when category or sort changes
   useEffect(() => {
     setCurrentPage(0)
-  }, [selectedCategory, sortBy, sortOrder, priceRange])
+  }, [selectedCategory, sortBy, sortOrder])
 
   const handleAddToCart = (product) => {
     addToCart(product)
@@ -56,39 +102,44 @@ const CatalogPage = () => {
     }
   }
 
-  const handlePriceRangeChange = (type, value) => {
+  const handlePriceRangeChange = useCallback((type, value) => {
     setPriceRange(prev => ({
       ...prev,
       [type]: value
     }))
-  }
+  }, [])
 
-  // Filter and sort products
-  const filteredAndSortedProducts = products
-    .filter(product => {
-      if (priceRange.min && product.price < parseFloat(priceRange.min)) return false
-      if (priceRange.max && product.price > parseFloat(priceRange.max)) return false
-      return true
-    })
-    .sort((a, b) => {
-      let aValue, bValue
-      
-      if (sortBy === 'name') {
-        aValue = a.name.toLowerCase()
-        bValue = b.name.toLowerCase()
-      } else if (sortBy === 'price') {
-        aValue = a.price
-        bValue = b.price
-      } else {
-        return 0
-      }
+  const handleApplyPriceRange = useCallback(() => {
+    setAppliedPriceRange(priceRange)
+    setCurrentPage(0)
+  }, [priceRange])
 
-      if (sortOrder === 'asc') {
-        return aValue > bValue ? 1 : -1
-      } else {
-        return aValue < bValue ? 1 : -1
-      }
-    })
+  const handlePriceRangeKeyDown = useCallback((e) => {
+    if (e.key === 'Enter') {
+      handleApplyPriceRange()
+    }
+  }, [handleApplyPriceRange])
+
+  // Sort products (server-side filtering, client-side sorting)
+  const sortedProducts = products.sort((a, b) => {
+    let aValue, bValue
+    
+    if (sortBy === 'name') {
+      aValue = a.name.toLowerCase()
+      bValue = b.name.toLowerCase()
+    } else if (sortBy === 'price') {
+      aValue = a.price
+      bValue = b.price
+    } else {
+      return 0
+    }
+
+    if (sortOrder === 'asc') {
+      return aValue > bValue ? 1 : -1
+    } else {
+      return aValue < bValue ? 1 : -1
+    }
+  })
 
   // Pagination component
   const Pagination = () => {
@@ -166,42 +217,6 @@ const CatalogPage = () => {
         >
           <FaChevronRight className="w-4 h-4" />
         </button>
-      </div>
-    )
-  }
-
-  // Simple Price Range Input Component
-  const PriceRangeInput = () => {
-    return (
-      <div className="relative">
-        <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
-          <FaFilter className="text-blue-500" />
-          Price Range
-        </label>
-        
-        <div className="flex gap-3">
-          <div className="flex-1">
-            <input
-              type="number"
-              placeholder={`Min $${priceStats.min}`}
-              value={priceRange.min}
-              onChange={(e) => handlePriceRangeChange('min', e.target.value)}
-              className="w-full px-4 py-3 border border-white/30 dark:border-gray-600/50 rounded-xl bg-white/20 dark:bg-gray-800/20 backdrop-blur-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-200"
-            />
-          </div>
-          <div className="flex items-center text-gray-500 dark:text-gray-400">
-            <span className="text-lg">-</span>
-          </div>
-          <div className="flex-1">
-            <input
-              type="number"
-              placeholder={`Max $${priceStats.max}`}
-              value={priceRange.max}
-              onChange={(e) => handlePriceRangeChange('max', e.target.value)}
-              className="w-full px-4 py-3 border border-white/30 dark:border-gray-600/50 rounded-xl bg-white/20 dark:bg-gray-800/20 backdrop-blur-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-200"
-            />
-          </div>
-        </div>
       </div>
     )
   }
@@ -314,14 +329,20 @@ const CatalogPage = () => {
               </div>
 
               {/* Price Range Input - Right Side */}
-              <PriceRangeInput />
+              <PriceRangeInput
+                priceStats={priceStats}
+                priceRange={priceRange}
+                onChange={handlePriceRangeChange}
+                onApply={handleApplyPriceRange}
+                onKeyDown={handlePriceRangeKeyDown}
+              />
             </div>
           </div>
         </div>
 
         {/* Product Grid - Fixed Heights for Consistency */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredAndSortedProducts.map((product, index) => (
+          {sortedProducts.map((product, index) => (
             <motion.div
               key={product.id}
               initial={{ opacity: 0, y: 20 }}
@@ -392,7 +413,7 @@ const CatalogPage = () => {
         <Pagination />
 
         {/* Empty State */}
-        {filteredAndSortedProducts.length === 0 && (
+        {sortedProducts.length === 0 && (
           <div className="text-center py-20">
             <div className="text-gray-400 dark:text-gray-500 text-8xl mb-6">📦</div>
             <h3 className="text-2xl font-bold text-gray-600 dark:text-gray-400 mb-3">

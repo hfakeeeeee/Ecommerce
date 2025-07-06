@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.math.BigDecimal;
 
 import java.util.List;
 import java.util.Optional;
@@ -43,6 +44,14 @@ public class ProductService {
 
     public Page<Product> getProductsByCategoryPaginated(String category, Pageable pageable) {
         return productRepository.findByCategory(category, pageable);
+    }
+    
+    public Page<Product> getProductsByPriceRange(BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
+        return productRepository.findByPriceRange(minPrice, maxPrice, pageable);
+    }
+    
+    public Page<Product> getProductsByCategoryAndPriceRange(String category, BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
+        return productRepository.findByCategoryAndPriceRange(category, minPrice, maxPrice, pageable);
     }
 
     public Product saveProduct(Product product) {
