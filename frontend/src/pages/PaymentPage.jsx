@@ -32,7 +32,7 @@ const getCardStyle = (isDark) => ({
 });
 
 // Checkout form component that uses Stripe
-function CheckoutForm({ shippingInfo, setLoading, showToast, clearCart, navigate, token, isDark, shippingFee, getCartTotalWithShipping }) {
+function CheckoutForm({ shippingInfo, setLoading, showToast, clearCart, navigate, token, isDark, shippingFee, getCartTotalWithShipping, validateShippingInfo }) {
     const stripe = useStripe();
     const elements = useElements();
     const { items, getCartTotal } = useCart();
@@ -55,6 +55,11 @@ function CheckoutForm({ shippingInfo, setLoading, showToast, clearCart, navigate
         if (!token) {
             showToast('Please log in to continue with payment', 'error');
             navigate('/login', { state: { from: '/payment' } });
+            return;
+        }
+
+        // Validate shipping information before proceeding
+        if (!validateShippingInfo()) {
             return;
         }
 
@@ -238,7 +243,7 @@ export default function PaymentPage() {
             return false;
         }
         // ZIP Code: required, format depends on country
-        if (!shippingInfo.zipCode.trim()) {
+        if (shippingInfo.zipCode.trim().length < 5) {
             showToast('Please enter a ZIP/Postal code', 'error');
             return false;
         }
@@ -462,6 +467,7 @@ export default function PaymentPage() {
                                     isDark={isDark}
                                     shippingFee={shippingFee}
                                     getCartTotalWithShipping={getCartTotalWithShipping}
+                                    validateShippingInfo={validateShippingInfo}
                                 />
                             </Elements>
                         </div>
