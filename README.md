@@ -57,7 +57,7 @@ Welcome to the **Ecommerce Platform** – a modern, full-stack web application d
 
 ### 1️⃣ Environment Variables
 
-Create a `.env` file in your project root with the following content:
+Edit a `.env` file in your project root with the following content:
 
 ```env
 # Database Configuration
@@ -111,6 +111,19 @@ You need **two Stripe keys**:
 3. Copy the **Secret Key** for backend and the **Publishable Key** for frontend
 
 > ⚠️ **Never commit your secret keys to version control!**
+
+---
+
+## Stripe Test Card for Payment
+
+To test the payment functionality in this application, use the following Stripe test card details:
+
+- **Card Number:** `4242 4242 4242 4242`
+- **Expiration Date:** Any valid future date (e.g., `12/34`)
+- **CVC:** Any 3 digits (e.g., `123`)
+- **ZIP Code:** Any 5-digit number (e.g., `12345`)
+
+These details will allow you to simulate a successful payment in the checkout process.
 
 ---
 
