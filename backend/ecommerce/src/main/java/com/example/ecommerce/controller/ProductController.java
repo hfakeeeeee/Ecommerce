@@ -156,4 +156,8 @@ public class ProductController {
             return ResponseEntity.badRequest().body("Failed to update product: " + e.getMessage());
         }
     }
+
+    /**
+     * Get all products, sorted by newest first (createdAt descending).
+     */
 } 

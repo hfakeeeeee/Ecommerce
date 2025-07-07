@@ -32,7 +32,7 @@ public class ProductService {
     }
 
     public Page<Product> getAllProductsPaginated(Pageable pageable) {
-        return productRepository.findAll(pageable);
+        return productRepository.findAllOrderByCreatedAtDesc(pageable);
     }
 
     public Optional<Product> getProductById(Long id) {

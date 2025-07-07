@@ -34,6 +34,7 @@
             <column name="stock" type="INT">
                 <constraints nullable="false"/>
             </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
         </createTable>
 
         <!-- Insert sample data -->
