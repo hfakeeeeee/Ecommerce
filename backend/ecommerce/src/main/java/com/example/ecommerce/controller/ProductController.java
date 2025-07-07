@@ -93,6 +93,12 @@ public class ProductController {
         return productService.getProductsByCategory(category);
     }
 
+    @GetMapping("/categories")
+    public ResponseEntity<List<String>> getAllCategories() {
+        List<String> categories = productService.getAllCategories();
+        return ResponseEntity.ok(categories);
+    }
+
     @PostMapping
     public Product createProduct(@RequestBody Product product) {
         return productService.saveProduct(product);

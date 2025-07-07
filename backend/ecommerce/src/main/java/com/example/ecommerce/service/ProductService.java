@@ -55,6 +55,10 @@ public class ProductService {
         return productRepository.findByCategoryAndPriceRange(category, minPrice, maxPrice, pageable);
     }
 
+    public List<String> getAllCategories() {
+        return productRepository.findAllCategories();
+    }
+
     public Product saveProduct(Product product) {
         return productRepository.save(product);
     }

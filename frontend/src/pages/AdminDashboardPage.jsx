@@ -22,6 +22,7 @@ const AdminDashboardPage = () => {
   const [showOrderDetailsModal, setShowOrderDetailsModal] = useState(false);
   const [actionType, setActionType] = useState('');
   const [toast, setToast] = useState({ message: '', type: '', visible: false });
+  const [categories, setCategories] = useState([]);
 
   // Search and filter states
   const [userSearch, setUserSearch] = useState('');
@@ -69,7 +70,7 @@ const AdminDashboardPage = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const [usersResponse, productsResponse, ordersResponse] = await Promise.all([
+      const [usersResponse, productsResponse, ordersResponse, categoriesResponse] = await Promise.all([
         fetch('/api/auth/admin/users', {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -84,16 +85,23 @@ const AdminDashboardPage = () => {
           headers: {
             'Authorization': `Bearer ${token}`
           }
+        }),
+        fetch('/api/products/categories', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
         })
       ]);
       
       const usersData = await usersResponse.json();
       const productsData = await productsResponse.json();
       const ordersData = await ordersResponse.json();
+      const categoriesData = await categoriesResponse.json();
       
       setUsers(usersData);
       setProducts(productsData);
       setOrders(ordersData);
+      setCategories(categoriesData);
       
       // Debug: Log order data structure
       console.log('Orders data:', ordersData);
@@ -444,7 +452,7 @@ const AdminDashboardPage = () => {
   );
 
   // Memoized ProductForm component with local state
-  const ProductForm = memo(function ProductForm({ initialProduct, onSubmit, onCancel, actionType }) {
+  const ProductForm = memo(function ProductForm({ initialProduct, onSubmit, onCancel, actionType, categories }) {
     const [form, setForm] = React.useState(() => ({ ...initialProduct }));
 
     React.useEffect(() => {
@@ -505,12 +513,17 @@ const AdminDashboardPage = () => {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Category
             </label>
-            <input
-              type="text"
+            <select
               value={form.category}
               onChange={e => handleChange('category', e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors"
-            />
+              required
+            >
+              <option value="">Select a category</option>
+              {categories.map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -790,7 +803,7 @@ const AdminDashboardPage = () => {
                     className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                   >
                     <option value="all">All Categories</option>
-                    {Array.from(new Set(products.map(p => p.category).filter(Boolean))).map(category => (
+                    {categories.map(category => (
                       <option key={category} value={category}>{category}</option>
                     ))}
                   </select>
@@ -1317,6 +1330,7 @@ const AdminDashboardPage = () => {
             }}
             onCancel={handleProductFormCancel}
             actionType={productModalMode}
+            categories={categories}
           />
         ) : null}
       </Modal>

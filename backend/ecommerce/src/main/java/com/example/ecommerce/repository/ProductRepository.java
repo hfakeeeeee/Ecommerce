@@ -24,4 +24,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     
     @Query("SELECT p FROM Product p WHERE LOWER(p.category) = LOWER(:category) AND p.price >= :minPrice AND p.price <= :maxPrice")
     Page<Product> findByCategoryAndPriceRange(@Param("category") String category, @Param("minPrice") BigDecimal minPrice, @Param("maxPrice") BigDecimal maxPrice, Pageable pageable);
+    
+    @Query("SELECT DISTINCT p.category FROM Product p ORDER BY p.category")
+    List<String> findAllCategories();
 } 
