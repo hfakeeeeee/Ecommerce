@@ -5,6 +5,7 @@ import Footer from './components/Footer'
 import { CartProvider } from './context/CartContext'
 import { AuthProvider } from './context/AuthContext'
 import { ProductProvider } from './context/ProductContext'
+import { FavouritesProvider } from './context/FavouritesContext'
 import ScrollToTop from './components/ScrollToTop'
 import './App.css'
 
@@ -14,14 +15,16 @@ function App() {
       <AuthProvider>
         <ProductProvider>
           <CartProvider>
-            <div className="flex flex-col min-h-screen">
-              <Header />
-              <main className="flex-grow">
-                <AppRoutes />
-              </main>
-              <Footer />
-              <ScrollToTop />
-            </div>
+            <FavouritesProvider>
+              <div className="flex flex-col min-h-screen">
+                <Header />
+                <main className="flex-grow">
+                  <AppRoutes />
+                </main>
+                <Footer />
+                <ScrollToTop />
+              </div>
+            </FavouritesProvider>
           </CartProvider>
         </ProductProvider>
       </AuthProvider>
