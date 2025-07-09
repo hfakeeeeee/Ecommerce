@@ -163,12 +163,6 @@ Use these test card details for payment testing:
 - **CVC:** Any 3 digits (e.g., `123`)
 - **ZIP Code:** Any 5-digit number (e.g., `12345`)
 
-### Default Admin Account
-- 📧 **Email:** `admin@example.com`
-- 🔑 **Password:** `admin123`
-
-> 🔒 **Security Tip:** Change the admin password after first login.
-
 ---
 
 ## 👑 Admin Account
