@@ -1,8 +1,8 @@
-# 🛒 Ecommerce Platform
+# 🛒 TECHVERSE - Modern Ecommerce Platform
 
 ## ✨ Introduction
 
-Welcome to the **Ecommerce Platform** – a modern, full-stack web application designed for seamless online shopping. Enjoy a beautiful React frontend, a robust Spring Boot backend, secure payments, and a powerful admin dashboard.
+Welcome to **TECHVERSE** – a cutting-edge, full-stack ecommerce platform designed for seamless online shopping experiences. Built with modern technologies, this platform offers a beautiful React frontend with advanced animations, a robust Spring Boot backend with comprehensive security, and an intelligent AI-powered chat support system.
 
 ---
 
@@ -13,7 +13,9 @@ Welcome to the **Ecommerce Platform** – a modern, full-stack web application d
 - 🚀 Spring Boot & Spring Security (JWT)
 - 🗄️ Spring Data JPA (PostgreSQL)
 - 💳 Stripe Java SDK
-- 🐘 Liquibase (DB migrations)
+- 🐘 Liquibase (Database migrations)
+- 📧 Spring Mail (Email notifications)
+- ⏰ Spring Quartz (Order automation)
 - 🐳 Docker
 
 **Frontend:**
@@ -26,38 +28,80 @@ Welcome to the **Ecommerce Platform** – a modern, full-stack web application d
 - 🐳 Docker
 
 **Database:**
-- 🐘 PostgreSQL
+- 🐘 PostgreSQL (Alpine)
+
+**Infrastructure:**
+- 🐳 Docker Compose
+- 🌐 Nginx (Frontend serving)
+- 📁 File uploads with static resource serving
 
 ---
 
 ## 🌟 Features
 
 ### 👤 User Features
-- 🔐 Secure registration & JWT login
-- ✉️ Password reset via email
-- 📝 Profile management (update info, change password, upload avatar)
-- 🛍️ Browse & search product catalog with filters
-- 📦 Detailed product pages with images & descriptions
-- ➕ Add/update/remove products in cart
-- 🛒 View & manage shopping cart
-- 💳 Secure Stripe checkout
-- 📜 Order history & status tracking (pending, processing, shipped, delivered, cancelled)
-- ❤️ Favourites/wishlist support
+- 🔐 **Secure Authentication**: JWT-based login/register with password reset via email
+- 👤 **Profile Management**: Update personal info, change password, upload avatar
+- 🛍️ **Advanced Product Catalog**: 
+  - Search with filters (price range, categories)
+  - Pagination and sorting options
+  - Detailed product pages with images
+- 🛒 **Smart Shopping Cart**: Add/update/remove products with real-time updates
+- 💳 **Secure Stripe Checkout**: Integrated payment processing with test cards
+- 📦 **Order Management**: 
+  - Complete order history
+  - Real-time status tracking (pending → processing → shipped → delivered → cancelled)
+  - Automated order status updates
+- ❤️ **Favourites/Wishlist**: Save and manage favorite products
+- 💬 **AI Chat Support**: Intelligent customer service chatbot with product recommendations
+- 🎨 **Modern UI/UX**: 
+  - Dark/Light theme support
+  - Responsive design
+  - Smooth animations and transitions
+  - Interactive components
 
 ### 🛡️ Admin Features
-- 🖥️ Secure admin dashboard
-- 🛠️ Full product CRUD
-- 👥 User management (view, update, change roles, reset passwords)
-- 📦 Order management (update status, cancel, automation)
-- 📊 Sales & user statistics
+- 🖥️ **Secure Admin Dashboard**: Role-based access control
+- 🛠️ **Product Management**: Full CRUD operations with image uploads
+- 👥 **User Management**: View, update, change roles, reset passwords
+- 📦 **Order Management**: Update status, cancel orders, automation
+- 📊 **Analytics Dashboard**: Sales statistics and user analytics
+- 📈 **Monthly Order Reports**: Visual charts and data insights
+
+### 🤖 AI Chat Support System
+- 💬 **Intelligent Conversations**: Context-aware responses
+- 🔍 **Product Search**: Natural language product discovery
+- 📦 **Product Recommendations**: Smart suggestions with images and links
+- 🚚 **Shipping Information**: Automated shipping policy responses
+- 🔄 **Return Policy Support**: Instant return and refund information
+- 🎯 **Conversation Memory**: Maintains context across chat sessions
+- 🖼️ **Rich Media Support**: Product images and clickable links
+
+### 🎯 Customer Service Pages
+- 📦 **Shipping Information**: Detailed shipping policies and costs
+- 🛡️ **Warranty Details**: Product warranty information
+- 📚 **Setup Guides**: Product installation and setup instructions
+- ❓ **FAQ Section**: Common questions and answers
+- 📞 **Contact Information**: Multiple ways to reach support
 
 ---
 
-## ⚙️ Environment & Configuration
+## 🚀 Quick Start
 
-### 1️⃣ Environment Variables
+### Prerequisites
+- Docker and Docker Compose
+- Git
 
-Edit a `.env` file in your project root with the following content:
+### 1️⃣ Clone and Setup
+
+```bash
+git clone https://github.com/hfakeeeeee/Ecommerce.git
+cd Ecommerce
+```
+
+### 2️⃣ Environment Configuration
+
+Edit a `.env` file in the project root:
 
 ```env
 # Database Configuration
@@ -74,8 +118,7 @@ APP_URL=http://localhost
 FRONTEND_HOST=http://localhost
 FRONTEND_PORT=80
 
-# CORS Configuration (auto-generated from FRONTEND_HOST:FRONTEND_PORT)
-# Add additional origins if needed, separated by commas
+# CORS Configuration
 CORS_ADDITIONAL_ORIGINS=
 
 # Spring Boot Configuration
@@ -85,45 +128,46 @@ SPRING_DATASOURCE_PASSWORD=root
 SERVER_PORT=8080
 ```
 
----
+### 3️⃣ Stripe Configuration
 
-### 2️⃣ Backend Settings
+**Required Stripe Keys:**
+- 🔑 **Secret Key**: Set in `backend/ecommerce/src/main/resources/application.properties`
+- 🪙 **Publishable Key**: Set in `frontend/src/pages/PaymentPage.jsx`
 
-Open `backend/ecommerce/src/main/resources/application.properties` to configure:
-- 📧 Email settings
-- 📁 File upload settings
-- 🔑 **Stripe Secret Key**: Set `stripe.secret.key` here
-
----
-
-### 3️⃣ Stripe Integration
-
-You need **two Stripe keys**:
-
-- 🔑 **Stripe Secret Key**:  
-  Set in `application.properties` as `stripe.secret.key`
-- 🪙 **Stripe Publishable Key**:  
-  Set in the frontend, in `frontend/src/pages/PaymentPage.jsx` (replace the value in `loadStripe('pk_test_...')`)
-
-**How to get your Stripe keys:**
-1. Create or log in to your Stripe account
-2. Visit [Stripe Dashboard API Keys](https://dashboard.stripe.com/test/apikeys)
-3. Copy the **Secret Key** for backend and the **Publishable Key** for frontend
+**Get your Stripe keys:**
+1. Create/Login to [Stripe Dashboard](https://dashboard.stripe.com/test/apikeys)
+2. Copy **Secret Key** for backend
+3. Copy **Publishable Key** for frontend
 
 > ⚠️ **Never commit your secret keys to version control!**
 
+### 4️⃣ Launch Application
+
+```bash
+docker-compose up --build
+```
+
+The application will be available at:
+- 🌐 **Frontend**: http://localhost
+- 🔧 **Backend API**: http://localhost:8080
+
 ---
 
-## Stripe Test Card for Payment
+## 🧪 Testing
 
-To test the payment functionality in this application, use the following Stripe test card details:
+### Stripe Test Cards
+Use these test card details for payment testing:
 
 - **Card Number:** `4242 4242 4242 4242`
 - **Expiration Date:** Any valid future date (e.g., `12/34`)
 - **CVC:** Any 3 digits (e.g., `123`)
 - **ZIP Code:** Any 5-digit number (e.g., `12345`)
 
-These details will allow you to simulate a successful payment in the checkout process.
+### Default Admin Account
+- 📧 **Email:** `admin@example.com`
+- 🔑 **Password:** `admin123`
+
+> 🔒 **Security Tip:** Change the admin password after first login.
 
 ---
 
@@ -133,6 +177,128 @@ These details will allow you to simulate a successful payment in the checkout pr
   - 📧 Email: `admin@example.com`
   - 🔑 Password: `admin123`
 - **Security Tip:** Change the admin password after your first login.
+---
+
+## 🏗️ Architecture
+
+### Backend Structure
+```
+backend/ecommerce/
+├── config/          # Security and web configuration
+├── controller/      # REST API endpoints
+├── dto/            # Data transfer objects
+├── model/          # JPA entities
+├── repository/     # Data access layer
+├── security/       # JWT and security configuration
+├── service/        # Business logic layer
+└── resources/
+    ├── db/         # Liquibase migrations
+    └── data/       # Initial data (products.csv)
+```
+
+### Frontend Structure
+```
+frontend/src/
+├── components/     # Reusable UI components
+├── context/        # React context providers
+├── pages/          # Page components
+├── config/         # Configuration files
+└── assets/         # Static assets
+```
+
+### Key Features Implementation
+- **JWT Authentication**: Secure token-based auth with refresh
+- **File Uploads**: Avatar and product image management
+- **Order Automation**: Scheduled status updates via Quartz
+- **Email Notifications**: Password reset and order confirmations
+- **Real-time Chat**: WebSocket-like chat with AI responses
+- **Analytics**: Dashboard with charts and statistics
+
+---
+
+## 🔧 Configuration
+
+### Email Settings
+Configure SMTP in `application.properties`:
+```properties
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=your-email@gmail.com
+spring.mail.password=your-app-password
+```
+
+### Order Automation
+Customize order status update intervals:
+```properties
+order.automation.pending-to-processing-seconds=30
+order.automation.processing-to-shipped-seconds=60
+order.automation.shipped-to-delivered-seconds=90
+```
+
+### File Upload
+Configure upload limits and directory:
+```properties
+spring.servlet.multipart.max-file-size=10MB
+spring.servlet.multipart.max-request-size=10MB
+app.upload.dir=/app/uploads
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **Database Connection Failed**
+   - Ensure PostgreSQL container is running
+   - Check database credentials in `.env`
+
+2. **Stripe Payment Errors**
+   - Verify Stripe keys are correctly configured
+   - Use test card numbers for development
+
+3. **File Upload Issues**
+   - Check upload directory permissions
+   - Verify file size limits
+
+4. **Chat Not Working**
+   - Ensure user is authenticated
+   - Check browser console for errors
+
+### Development Commands
+
+```bash
+# View logs
+docker-compose logs -f
+
+# Restart specific service
+docker-compose restart backend
+
+# Access database
+docker-compose exec postgres psql -U postgres -d ecommerce
+
+# Clean rebuild
+docker-compose down -v
+docker-compose up --build
+```
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these steps:
+
+1. 🍴 Fork the repository
+2. 🌿 Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. 💾 Commit your changes (`git commit -m 'Add amazing feature'`)
+4. 📤 Push to the branch (`git push origin feature/amazing-feature`)
+5. 🔄 Open a Pull Request
+
+### Development Guidelines
+- Follow existing code style and patterns
+- Add tests for new features
+- Update documentation as needed
+- Ensure all tests pass before submitting
 
 ---
 
