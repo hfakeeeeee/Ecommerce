@@ -218,7 +218,8 @@ export function AuthProvider({ children }) {
             register,
             updateProfile,
             updatePassword,
-            resetPassword
+            resetPassword,
+            isAuthenticated: !!user && !!token
         }}>
             {children}
         </AuthContext.Provider>

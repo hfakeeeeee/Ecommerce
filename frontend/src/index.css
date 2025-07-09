@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Add custom z-index for chat widget */
+.chat-widget {
+  z-index: 1000;
+}
+
+/* Ensure chat widget is above other elements */
+.fixed.bottom-4.right-4 {
+  z-index: 1000;
+}
+
 @layer base {
   :root {
     font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;

@@ -15,5 +15,6 @@
     <include file="db/changelog/007-add-role-and-default-admin.xml"/>
     <include file="db/changelog/008-reset-products-sequence.xml"/>
     <include file="db/changelog/009-create-user-favorites-table.xml"/>
+    <include file="db/changelog/010-create-chat-messages-table.xml"/>
 
 </databaseChangeLog>
