@@ -98,8 +98,8 @@ const CatalogPage = () => {
     const category = selectedCategory === 'all' ? '' : selectedCategory
     const minPrice = debouncedPriceRange.min ? parseFloat(debouncedPriceRange.min) : null
     const maxPrice = debouncedPriceRange.max ? parseFloat(debouncedPriceRange.max) : null
-    fetchProductsByCategory(category, currentPage, 12, minPrice, maxPrice, debouncedSearchQuery)
-  }, [selectedCategory, currentPage, fetchProductsByCategory, debouncedPriceRange, debouncedSearchQuery])
+    fetchProductsByCategory(category, currentPage, 12, minPrice, maxPrice, debouncedSearchQuery, sortBy, sortOrder)
+  }, [selectedCategory, currentPage, fetchProductsByCategory, debouncedPriceRange, debouncedSearchQuery, sortBy, sortOrder])
 
   useEffect(() => {
     fetchProducts()
@@ -108,7 +108,39 @@ const CatalogPage = () => {
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(0)
-  }, [selectedCategory, debouncedSearchQuery, debouncedPriceRange])
+  }, [selectedCategory, debouncedSearchQuery, debouncedPriceRange, sortBy, sortOrder])
+
+  const handleSort = (field) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortBy(field)
+      setSortOrder('asc')
+    }
+  }
+
+  // Add this to your JSX where the sort buttons are rendered
+  const renderSortButton = (field, label) => (
+    <button
+      onClick={() => handleSort(field)}
+      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 transition-all duration-200 hover:shadow-lg border border-gray-200/50 dark:border-gray-700/50"
+    >
+      {label}
+      {sortBy === field && (
+        sortOrder === 'asc' ? <FaSortUp className="text-blue-500" /> : <FaSortDown className="text-blue-500" />
+      )}
+      {sortBy !== field && <FaSort className="text-gray-400" />}
+    </button>
+  )
+
+  // Add this to your JSX where you want the sort buttons to appear
+  const sortButtons = (
+    <div className="flex gap-4 mb-6">
+      {renderSortButton('name', 'Name')}
+      {renderSortButton('price', 'Price')}
+      {renderSortButton('createdAt', 'Date Added')}
+    </div>
+  )
 
   const handleAddToCart = (product, e) => {
     e.preventDefault()
@@ -363,32 +395,9 @@ const CatalogPage = () => {
               <div className="flex items-center gap-3">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Sort by:</span>
                 <div className="flex gap-2">
-                  <button
-                    onClick={() => handleSort('name')}
-                    className={`flex items-center gap-1 px-4 py-2 rounded-xl transition-all duration-200 text-sm font-medium ${
-                      sortBy === 'name'
-                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20'
-                        : 'bg-gray-100/80 dark:bg-gray-700/80 text-gray-700 dark:text-gray-300 hover:bg-gray-200/80 dark:hover:bg-gray-600/80'
-                    }`}
-                  >
-                    <span>Name</span>
-                    {sortBy === 'name' && (
-                      sortOrder === 'asc' ? <FaSortUp /> : <FaSortDown />
-                    )}
-                  </button>
-                  <button
-                    onClick={() => handleSort('price')}
-                    className={`flex items-center gap-1 px-4 py-2 rounded-xl transition-all duration-200 text-sm font-medium ${
-                      sortBy === 'price'
-                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20'
-                        : 'bg-gray-100/80 dark:bg-gray-700/80 text-gray-700 dark:text-gray-300 hover:bg-gray-200/80 dark:hover:bg-gray-600/80'
-                    }`}
-                  >
-                    <span>Price</span>
-                    {sortBy === 'price' && (
-                      sortOrder === 'asc' ? <FaSortUp /> : <FaSortDown />
-                    )}
-                  </button>
+                  {renderSortButton('name', 'Name')}
+                  {renderSortButton('price', 'Price')}
+                  {renderSortButton('createdAt', 'Date Added')}
                 </div>
               </div>
             </div>

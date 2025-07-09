@@ -33,8 +33,12 @@ public class ProductController {
             @RequestParam(defaultValue = "12") int size,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
-            @RequestParam(required = false) String query) {
-        Pageable pageable = PageRequest.of(page, size);
+            @RequestParam(required = false) String query,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortOrder) {
+        Pageable pageable = PageRequest.of(page, size, sortOrder.equalsIgnoreCase("asc") ? 
+            org.springframework.data.domain.Sort.by(sortBy).ascending() : 
+            org.springframework.data.domain.Sort.by(sortBy).descending());
         
         if (query != null && !query.trim().isEmpty()) {
             Page<Product> products = productService.searchProducts(query, pageable);
@@ -81,8 +85,12 @@ public class ProductController {
             @RequestParam(defaultValue = "12") int size,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
-            @RequestParam(required = false) String query) {
-        Pageable pageable = PageRequest.of(page, size);
+            @RequestParam(required = false) String query,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortOrder) {
+        Pageable pageable = PageRequest.of(page, size, sortOrder.equalsIgnoreCase("asc") ? 
+            org.springframework.data.domain.Sort.by(sortBy).ascending() : 
+            org.springframework.data.domain.Sort.by(sortBy).descending());
         
         if (query != null && !query.trim().isEmpty()) {
             Page<Product> products = productService.searchProductsByCategory(query, category, pageable);
