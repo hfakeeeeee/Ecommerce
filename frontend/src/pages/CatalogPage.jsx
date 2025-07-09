@@ -64,6 +64,7 @@ const CatalogPage = () => {
   const [priceRange, setPriceRange] = useState({ min: '', max: '' })
   const [debouncedPriceRange, setDebouncedPriceRange] = useState(priceRange)
   const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery)
   const [viewMode, setViewMode] = useState('grid') // grid or list
   const [showFilters, setShowFilters] = useState(false)
   const { products, loading, error, pagination, fetchProductsByCategory } = useProducts()
@@ -84,13 +85,21 @@ const CatalogPage = () => {
     return () => clearTimeout(handler)
   }, [priceRange])
 
+  // Debounce search query changes
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery)
+    }, 400)
+    return () => clearTimeout(handler)
+  }, [searchQuery])
+
   // Memoize the fetchProductsByCategory call
   const fetchProducts = useCallback(() => {
     const category = selectedCategory === 'all' ? '' : selectedCategory
     const minPrice = debouncedPriceRange.min ? parseFloat(debouncedPriceRange.min) : null
     const maxPrice = debouncedPriceRange.max ? parseFloat(debouncedPriceRange.max) : null
-    fetchProductsByCategory(category, currentPage, 12, minPrice, maxPrice, searchQuery)
-  }, [selectedCategory, currentPage, fetchProductsByCategory, debouncedPriceRange, searchQuery])
+    fetchProductsByCategory(category, currentPage, 12, minPrice, maxPrice, debouncedSearchQuery)
+  }, [selectedCategory, currentPage, fetchProductsByCategory, debouncedPriceRange, debouncedSearchQuery])
 
   useEffect(() => {
     fetchProducts()
@@ -99,7 +108,7 @@ const CatalogPage = () => {
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(0)
-  }, [selectedCategory, searchQuery, debouncedPriceRange])
+  }, [selectedCategory, debouncedSearchQuery, debouncedPriceRange])
 
   const handleAddToCart = (product, e) => {
     e.preventDefault()
