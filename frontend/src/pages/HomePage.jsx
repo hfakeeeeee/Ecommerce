@@ -26,6 +26,7 @@ import {
   FaFire,
   FaGem
 } from 'react-icons/fa'
+import BackToTop from '../components/BackToTop'
 
 export default function HomePage() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
@@ -132,6 +133,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900 overflow-hidden">
+      <BackToTop />
       {/* Simplified Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         {/* Floating Tech Icons - Reduced and Simplified */}
