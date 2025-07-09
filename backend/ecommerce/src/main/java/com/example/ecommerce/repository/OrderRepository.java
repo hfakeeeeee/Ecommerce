@@ -25,4 +25,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     
     @Query("SELECT o FROM Order o WHERE o.status = 'SHIPPED' AND o.orderDate <= :cutoffTime")
     List<Order> findShippedOrdersReadyForDelivery(@Param("cutoffTime") LocalDateTime cutoffTime);
+
+    List<Order> findByUser_Id(Long userId);
+    List<Order> findByOrderDateAfter(LocalDateTime date);
 } 

@@ -17,12 +17,15 @@ export const ProductProvider = ({ children }) => {
     size: 12
   });
 
-  const fetchProducts = useCallback(async (page = 0, size = 12, minPrice = null, maxPrice = null) => {
+  const fetchProducts = useCallback(async (page = 0, size = 12, minPrice = null, maxPrice = null, query = null) => {
     try {
       setLoading(true);
       let url = `/api/products?page=${page}&size=${size}`;
       if (minPrice !== null && maxPrice !== null) {
         url += `&minPrice=${minPrice}&maxPrice=${maxPrice}`;
+      }
+      if (query) {
+        url += `&query=${encodeURIComponent(query)}`;
       }
       
       const response = await fetch(url);
@@ -48,12 +51,15 @@ export const ProductProvider = ({ children }) => {
     }
   }, []);
 
-  const fetchProductsByCategory = useCallback(async (category, page = 0, size = 12, minPrice = null, maxPrice = null) => {
+  const fetchProductsByCategory = useCallback(async (category, page = 0, size = 12, minPrice = null, maxPrice = null, query = null) => {
     try {
       setLoading(true);
       let url = category ? `/api/products/category/${category}?page=${page}&size=${size}` : `/api/products?page=${page}&size=${size}`;
       if (minPrice !== null && maxPrice !== null) {
         url += `&minPrice=${minPrice}&maxPrice=${maxPrice}`;
+      }
+      if (query) {
+        url += `&query=${encodeURIComponent(query)}`;
       }
       
       const response = await fetch(url);

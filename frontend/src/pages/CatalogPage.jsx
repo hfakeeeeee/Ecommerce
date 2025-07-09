@@ -89,17 +89,17 @@ const CatalogPage = () => {
     const category = selectedCategory === 'all' ? '' : selectedCategory
     const minPrice = debouncedPriceRange.min ? parseFloat(debouncedPriceRange.min) : null
     const maxPrice = debouncedPriceRange.max ? parseFloat(debouncedPriceRange.max) : null
-    fetchProductsByCategory(category, currentPage, 12, minPrice, maxPrice)
-  }, [selectedCategory, currentPage, fetchProductsByCategory, debouncedPriceRange])
+    fetchProductsByCategory(category, currentPage, 12, minPrice, maxPrice, searchQuery)
+  }, [selectedCategory, currentPage, fetchProductsByCategory, debouncedPriceRange, searchQuery])
 
   useEffect(() => {
     fetchProducts()
   }, [fetchProducts])
 
-  // Reset to first page when category or sort changes
+  // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(0)
-  }, [selectedCategory, sortBy, sortOrder])
+  }, [selectedCategory, searchQuery, debouncedPriceRange])
 
   const handleAddToCart = (product, e) => {
     e.preventDefault()
@@ -117,15 +117,6 @@ const CatalogPage = () => {
     setCurrentPage(newPage)
   }
 
-  const handleSort = (field) => {
-    if (sortBy === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
-    } else {
-      setSortBy(field)
-      setSortOrder('asc')
-    }
-  }
-
   const handlePriceRangeChange = useCallback((type, value) => {
     setPriceRange(prev => ({
       ...prev,
@@ -139,37 +130,8 @@ const CatalogPage = () => {
     setSelectedCategory('all')
   }
 
-  // Sort products
-  const sortedProducts = products.sort((a, b) => {
-    let aValue, bValue
-    
-    if (sortBy === 'name') {
-      aValue = a.name.toLowerCase()
-      bValue = b.name.toLowerCase()
-    } else if (sortBy === 'price') {
-      aValue = a.price
-      bValue = b.price
-    } else {
-      return 0
-    }
-
-    if (sortOrder === 'asc') {
-      return aValue > bValue ? 1 : -1
-    } else {
-      return aValue < bValue ? 1 : -1
-    }
-  })
-
-  // Filter products by search query
-  const filteredProducts = useMemo(() => {
-    if (!searchQuery.trim()) return sortedProducts
-    const q = searchQuery.toLowerCase()
-    return sortedProducts.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        (p.description && p.description.toLowerCase().includes(q))
-    )
-  }, [sortedProducts, searchQuery])
+  // Remove client-side sorting and filtering since it's now handled by the server
+  const displayProducts = products
 
   // Modern Pagination component
   const Pagination = () => {
@@ -459,7 +421,7 @@ const CatalogPage = () => {
             ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
             : 'grid-cols-1'
         }`}>
-          {filteredProducts.map((product, index) => (
+          {displayProducts.map((product, index) => (
             <motion.div
               key={product.id}
               initial={{ opacity: 0, y: 20 }}
@@ -566,7 +528,7 @@ const CatalogPage = () => {
         <Pagination />
 
         {/* Enhanced Empty State */}
-        {filteredProducts.length === 0 && (
+        {displayProducts.length === 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

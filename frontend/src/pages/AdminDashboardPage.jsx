@@ -2,9 +2,11 @@ import React, { useEffect, useState, memo, useCallback } from 'react';
 import { 
   FaEdit, FaTrash, FaUserEdit, FaKey, FaUserShield, FaPlus, FaSpinner, 
   FaTimes, FaSave, FaSearch, FaImage, FaChevronLeft, FaChevronRight,
-  FaFilter, FaSort, FaDownload, FaUpload, FaBox, FaTruck, FaCheckCircle, FaTimesCircle, FaEye
+  FaFilter, FaSort, FaDownload, FaUpload, FaBox, FaTruck, FaCheckCircle, FaTimesCircle, FaEye,
+  FaChartLine, FaUsers, FaShoppingCart, FaDollarSign
 } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 const AdminDashboardPage = () => {
   const [users, setUsers] = useState([]);
@@ -23,6 +25,9 @@ const AdminDashboardPage = () => {
   const [actionType, setActionType] = useState('');
   const [toast, setToast] = useState({ message: '', type: '', visible: false });
   const [categories, setCategories] = useState([]);
+  const [showChart, setShowChart] = useState(true);
+  const [analytics, setAnalytics] = useState(null);
+  const [orderTrends, setOrderTrends] = useState([]);
 
   // Search and filter states
   const [userSearch, setUserSearch] = useState('');
@@ -64,6 +69,7 @@ const AdminDashboardPage = () => {
 
   useEffect(() => {
     fetchData();
+    fetchAnalytics();
   }, []);
 
   const fetchData = async () => {
@@ -113,6 +119,40 @@ const AdminDashboardPage = () => {
       showToast('Error fetching data', 'error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAnalytics = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      };
+
+      const [analyticsResponse, trendsResponse] = await Promise.all([
+        fetch('/api/analytics/dashboard', { headers }),
+        fetch('/api/analytics/orders-by-month', { headers })
+      ]);
+
+      if (!analyticsResponse.ok || !trendsResponse.ok) {
+        throw new Error('Failed to fetch analytics data');
+      }
+      
+      const analyticsData = await analyticsResponse.json();
+      const trendsData = await trendsResponse.json();
+      
+      setAnalytics(analyticsData);
+      
+      // Transform trends data for the chart
+      const transformedTrends = Object.entries(trendsData).map(([month, count]) => ({
+        month,
+        orders: count
+      }));
+      setOrderTrends(transformedTrends);
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+      showToast('Error fetching analytics data', 'error');
     }
   };
 
@@ -624,6 +664,150 @@ const AdminDashboardPage = () => {
               Manage users, products, and orders with ease
             </p>
           </div>
+
+          {/* Analytics Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mb-12"
+          >
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                  Analytics Overview
+                </h2>
+                <button
+                  onClick={() => setShowChart(!showChart)}
+                  className="flex items-center px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+                >
+                  <FaChartLine className="mr-2" />
+                  {showChart ? 'Hide Chart' : 'Show Chart'}
+                </button>
+              </div>
+              
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg transform transition-all duration-200"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-blue-100 text-sm uppercase tracking-wider">Total Orders</p>
+                      <h3 className="text-4xl font-bold mt-2">{analytics?.totalOrders || 0}</h3>
+                    </div>
+                    <div className="bg-white bg-opacity-20 p-3 rounded-lg backdrop-blur-lg">
+                      <FaShoppingCart className="w-8 h-8" />
+                    </div>
+                  </div>
+                  <div className="mt-4 text-blue-100 text-sm">
+                    All time orders
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg transform transition-all duration-200"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-purple-100 text-sm uppercase tracking-wider">Total Users</p>
+                      <h3 className="text-4xl font-bold mt-2">{analytics?.totalUsers || 0}</h3>
+                    </div>
+                    <div className="bg-white bg-opacity-20 p-3 rounded-lg backdrop-blur-lg">
+                      <FaUsers className="w-8 h-8" />
+                    </div>
+                  </div>
+                  <div className="mt-4 text-purple-100 text-sm">
+                    Active accounts
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg transform transition-all duration-200"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-green-100 text-sm uppercase tracking-wider">Total Revenue</p>
+                      <h3 className="text-4xl font-bold mt-2">${analytics?.totalRevenue?.toFixed(2) || '0.00'}</h3>
+                    </div>
+                    <div className="bg-white bg-opacity-20 p-3 rounded-lg backdrop-blur-lg">
+                      <FaDollarSign className="w-8 h-8" />
+                    </div>
+                  </div>
+                  <div className="mt-4 text-green-100 text-sm">
+                    Gross revenue
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-6 text-white shadow-lg transform transition-all duration-200"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-red-100 text-sm uppercase tracking-wider">Recent Orders</p>
+                      <h3 className="text-4xl font-bold mt-2">{analytics?.recentOrders || 0}</h3>
+                    </div>
+                    <div className="bg-white bg-opacity-20 p-3 rounded-lg backdrop-blur-lg">
+                      <FaChartLine className="w-8 h-8" />
+                    </div>
+                  </div>
+                  <div className="mt-4 text-red-100 text-sm">
+                    Last 30 days
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Orders Trend Chart */}
+              <AnimatePresence>
+                {showChart && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="bg-white dark:bg-gray-700 rounded-xl p-6 shadow-lg overflow-hidden"
+                  >
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Orders Trend</h3>
+                    <div className="h-[400px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={orderTrends}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                          <XAxis 
+                            dataKey="month" 
+                            stroke="#6B7280"
+                            tick={{ fill: '#6B7280' }}
+                          />
+                          <YAxis 
+                            stroke="#6B7280"
+                            tick={{ fill: '#6B7280' }}
+                          />
+                          <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: '#1F2937',
+                              border: 'none',
+                              borderRadius: '8px',
+                              color: '#F3F4F6'
+                            }}
+                          />
+                          <Legend />
+                          <Bar 
+                            dataKey="orders" 
+                            fill="#8B5CF6" 
+                            name="Orders"
+                            radius={[4, 4, 0, 0]}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </motion.div>
 
           {/* User Management Section */}
           <motion.div

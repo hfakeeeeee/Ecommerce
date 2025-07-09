@@ -36,7 +36,7 @@ public class SecurityConfig {
     @Value("${frontend.host:localhost}")
     private String frontendHost;
 
-    @Value("${frontend.port:3000}")
+    @Value("${frontend.port:80}")
     private String frontendPort;
 
     @Value("${cors.additional.origins:}")
@@ -55,8 +55,6 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/products/**").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
-                .requestMatchers("/api/favorites/**").authenticated()
-                .requestMatchers("/api/cart/**").authenticated()
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> 
@@ -71,12 +69,14 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // Build the primary frontend URL
-        String primaryFrontendUrl = frontendHost + ":" + frontendPort;
-        
-        // Create list of allowed origins
+        // Build the list of allowed origins
         java.util.List<String> allowedOriginsList = new java.util.ArrayList<>();
-        allowedOriginsList.add(primaryFrontendUrl);
+        allowedOriginsList.add("http://localhost");
+        allowedOriginsList.add("http://localhost:80");
+        allowedOriginsList.add("http://localhost:5173");
+        allowedOriginsList.add("http://127.0.0.1");
+        allowedOriginsList.add("http://127.0.0.1:80");
+        allowedOriginsList.add("http://127.0.0.1:5173");
         
         // Add additional origins if provided
         if (additionalOrigins != null && !additionalOrigins.trim().isEmpty()) {
@@ -98,8 +98,7 @@ public class SecurityConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
-        logger.info("CORS configuration applied with primary origin: {} and additional origins: {}", 
-                   primaryFrontendUrl, allowedOriginsList);
+        logger.info("CORS configuration applied with origins: {}", allowedOriginsList);
         return source;
     }
 

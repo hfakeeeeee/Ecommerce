@@ -145,4 +145,18 @@ public class ProductService {
             throw new RuntimeException("Product not found with ID: " + productId);
         }
     }
+
+    public Page<Product> searchProducts(String query, Pageable pageable) {
+        if (query == null || query.trim().isEmpty()) {
+            return getAllProductsPaginated(pageable);
+        }
+        return productRepository.searchProducts(query.trim(), pageable);
+    }
+
+    public Page<Product> searchProductsByCategory(String query, String category, Pageable pageable) {
+        if (query == null || query.trim().isEmpty()) {
+            return getProductsByCategoryPaginated(category, pageable);
+        }
+        return productRepository.searchProductsByCategory(query.trim(), category, pageable);
+    }
 } 

@@ -32,10 +32,14 @@ public class ProductController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size,
             @RequestParam(required = false) BigDecimal minPrice,
-            @RequestParam(required = false) BigDecimal maxPrice) {
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) String query) {
         Pageable pageable = PageRequest.of(page, size);
         
-        if (minPrice != null && maxPrice != null) {
+        if (query != null && !query.trim().isEmpty()) {
+            Page<Product> products = productService.searchProducts(query, pageable);
+            return ResponseEntity.ok(products);
+        } else if (minPrice != null && maxPrice != null) {
             Page<Product> products = productService.getProductsByPriceRange(minPrice, maxPrice, pageable);
             return ResponseEntity.ok(products);
         } else {
@@ -76,10 +80,14 @@ public class ProductController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size,
             @RequestParam(required = false) BigDecimal minPrice,
-            @RequestParam(required = false) BigDecimal maxPrice) {
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) String query) {
         Pageable pageable = PageRequest.of(page, size);
         
-        if (minPrice != null && maxPrice != null) {
+        if (query != null && !query.trim().isEmpty()) {
+            Page<Product> products = productService.searchProductsByCategory(query, category, pageable);
+            return ResponseEntity.ok(products);
+        } else if (minPrice != null && maxPrice != null) {
             Page<Product> products = productService.getProductsByCategoryAndPriceRange(category, minPrice, maxPrice, pageable);
             return ResponseEntity.ok(products);
         } else {
