@@ -31,7 +31,12 @@ services:
       APP_URL: ${APP_URL}
       FRONTEND_HOST: ${FRONTEND_HOST}
       FRONTEND_PORT: ${FRONTEND_PORT}
-      CORS_ADDITIONAL_ORIGINS: ${CORS_ADDITIONAL_ORIGINS}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      JWT_SECRET: ${JWT_SECRET}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASS: ${MAIL_PASS}
     volumes:
       - uploads_data:/app/uploads
     ports:
