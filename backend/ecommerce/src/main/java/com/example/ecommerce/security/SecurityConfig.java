@@ -19,6 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.http.HttpMethod;
 
 import java.util.Arrays;
 
@@ -33,14 +34,8 @@ public class SecurityConfig {
     @Value("${app.upload.dir:${user.home}}")
     private String uploadDir;
 
-    @Value("${frontend.host:localhost}")
+    @Value("${frontend.url}")
     private String frontendHost;
-
-    @Value("${frontend.port:80}")
-    private String frontendPort;
-
-    @Value("${cors.additional.origins:}")
-    private String additionalOrigins;
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
@@ -55,6 +50,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/products/**").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow all OPTIONS requests
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> 
@@ -71,34 +67,25 @@ public class SecurityConfig {
         
         // Build the list of allowed origins
         java.util.List<String> allowedOriginsList = new java.util.ArrayList<>();
-        allowedOriginsList.add("http://localhost");
-        allowedOriginsList.add("http://localhost:80");
-        allowedOriginsList.add("http://localhost:5173");
-        allowedOriginsList.add("http://127.0.0.1");
-        allowedOriginsList.add("http://127.0.0.1:80");
-        allowedOriginsList.add("http://127.0.0.1:5173");
         
-        // Add additional origins if provided
-        if (additionalOrigins != null && !additionalOrigins.trim().isEmpty()) {
-            String[] additionalOriginsArray = additionalOrigins.split(",");
-            for (String origin : additionalOriginsArray) {
-                String trimmedOrigin = origin.trim();
-                if (!trimmedOrigin.isEmpty()) {
-                    allowedOriginsList.add(trimmedOrigin);
-                }
-            }
-        }
+        allowedOriginsList.add(frontendHost);
+        
+        // Add common development origins
+        allowedOriginsList.add("http://localhost");
+        allowedOriginsList.add("http://127.0.0.1");
         
         configuration.setAllowedOrigins(allowedOriginsList);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"));
-        configuration.setExposedHeaders(Arrays.asList("Authorization"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         logger.info("CORS configuration applied with origins: {}", allowedOriginsList);
+        logger.info("CORS configuration - allowed methods: {}", configuration.getAllowedMethods());
+        logger.info("CORS configuration - allowed headers: {}", configuration.getAllowedHeaders());
+        logger.info("CORS configuration - allow credentials: {}", configuration.getAllowCredentials());
         return source;
     }
 

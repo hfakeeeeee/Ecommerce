@@ -17,23 +17,13 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${app.upload.dir:${user.home}}")
     private String uploadDir;
 
-    @Value("${CORS_ADDITIONAL_ORIGINS:http://localhost:80,http://127.0.0.1:80}")
-    private String additionalOrigins;
+    @Value("${frontend.url}")
+    private String frontendHost;
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         List<String> allowedOrigins = new ArrayList<>();
-        allowedOrigins.add("http://localhost:80");
-        allowedOrigins.add("http://localhost:3000");
-        allowedOrigins.add("http://localhost:5173");
-        
-        // Add additional origins from configuration
-        for (String origin : additionalOrigins.split(",")) {
-            String trimmedOrigin = origin.trim();
-            if (!trimmedOrigin.isEmpty()) {
-                allowedOrigins.add(trimmedOrigin);
-            }
-        }
+        allowedOrigins.add(frontendHost);
 
         registry.addMapping("/**")
                 .allowedOrigins(allowedOrigins.toArray(new String[0]))

@@ -14,7 +14,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "http://localhost:5173")
 public class PaymentController {
 
     private static final Logger logger = LoggerFactory.getLogger(PaymentController.class);
