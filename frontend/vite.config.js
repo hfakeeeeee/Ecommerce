@@ -9,13 +9,13 @@ export default defineConfig({
     port: 80,
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: process.env.BACKEND_URL || 'http://localhost:8080',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path
       },
       '/uploads': {
-        target: 'http://localhost:8080',
+        target: process.env.BACKEND_URL || 'http://localhost:8080',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path
