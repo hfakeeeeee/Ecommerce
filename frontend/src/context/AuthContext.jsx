@@ -4,6 +4,9 @@ import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 
+// Get API base URL from environment variable or use default
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
+
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [token, setToken] = useState(localStorage.getItem('token'));
@@ -20,7 +23,7 @@ export function AuthProvider({ children }) {
 
     const checkAuthStatus = async () => {
         try {
-            const response = await fetch('/api/auth/verify', {
+            const response = await fetch(`${API_BASE_URL}/api/auth/verify`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -53,7 +56,7 @@ export function AuthProvider({ children }) {
 
     const login = async (email, password) => {
         try {
-            const response = await fetch('/api/auth/login', {
+            const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -97,7 +100,7 @@ export function AuthProvider({ children }) {
 
     const register = async (userData) => {
         try {
-            const response = await fetch('/api/auth/register', {
+            const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -122,7 +125,7 @@ export function AuthProvider({ children }) {
     const updateProfile = async (profileData) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('/api/auth/profile', {
+            const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -154,7 +157,7 @@ export function AuthProvider({ children }) {
     const updatePassword = async (currentPassword, newPassword) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('/api/auth/change-password', {
+            const response = await fetch(`${API_BASE_URL}/api/auth/change-password`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -177,7 +180,7 @@ export function AuthProvider({ children }) {
 
     const resetPassword = async (email) => {
         try {
-            const response = await fetch('/api/auth/reset-password', {
+            const response = await fetch(`${API_BASE_URL}/api/auth/reset-password`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

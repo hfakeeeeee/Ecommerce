@@ -4,6 +4,9 @@ import Toast from '../components/Toast'
 
 const CartContext = createContext();
 
+// Get API base URL from environment variable or use default
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
+
 export function CartProvider({ children }) {
   const [items, setItems] = useState([]);
   const [notification, setNotification] = useState({ message: '', visible: false });
@@ -28,7 +31,7 @@ export function CartProvider({ children }) {
 
     try {
       console.log('CartContext: Fetching cart with token:', token.substring(0, 20) + '...');
-      const response = await fetch('/api/cart', {
+      const response = await fetch(`${API_BASE_URL}/api/cart`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -69,7 +72,7 @@ export function CartProvider({ children }) {
     }
 
     try {
-      const response = await fetch('/api/cart/add', {
+      const response = await fetch(`${API_BASE_URL}/api/cart/add`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -102,7 +105,7 @@ export function CartProvider({ children }) {
     if (!token || !user) return;
 
     try {
-      const response = await fetch(`/api/cart/remove/${productId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/cart/remove/${productId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -127,7 +130,7 @@ export function CartProvider({ children }) {
     if (!token || !user) return;
 
     try {
-      const response = await fetch('/api/cart/update-quantity', {
+      const response = await fetch(`${API_BASE_URL}/api/cart/update-quantity`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -153,7 +156,7 @@ export function CartProvider({ children }) {
     if (!token || !user) return;
 
     try {
-      const response = await fetch('/api/cart/clear', {
+      const response = await fetch(`${API_BASE_URL}/api/cart/clear`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

@@ -2,6 +2,9 @@ import React, { createContext, useState, useContext, useEffect, useCallback } fr
 
 const ProductContext = createContext();
 
+// Get API base URL from environment variable or use default
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
+
 export const useProducts = () => {
   return useContext(ProductContext);
 };
@@ -20,7 +23,7 @@ export const ProductProvider = ({ children }) => {
   const fetchProducts = useCallback(async (page = 0, size = 12, minPrice = null, maxPrice = null, query = null, sortBy = 'name', sortOrder = 'asc') => {
     try {
       setLoading(true);
-      let url = `/api/products?page=${page}&size=${size}&sortBy=${sortBy}&sortOrder=${sortOrder}`;
+      let url = `${API_BASE_URL}/api/products?page=${page}&size=${size}&sortBy=${sortBy}&sortOrder=${sortOrder}`;
       if (minPrice !== null && maxPrice !== null) {
         url += `&minPrice=${minPrice}&maxPrice=${maxPrice}`;
       }
@@ -54,7 +57,7 @@ export const ProductProvider = ({ children }) => {
   const fetchProductsByCategory = useCallback(async (category, page = 0, size = 12, minPrice = null, maxPrice = null, query = null, sortBy = 'name', sortOrder = 'asc') => {
     try {
       setLoading(true);
-      let url = category ? `/api/products/category/${category}?page=${page}&size=${size}&sortBy=${sortBy}&sortOrder=${sortOrder}` : `/api/products?page=${page}&size=${size}&sortBy=${sortBy}&sortOrder=${sortOrder}`;
+      let url = category ? `${API_BASE_URL}/api/products/category/${category}?page=${page}&size=${size}&sortBy=${sortBy}&sortOrder=${sortOrder}` : `${API_BASE_URL}/api/products?page=${page}&size=${size}&sortBy=${sortBy}&sortOrder=${sortOrder}`;
       if (minPrice !== null && maxPrice !== null) {
         url += `&minPrice=${minPrice}&maxPrice=${maxPrice}`;
       }

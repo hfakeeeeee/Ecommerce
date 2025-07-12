@@ -3,6 +3,9 @@ import { useAuth } from './AuthContext';
 
 const ChatContext = createContext();
 
+// Get API base URL from environment variable or use default
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
+
 export const useChat = () => {
   return useContext(ChatContext);
 };
@@ -20,7 +23,7 @@ export const ChatProvider = ({ children }) => {
 
   const fetchChatHistory = async () => {
     try {
-      const response = await fetch('/api/chat/history', {
+      const response = await fetch(`${API_BASE_URL}/api/chat/history`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -36,7 +39,7 @@ export const ChatProvider = ({ children }) => {
 
   const sendMessage = async (message) => {
     try {
-      const response = await fetch('/api/chat/send', {
+      const response = await fetch(`${API_BASE_URL}/api/chat/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

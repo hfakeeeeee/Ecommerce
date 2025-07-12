@@ -3,6 +3,9 @@ import { useAuth } from './AuthContext';
 
 const FavouritesContext = createContext();
 
+// Get API base URL from environment variable or use default
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
+
 export function FavouritesProvider({ children }) {
   const [favourites, setFavourites] = useState([]);
   const auth = useAuth();
@@ -22,7 +25,7 @@ export function FavouritesProvider({ children }) {
     if (!token) return;
 
     try {
-      const response = await fetch('/api/favorites', {
+      const response = await fetch(`${API_BASE_URL}/api/favorites`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -47,7 +50,7 @@ export function FavouritesProvider({ children }) {
     }
 
     try {
-      const response = await fetch('/api/favorites/add', {
+      const response = await fetch(`${API_BASE_URL}/api/favorites/add`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -72,7 +75,7 @@ export function FavouritesProvider({ children }) {
     if (!token || !user) return;
 
     try {
-      const response = await fetch(`/api/favorites/${productId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/favorites/${productId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -114,7 +117,7 @@ export function FavouritesProvider({ children }) {
     if (!token || !user) return false;
 
     try {
-      const response = await fetch(`/api/favorites/check/${productId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/favorites/check/${productId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
