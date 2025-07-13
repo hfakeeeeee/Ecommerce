@@ -34,10 +34,9 @@ const getCardStyle = (isDark) => ({
 });
 
 // Checkout form component that uses Stripe
-function CheckoutForm({ shippingInfo, setLoading, showToast, clearCart, navigate, token, isDark, shippingFee, getCartTotalWithShipping, validateShippingInfo }) {
+function CheckoutForm({ shippingInfo, setLoading, showToast, removeSelectedItems, navigate, token, isDark, shippingFee, getCartTotalWithShipping, validateShippingInfo, selectedItems }) {
     const stripe = useStripe();
     const elements = useElements();
-    const { items, getCartTotal } = useCart();
     const [isProcessing, setIsProcessing] = useState(false);
 
     useEffect(() => {
@@ -80,7 +79,7 @@ function CheckoutForm({ shippingInfo, setLoading, showToast, clearCart, navigate
                     amount: getCartTotalWithShipping() * 100, // Convert to cents
                     currency: 'usd',
                     shipping: shippingInfo,
-                    items: items.map(item => ({
+                    items: selectedItems.map(item => ({
                         id: item.productId,
                         name: item.productName,
                         price: item.price,
@@ -123,7 +122,11 @@ function CheckoutForm({ shippingInfo, setLoading, showToast, clearCart, navigate
             }
 
             if (paymentIntent.status === 'succeeded') {
-                clearCart();
+                // Remove only the selected items from cart after successful payment
+                const selectedProductIds = selectedItems.map(item => item.productId);
+                await removeSelectedItems(selectedProductIds);
+                // Clear session storage
+                sessionStorage.removeItem('selectedCartItems');
                 showToast('Payment successful! Thank you for your purchase.', 'success');
                 setTimeout(() => {
                     navigate('/');
@@ -172,11 +175,12 @@ function CheckoutForm({ shippingInfo, setLoading, showToast, clearCart, navigate
 
 export default function PaymentPage() {
     const navigate = useNavigate();
-    const { items, getCartTotal, clearCart } = useCart();
+    const { items, getCartTotal, removeSelectedItems } = useCart();
     const { user, token } = useAuth();
     const [loading, setLoading] = useState(false);
     const [toast, setToast] = useState({ message: '', type: '', visible: false });
     const [mounted, setMounted] = useState(false);
+    const [selectedItems, setSelectedItems] = useState([]);
 
     useEffect(() => {
         if (!token) {
@@ -184,6 +188,24 @@ export default function PaymentPage() {
             return;
         }
     }, [token, navigate]);
+
+    // Load selected items from session storage
+    useEffect(() => {
+        const storedSelectedItems = sessionStorage.getItem('selectedCartItems');
+        if (storedSelectedItems) {
+            try {
+                const parsedItems = JSON.parse(storedSelectedItems);
+                setSelectedItems(parsedItems);
+            } catch (error) {
+                console.error('Error parsing selected cart items:', error);
+                // Fallback to all cart items if parsing fails
+                setSelectedItems(items);
+            }
+        } else {
+            // If no selected items stored, use all cart items (fallback)
+            setSelectedItems(items);
+        }
+    }, [items]);
 
     const [shippingInfo, setShippingInfo] = useState({
         firstName: '',
@@ -283,21 +305,27 @@ export default function PaymentPage() {
     if (shippingInfo.country === 'US') shippingFee = 50.0;
     else if (shippingInfo.country === 'MY' || shippingInfo.country === 'SG') shippingFee = 20.0;
     else shippingFee = 0;
-    const getCartTotalWithShipping = () => getCartTotal() + shippingFee;
+
+    // Calculate totals based on selected items
+    const getSelectedItemsTotal = () => {
+        return selectedItems.reduce((total, item) => total + item.price * item.quantity, 0);
+    };
+
+    const getCartTotalWithShipping = () => getSelectedItemsTotal() + shippingFee;
 
     // Detect dark mode
     const isDark = document.documentElement.classList.contains('dark');
 
-    if (items.length === 0) {
+    if (selectedItems.length === 0) {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-7xl mx-auto text-center">
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Your cart is empty</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">No items selected for checkout</h2>
                     <button
-                        onClick={() => navigate('/catalog')}
+                        onClick={() => navigate('/cart')}
                         className="inline-block bg-indigo-600 text-white px-6 py-3 rounded-md hover:bg-indigo-700 transition-colors"
                     >
-                        Continue Shopping
+                        Back to Cart
                     </button>
                 </div>
             </div>
@@ -326,7 +354,7 @@ export default function PaymentPage() {
                         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
                             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Order Summary</h2>
                             <div className="space-y-4">
-                                {items.map((item) => (
+                                {selectedItems.map((item) => (
                                     <div key={item.productId} className="flex items-center space-x-4">
                                         <img src={item.productImage} alt={item.productName} className="w-16 h-16 object-cover rounded" />
                                         <div className="flex-1">
@@ -341,7 +369,7 @@ export default function PaymentPage() {
                                 <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
                                     <div className="flex justify-between">
                                         <span className="text-base font-medium text-gray-900 dark:text-white">Subtotal</span>
-                                        <span className="text-base font-medium text-gray-900 dark:text-white">${getCartTotal().toFixed(2)}</span>
+                                        <span className="text-base font-medium text-gray-900 dark:text-white">${getSelectedItemsTotal().toFixed(2)}</span>
                                     </div>
                                     <div className="flex justify-between mt-2">
                                         <span className="text-base font-medium text-gray-900 dark:text-white">Shipping</span>
@@ -463,13 +491,14 @@ export default function PaymentPage() {
                                     shippingInfo={shippingInfo}
                                     setLoading={setLoading}
                                     showToast={showToast}
-                                    clearCart={clearCart}
+                                    removeSelectedItems={removeSelectedItems}
                                     navigate={navigate}
                                     token={token}
                                     isDark={isDark}
                                     shippingFee={shippingFee}
                                     getCartTotalWithShipping={getCartTotalWithShipping}
                                     validateShippingInfo={validateShippingInfo}
+                                    selectedItems={selectedItems}
                                 />
                             </Elements>
                         </div>

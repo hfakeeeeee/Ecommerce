@@ -176,6 +176,34 @@ export function CartProvider({ children }) {
     }
   };
 
+  const removeSelectedItems = async (productIds) => {
+    if (!token || !user || !productIds || productIds.length === 0) return;
+
+    try {
+      // Remove each selected item from the cart
+      for (const productId of productIds) {
+        const response = await fetch(`${API_BASE_URL}/api/cart/remove/${productId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || `Failed to remove item ${productId}`);
+        }
+      }
+
+      // Refresh cart to get updated state
+      await fetchCart();
+      showNotification('Selected items removed from cart');
+    } catch (error) {
+      console.error('Error removing selected items from cart:', error);
+      showNotification('Error removing selected items from cart');
+    }
+  };
+
   const getCartTotal = () => {
     return items.reduce((total, item) => total + item.price * item.quantity, 0);
   };
@@ -192,6 +220,7 @@ export function CartProvider({ children }) {
         removeFromCart,
         updateQuantity,
         clearCart,
+        removeSelectedItems,
         getCartTotal,
         getCartItemCount,
         notification
