@@ -1,12 +1,13 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaCheck, FaTimes, FaShoppingCart } from 'react-icons/fa'
+import { FaCheck, FaTimes, FaShoppingCart, FaBan } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
 
 export default function Toast({ message, type = 'success', isVisible, onClose, action }) {
   const icons = {
     success: <FaCheck className="w-5 h-5 text-green-500" />,
     error: <FaTimes className="w-5 h-5 text-red-500" />,
-    cart: <FaShoppingCart className="w-5 h-5 text-indigo-500" />
+    cart: <FaShoppingCart className="w-5 h-5 text-indigo-500" />,
+    ban: <FaBan className="w-5 h-5 text-red-500" />
   }
 
   return (

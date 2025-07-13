@@ -9,7 +9,7 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
 
 export function FavouritesProvider({ children }) {
   const [favourites, setFavourites] = useState([]);
-  const [notification, setNotification] = useState({ message: '', visible: false });
+  const [notification, setNotification] = useState({ message: '', visible: false, type: 'success' });
   const auth = useAuth();
   const token = auth?.token;
   const user = auth?.user;
@@ -45,16 +45,16 @@ export function FavouritesProvider({ children }) {
     }
   };
 
-  const showNotification = (message) => {
-    setNotification({ message, visible: true });
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, visible: true, type });
     setTimeout(() => {
-      setNotification({ message: '', visible: false });
+      setNotification({ message: '', visible: false, type: 'success' });
     }, 3000);
   };
 
   const addToFavourites = async (product) => {
     if (!token || !user) {
-      showNotification('Please log in to add items to favourites');
+      showNotification('Please log in to add items to favourites', 'ban');
       return;
     }
 
@@ -75,7 +75,7 @@ export function FavouritesProvider({ children }) {
         console.error('Failed to add favourite:', response.status);
         const errorData = await response.json();
         console.error('Error details:', errorData);
-        showNotification('Error adding to favourites');
+        showNotification('Error adding to favourites', 'error');
       }
     } catch (error) {
       console.error('Error adding to favourites:', error);
@@ -101,7 +101,7 @@ export function FavouritesProvider({ children }) {
         console.error('Failed to remove favourite:', response.status);
         const errorData = await response.json();
         console.error('Error details:', errorData);
-        showNotification('Error removing from favourites');
+        showNotification('Error removing from favourites', 'error');
       }
     } catch (error) {
       console.error('Error removing from favourites:', error);
@@ -110,7 +110,7 @@ export function FavouritesProvider({ children }) {
 
   const toggleFavourite = async (product) => {
     if (!token || !user) {
-      showNotification('Please log in to manage favourites');
+      showNotification('Please log in to manage favourites', 'ban');
       return;
     }
 
@@ -164,9 +164,9 @@ export function FavouritesProvider({ children }) {
       {children}
       <Toast
         message={notification.message}
-        type="success"
+        type={notification.type}
         isVisible={notification.visible}
-        onClose={() => setNotification({ message: '', visible: false })}
+        onClose={() => setNotification({ message: '', visible: false, type: 'success' })}
       />
     </FavouritesContext.Provider>
   );
