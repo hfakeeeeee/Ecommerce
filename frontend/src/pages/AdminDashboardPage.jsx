@@ -9,7 +9,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { useAuth } from '../context/AuthContext';
-import { getImageUrl, getPlaceholderUrl } from '../utils/imageUtils';
+import { getImageUrl, getPlaceholderUrl, createDataUrlPlaceholder } from '../utils/imageUtils';
 import { useNavigate } from 'react-router-dom';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
@@ -1037,7 +1037,10 @@ const AdminDashboardPage = () => {
                                   src={getImageUrl(user.imageUrl)}
                                   alt={user.firstName + ' ' + user.lastName}
                                     className="h-full w-full rounded-full object-cover object-center border-2 border-gray-200 dark:border-gray-600"
-                                  onError={e => { e.target.src = getPlaceholderUrl(); }}
+                                  onError={e => { 
+                                    e.target.onerror = null; // Prevent infinite loop
+                                    e.target.src = createDataUrlPlaceholder('No Image', 80, 80);
+                                  }}
                                 />
                               ) : (
                                   <div className="h-12 w-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-lg">
@@ -1368,7 +1371,10 @@ const AdminDashboardPage = () => {
                                       src={getImageUrl(order.user.imageUrl)}
                                       alt={order.user?.firstName + ' ' + order.user?.lastName}
                                       className="h-10 w-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
-                                      onError={e => { e.target.src = getPlaceholderUrl(); }}
+                                      onError={e => { 
+                                      e.target.onerror = null; // Prevent infinite loop
+                                      e.target.src = createDataUrlPlaceholder('No Image', 80, 80);
+                                    }}
                                     />
                                   ) : (
                                     <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
@@ -1521,7 +1527,10 @@ const AdminDashboardPage = () => {
                       src={getImageUrl(userForm.imageUrl)}
                       alt="Avatar Preview"
                       className="w-full h-full object-cover"
-                      onError={e => { e.target.src = getPlaceholderUrl(); }}
+                      onError={e => { 
+                        e.target.onerror = null; // Prevent infinite loop
+                        e.target.src = createDataUrlPlaceholder('No Image', 80, 80);
+                      }}
                     />
                   </div>
                 )}
