@@ -92,13 +92,23 @@ const CatalogPage = () => {
     return () => clearTimeout(handler)
   }, [searchQuery])
 
+  const categoryIdToDisplayName = (id) => {
+    if (id === 'smart-home') return 'Smart Home';
+    if (id === 'laptops') return 'Laptops';
+    if (id === 'smartphones') return 'Smartphones';
+    if (id === 'audio') return 'Audio';
+    if (id === 'gaming') return 'Gaming';
+    if (id === 'wearables') return 'Wearables';
+    return '';
+  };
+
   // Memoize the fetchProductsByCategory call
   const fetchProducts = useCallback(() => {
-    const category = selectedCategory === 'all' ? '' : selectedCategory
-    const minPrice = debouncedPriceRange.min ? parseFloat(debouncedPriceRange.min) : null
-    const maxPrice = debouncedPriceRange.max ? parseFloat(debouncedPriceRange.max) : null
-    fetchProductsByCategory(category, currentPage, 12, minPrice, maxPrice, debouncedSearchQuery, sortBy, sortOrder)
-  }, [selectedCategory, currentPage, fetchProductsByCategory, debouncedPriceRange, debouncedSearchQuery, sortBy, sortOrder])
+    const category = selectedCategory === 'all' ? '' : categoryIdToDisplayName(selectedCategory);
+    const minPrice = debouncedPriceRange.min ? parseFloat(debouncedPriceRange.min) : null;
+    const maxPrice = debouncedPriceRange.max ? parseFloat(debouncedPriceRange.max) : null;
+    fetchProductsByCategory(category, currentPage, 12, minPrice, maxPrice, debouncedSearchQuery, sortBy, sortOrder);
+  }, [selectedCategory, currentPage, fetchProductsByCategory, debouncedPriceRange, debouncedSearchQuery, sortBy, sortOrder]);
 
   useEffect(() => {
     fetchProducts()
@@ -135,9 +145,7 @@ const CatalogPage = () => {
   // Add this to your JSX where you want the sort buttons to appear
   const sortButtons = (
     <div className="flex gap-4 mb-6">
-      {renderSortButton('name', 'Name')}
       {renderSortButton('price', 'Price')}
-      {renderSortButton('createdAt', 'Date Added')}
     </div>
   )
 
@@ -370,9 +378,7 @@ const CatalogPage = () => {
               <div className="flex items-center gap-3">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Sort by:</span>
                 <div className="flex gap-2">
-                  {renderSortButton('name', 'Name')}
                   {renderSortButton('price', 'Price')}
-                  {renderSortButton('createdAt', 'Date Added')}
                 </div>
               </div>
             </div>
