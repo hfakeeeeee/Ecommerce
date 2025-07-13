@@ -3,10 +3,11 @@ import {
   FaEdit, FaTrash, FaUserEdit, FaKey, FaUserShield, FaPlus, FaSpinner, 
   FaTimes, FaSave, FaSearch, FaImage, FaChevronLeft, FaChevronRight,
   FaFilter, FaSort, FaDownload, FaUpload, FaBox, FaTruck, FaCheckCircle, FaTimesCircle, FaEye,
-  FaChartLine, FaUsers, FaShoppingCart, FaDollarSign
+  FaChartLine, FaUsers, FaShoppingCart, FaDollarSign, FaCrown, FaStar, FaArrowUp, FaArrowDown,
+  FaCalendarAlt, FaClock, FaMapMarkerAlt, FaPhone, FaEnvelope, FaGlobe, FaShieldAlt
 } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { useAuth } from '../context/AuthContext';
 import { getImageUrl, getPlaceholderUrl } from '../utils/imageUtils';
 
@@ -32,6 +33,7 @@ const AdminDashboardPage = () => {
   const [showChart, setShowChart] = useState(true);
   const [analytics, setAnalytics] = useState(null);
   const [orderTrends, setOrderTrends] = useState([]);
+  const [activeTab, setActiveTab] = useState('overview');
 
   // Search and filter states
   const [userSearch, setUserSearch] = useState('');
@@ -205,8 +207,8 @@ const AdminDashboardPage = () => {
     );
   }, [filteredProducts, currentProductPage, itemsPerPage]);
 
-  const totalUserPages = React.useMemo(() => Math.ceil(filteredUsers.length / itemsPerPage), [filteredUsers.length, itemsPerPage]);
-  const totalProductPages = React.useMemo(() => Math.ceil(filteredProducts.length / itemsPerPage), [filteredProducts.length, itemsPerPage]);
+  const totalUserPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const totalProductPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
   // Order filtering and pagination
   const sortedOrders = React.useMemo(() => {
@@ -233,7 +235,7 @@ const AdminDashboardPage = () => {
     );
   }, [filteredOrders, currentOrderPage, itemsPerPage]);
 
-  const totalOrderPages = React.useMemo(() => Math.ceil(filteredOrders.length / itemsPerPage), [filteredOrders.length, itemsPerPage]);
+  const totalOrderPages = Math.ceil(filteredOrders.length / itemsPerPage);
 
   // Image handling - URL preview
   const handleImageUrlChange = (e) => {
@@ -643,667 +645,651 @@ const AdminDashboardPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
-        <div className="flex items-center space-x-3">
-          <FaSpinner className="animate-spin text-blue-600 dark:text-blue-400 text-2xl" />
-          <span className="text-gray-600 dark:text-gray-300 text-lg">Loading admin dashboard...</span>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex flex-col items-center space-y-4"
+        >
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-purple-600 rounded-full animate-spin" style={{ animationDelay: '0.5s' }}></div>
+          </div>
+          <div className="text-center">
+            <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Loading Dashboard</h3>
+            <p className="text-gray-500 dark:text-gray-400">Preparing your admin workspace...</p>
+          </div>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 sticky top-0 z-40"
+      >
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <FaCrown className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    Admin Dashboard
+                  </h1>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Manage your e-commerce platform</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Quick Stats */}
+            <div className="hidden lg:flex items-center space-x-6">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">{analytics?.totalOrders || 0}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Total Orders</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">{analytics?.totalUsers || 0}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Users</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">${analytics?.totalRevenue?.toFixed(2) || '0.00'}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Revenue</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Navigation Tabs */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-7xl mx-auto"
+          transition={{ delay: 0.1 }}
+          className="mb-8"
         >
-          <div className="text-center mb-12">
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
-              Admin Dashboard
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 text-lg">
-              Manage users, products, and orders with ease
-            </p>
+          <div className="flex flex-wrap gap-2 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl p-2 shadow-lg border border-gray-200/50 dark:border-gray-700/50">
+            {[
+              { id: 'overview', label: 'Overview', icon: FaChartLine },
+              { id: 'users', label: 'Users', icon: FaUsers },
+              { id: 'products', label: 'Products', icon: FaBox },
+              { id: 'orders', label: 'Orders', icon: FaShoppingCart }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+                  activeTab === tab.id
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transform scale-105'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-gray-700/50'
+                }`}
+              >
+                <tab.icon className="w-4 h-4" />
+                <span>{tab.label}</span>
+              </button>
+            ))}
           </div>
+        </motion.div>
 
-          {/* Analytics Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mb-12"
-          >
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-                  Analytics Overview
-                </h2>
-                <button
-                  onClick={() => setShowChart(!showChart)}
-                  className="flex items-center px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
-                >
-                  <FaChartLine className="mr-2" />
-                  {showChart ? 'Hide Chart' : 'Show Chart'}
-                </button>
-              </div>
-              
-              {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg transform transition-all duration-200"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-blue-100 text-sm uppercase tracking-wider">Total Orders</p>
-                      <h3 className="text-4xl font-bold mt-2">{analytics?.totalOrders || 0}</h3>
-                    </div>
-                    <div className="bg-white bg-opacity-20 p-3 rounded-lg backdrop-blur-lg">
-                      <FaShoppingCart className="w-8 h-8" />
-                    </div>
+        {/* Tab Content */}
+        <AnimatePresence mode="wait">
+          {activeTab === 'overview' && (
+            <motion.div
+              key="overview"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              {/* Analytics Overview */}
+              <div className="mb-8">
+                <div className="flex justify-between items-center mb-6">
+                  <div>
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                      Analytics Overview
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-400">Real-time insights into your business performance</p>
                   </div>
-                  <div className="mt-4 text-blue-100 text-sm">
-                    All time orders
-                  </div>
-                </motion.div>
-
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg transform transition-all duration-200"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-purple-100 text-sm uppercase tracking-wider">Total Users</p>
-                      <h3 className="text-4xl font-bold mt-2">{analytics?.totalUsers || 0}</h3>
-                    </div>
-                    <div className="bg-white bg-opacity-20 p-3 rounded-lg backdrop-blur-lg">
-                      <FaUsers className="w-8 h-8" />
-                    </div>
-                  </div>
-                  <div className="mt-4 text-purple-100 text-sm">
-                    Active accounts
-                  </div>
-                </motion.div>
-
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg transform transition-all duration-200"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-green-100 text-sm uppercase tracking-wider">Total Revenue</p>
-                      <h3 className="text-4xl font-bold mt-2">${analytics?.totalRevenue?.toFixed(2) || '0.00'}</h3>
-                    </div>
-                    <div className="bg-white bg-opacity-20 p-3 rounded-lg backdrop-blur-lg">
-                      <FaDollarSign className="w-8 h-8" />
-                    </div>
-                  </div>
-                  <div className="mt-4 text-green-100 text-sm">
-                    Gross revenue
-                  </div>
-                </motion.div>
-
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-6 text-white shadow-lg transform transition-all duration-200"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-red-100 text-sm uppercase tracking-wider">Recent Orders</p>
-                      <h3 className="text-4xl font-bold mt-2">{analytics?.recentOrders || 0}</h3>
-                    </div>
-                    <div className="bg-white bg-opacity-20 p-3 rounded-lg backdrop-blur-lg">
-                      <FaChartLine className="w-8 h-8" />
-                    </div>
-                  </div>
-                  <div className="mt-4 text-red-100 text-sm">
-                    Last 30 days
-                  </div>
-                </motion.div>
-              </div>
-
-              {/* Orders Trend Chart */}
-              <AnimatePresence>
-                {showChart && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="bg-white dark:bg-gray-700 rounded-xl p-6 shadow-lg overflow-hidden"
-                  >
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Orders Trend</h3>
-                    <div className="h-[400px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={orderTrends}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                          <XAxis 
-                            dataKey="month" 
-                            stroke="#6B7280"
-                            tick={{ fill: '#6B7280' }}
-                          />
-                          <YAxis 
-                            stroke="#6B7280"
-                            tick={{ fill: '#6B7280' }}
-                          />
-                          <Tooltip 
-                            contentStyle={{ 
-                              backgroundColor: '#1F2937',
-                              border: 'none',
-                              borderRadius: '8px',
-                              color: '#F3F4F6'
-                            }}
-                          />
-                          <Legend />
-                          <Bar 
-                            dataKey="orders" 
-                            fill="#8B5CF6" 
-                            name="Orders"
-                            radius={[4, 4, 0, 0]}
-                          />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </motion.div>
-
-          {/* User Management Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mb-12"
-          >
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-6">
-              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 space-y-4 lg:space-y-0">
-                <div>
-                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                    User Management
-                  </h2>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    {filteredUsers.length} users found • {users.length} total
-                  </p>
-                </div>
-                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
-                  <div className="relative w-full sm:w-64">
-                    <input
-                      type="text"
-                      value={userSearch}
-                      onChange={(e) => setUserSearch(e.target.value)}
-                      placeholder="Search users..."
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                    />
-                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  </div>
-                  <select
-                    value={userFilter}
-                    onChange={(e) => setUserFilter(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  >
-                    <option value="all">All Roles</option>
-                    <option value="USER">Users</option>
-                    <option value="ADMIN">Admins</option>
-                  </select>
-                </div>
-              </div>
-              
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                  <thead className="bg-gray-50 dark:bg-gray-700">
-                    <tr>
-                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        User
-                      </th>
-                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Email
-                      </th>
-                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Role
-                      </th>
-                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                    {paginatedUsers.map((user, index) => (
-                      <motion.tr
-                        key={user.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <div className="flex items-center justify-center">
-                            <div className="flex-shrink-0 h-10 w-10">
-                              {user.imageUrl ? (
-                                <img
-                                  src={getImageUrl(user.imageUrl)}
-                                  alt={user.firstName + ' ' + user.lastName}
-                                  className="h-10 w-10 rounded-full object-cover border border-gray-300 dark:border-gray-700"
-                                  onError={e => { e.target.src = getPlaceholderUrl(); }}
-                                />
-                              ) : (
-                                <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
-                                  {user.firstName.charAt(0)}{user.lastName.charAt(0)}
-                                </div>
-                              )}
-                            </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                {user.firstName} {user.lastName}
-                              </div>
-                              <div className="text-sm text-gray-500 dark:text-gray-400">
-                                ID: {user.id}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 dark:text-white">
-                          {user.email}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
-                            user.role === 'ADMIN' 
-                              ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                              : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                          }`}>
-                            {user.role}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-3">
-                          <button
-                            onClick={() => handleUserAction('edit', user)}
-                            className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                            title="Edit User"
-                          >
-                            <FaUserEdit className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleUserAction('reset-password', user)}
-                            className="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300 transition-colors p-2 rounded-lg hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
-                            title="Reset Password"
-                          >
-                            <FaKey className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleUserAction('change-role', user)}
-                            className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 transition-colors p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20"
-                            title="Change Role"
-                          >
-                            <FaUserShield className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              
-              {totalUserPages > 1 && (
-                <Pagination
-                  currentPage={currentUserPage}
-                  totalPages={totalUserPages}
-                  onPageChange={setCurrentUserPage}
-                />
-              )}
-            </div>
-          </motion.div>
-
-          {/* Product Management Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="mb-12"
-          >
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
-              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 space-y-4 lg:space-y-0">
-                <div>
-                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                    Product Management
-                  </h2>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    {filteredProducts.length} products found • {products.length} total
-                  </p>
-                </div>
-                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
-                  <div className="relative w-full sm:w-64">
-                    <input
-                      type="text"
-                      value={productSearch}
-                      onChange={(e) => setProductSearch(e.target.value)}
-                      placeholder="Search products..."
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                    />
-                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  </div>
-                  <select
-                    value={productFilter}
-                    onChange={(e) => setProductFilter(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  >
-                    <option value="all">All Categories</option>
-                    {categories.map(category => (
-                      <option key={category} value={category}>{category}</option>
-                    ))}
-                  </select>
                   <button
-                    onClick={handleAddProduct}
-                    className="inline-flex items-center px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm font-medium rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg"
+                    onClick={() => setShowChart(!showChart)}
+                    className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg"
                   >
-                    <FaPlus className="w-4 h-4 mr-2" />
-                    Add Product
+                    <FaChartLine className="mr-2" />
+                    {showChart ? 'Hide Charts' : 'Show Charts'}
                   </button>
                 </div>
-              </div>
               
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                  <thead className="bg-gray-50 dark:bg-gray-700">
-                    <tr>
-                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Product
-                      </th>
-                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Price
-                      </th>
-                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Category
-                      </th>
-                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Stock
-                      </th>
-                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                    {paginatedProducts.length === 0 ? (
-                      <tr>
-                        <td colSpan="6" className="px-6 py-12 text-center">
-                          <div className="text-gray-500 dark:text-gray-400">
-                            <FaImage className="mx-auto h-12 w-12 mb-4 opacity-50" />
-                            <p className="text-lg font-medium mb-2">No products found</p>
-                            <p className="text-sm">Try adjusting your search or filters</p>
+                {/* Enhanced Stats Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                  <motion.div
+                    whileHover={{ scale: 1.02, y: -5 }}
+                    className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="relative flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Orders</p>
+                        <h3 className="text-3xl font-bold text-gray-900 dark:text-white">{analytics?.totalOrders || 0}</h3>
+                        <div className="flex items-center mt-2 text-green-600 dark:text-green-400">
+                          <FaArrowUp className="w-3 h-3 mr-1" />
+                          <span className="text-xs">+12% this month</span>
+                        </div>
+                      </div>
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <FaShoppingCart className="w-6 h-6 text-white" />
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    whileHover={{ scale: 1.02, y: -5 }}
+                    className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="relative flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Users</p>
+                        <h3 className="text-3xl font-bold text-gray-900 dark:text-white">{analytics?.totalUsers || 0}</h3>
+                        <div className="flex items-center mt-2 text-green-600 dark:text-green-400">
+                          <FaArrowUp className="w-3 h-3 mr-1" />
+                          <span className="text-xs">+8% this month</span>
+                        </div>
+                      </div>
+                      <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <FaUsers className="w-6 h-6 text-white" />
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    whileHover={{ scale: 1.02, y: -5 }}
+                    className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="relative flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Revenue</p>
+                        <h3 className="text-3xl font-bold text-gray-900 dark:text-white">${analytics?.totalRevenue?.toFixed(2) || '0.00'}</h3>
+                        <div className="flex items-center mt-2 text-green-600 dark:text-green-400">
+                          <FaArrowUp className="w-3 h-3 mr-1" />
+                          <span className="text-xs">+15% this month</span>
+                        </div>
+                      </div>
+                      <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <FaDollarSign className="w-6 h-6 text-white" />
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    whileHover={{ scale: 1.02, y: -5 }}
+                    className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="relative flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Recent Orders</p>
+                        <h3 className="text-3xl font-bold text-gray-900 dark:text-white">{analytics?.recentOrders || 0}</h3>
+                        <div className="flex items-center mt-2 text-green-600 dark:text-green-400">
+                          <FaArrowUp className="w-3 h-3 mr-1" />
+                          <span className="text-xs">+5% this week</span>
+                        </div>
+                      </div>
+                      <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <FaChartLine className="w-6 h-6 text-white" />
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+
+                {/* Enhanced Charts Section */}
+                <AnimatePresence>
+                  {showChart && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+                    >
+                      {/* Orders Trend Chart */}
+                      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50">
+                        <div className="flex items-center justify-between mb-6">
+                          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Orders Trend</h3>
+                          <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                            <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                            <span>Monthly Orders</span>
                           </div>
-                        </td>
-                      </tr>
-                    ) : (
-                      paginatedProducts.map((product, index) => (
-                        <motion.tr
-                          key={product.id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                        >
-                          <td className="px-6 py-4 text-center">
-                            <div className="flex flex-col items-center">
-                              <img
-                                className="h-16 w-16 rounded-lg object-cover shadow-md mb-2"
-                                src={product.image}
-                                alt={product.name}
-                                onError={(e) => {
-                                  e.target.src = 'https://via.placeholder.com/64x64?text=No+Image';
+                        </div>
+                        <div className="h-[300px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={orderTrends}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+                              <XAxis 
+                                dataKey="month" 
+                                stroke="#6B7280"
+                                tick={{ fill: '#6B7280', fontSize: 12 }}
+                              />
+                              <YAxis 
+                                stroke="#6B7280"
+                                tick={{ fill: '#6B7280', fontSize: 12 }}
+                              />
+                              <Tooltip 
+                                contentStyle={{ 
+                                  backgroundColor: '#1F2937',
+                                  border: 'none',
+                                  borderRadius: '12px',
+                                  color: '#F3F4F6',
+                                  boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
                                 }}
                               />
-                              <span className="text-sm font-medium text-gray-900 dark:text-white">{product.name}</span>
-                              <span className="text-xs text-gray-500 dark:text-gray-400">ID: {product.id}</span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-center text-sm text-gray-900 dark:text-white">
-                            <span className="font-semibold text-green-600 dark:text-green-400">
-                              ${product.price}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-center text-sm text-gray-900 dark:text-white">
-                            {product.category || 'Uncategorized'}
-                          </td>
-                          <td className="px-6 py-4 text-center text-sm text-gray-900 dark:text-white">
-                            {product.stock}
-                          </td>
-                          <td className="px-6 py-4 text-center text-sm font-medium space-x-3">
-                            <button
-                              onClick={() => handleProductAction('edit', product)}
-                              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                              title="Edit Product"
-                            >
-                              <FaEdit className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleProductAction('delete', product)}
-                              className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
-                              title="Delete Product"
-                            >
-                              <FaTrash className="w-4 h-4" />
-                            </button>
-                          </td>
-                        </motion.tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-              
-              {totalProductPages > 1 && (
-                <Pagination
-                  currentPage={currentProductPage}
-                  totalPages={totalProductPages}
-                  onPageChange={setCurrentProductPage}
-                />
-              )}
-            </div>
-          </motion.div>
+                              <Bar 
+                                dataKey="orders" 
+                                fill="url(#purpleGradient)" 
+                                name="Orders"
+                                radius={[6, 6, 0, 0]}
+                              />
+                              <defs>
+                                <linearGradient id="purpleGradient" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.8}/>
+                                  <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.3}/>
+                                </linearGradient>
+                              </defs>
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
 
-          {/* Order Management Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="mb-12"
-          >
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
-              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 space-y-4 lg:space-y-0">
-                <div>
-                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                    Order Management
-                  </h2>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    {filteredOrders.length} orders found • {orders.length} total
-                  </p>
-                </div>
-                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
-                  <div className="relative w-full sm:w-64">
-                    <input
-                      type="text"
-                      value={orderSearch}
-                      onChange={(e) => setOrderSearch(e.target.value)}
-                      placeholder="Search orders..."
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                    />
-                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  </div>
-                  <select
-                    value={orderFilter}
-                    onChange={(e) => setOrderFilter(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  >
-                    <option value="all">All Status</option>
-                    <option value="PENDING">Pending</option>
-                    <option value="CONFIRMED">Confirmed</option>
-                    <option value="SHIPPED">Shipped</option>
-                    <option value="DELIVERED">Delivered</option>
-                    <option value="CANCELLED">Cancelled</option>
-                  </select>
-                </div>
-              </div>
-              
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                  <thead className="bg-gray-50 dark:bg-gray-700">
-                    <tr>
-                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Order
-                      </th>
-                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Customer
-                      </th>
-                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Total
-                      </th>
-                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Date
-                      </th>
-                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                    {paginatedOrders.length === 0 ? (
-                      <tr>
-                        <td colSpan="6" className="px-6 py-12 text-center">
-                          <div className="text-gray-500 dark:text-gray-400">
-                            <FaBox className="mx-auto h-12 w-12 mb-4 opacity-50" />
-                            <p className="text-lg font-medium mb-2">No orders found</p>
-                            <p className="text-sm">Try adjusting your search or filters</p>
+                      {/* Revenue Chart */}
+                      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50">
+                        <div className="flex items-center justify-between mb-6">
+                          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Revenue Overview</h3>
+                          <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <span>Monthly Revenue</span>
                           </div>
-                        </td>
+                        </div>
+                        <div className="h-[300px] flex items-center justify-center">
+                          <div className="text-center">
+                            <div className="text-4xl font-bold text-green-600 dark:text-green-400 mb-2">
+                              ${analytics?.totalRevenue?.toFixed(2) || '0.00'}
+                            </div>
+                            <div className="text-gray-600 dark:text-gray-400">Total Revenue</div>
+                            <div className="mt-4 text-sm text-gray-500 dark:text-gray-500">
+                              Revenue data visualization coming soon...
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Users Tab */}
+          {activeTab === 'users' && (
+            <motion.div
+              key="users"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 p-6">
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 space-y-4 lg:space-y-0">
+                  <div>
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                      User Management
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      {filteredUsers.length} users found • {users.length} total
+                    </p>
+                  </div>
+                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+                    <div className="relative w-full sm:w-64">
+                      <input
+                        type="text"
+                        value={userSearch}
+                        onChange={(e) => setUserSearch(e.target.value)}
+                        placeholder="Search users..."
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
+                      />
+                      <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    </div>
+                    <select
+                      value={userFilter}
+                      onChange={(e) => setUserFilter(e.target.value)}
+                      className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
+                    >
+                      <option value="all">All Roles</option>
+                      <option value="USER">Users</option>
+                      <option value="ADMIN">Admins</option>
+                    </select>
+                  </div>
+                </div>
+                
+                {/* Users Table */}
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          User
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Email
+                        </th>
+                        <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Role
+                        </th>
+                        <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Actions
+                        </th>
                       </tr>
-                    ) : (
-                      paginatedOrders.map((order, index) => (
+                    </thead>
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                      {paginatedUsers.map((user, index) => (
                         <motion.tr
-                          key={order.id}
+                          key={user.id}
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: index * 0.05 }}
                           className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                         >
-                          <td className="px-6 py-4 whitespace-nowrap text-center">
-                            <div className="flex flex-col items-center">
-                              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                #{order.orderNumber}
-                              </span>
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {(() => {
-                                  if (order.items && Array.isArray(order.items)) {
-                                    return `${order.items.length} items`;
-                                  } else if (order.orderItems && Array.isArray(order.orderItems)) {
-                                    return `${order.orderItems.length} items`;
-                                  } else {
-                                    return '0 items';
-                                  }
-                                })()}
-                              </span>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="flex-shrink-0 h-12 w-12">
+                                {user.imageUrl ? (
+                                  <img
+                                    src={getImageUrl(user.imageUrl)}
+                                    alt={user.firstName + ' ' + user.lastName}
+                                    className="h-12 w-12 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
+                                    onError={e => { e.target.src = getPlaceholderUrl(); }}
+                                  />
+                                ) : (
+                                  <div className="h-12 w-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-lg">
+                                    {user.firstName.charAt(0)}{user.lastName.charAt(0)}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="ml-4">
+                                <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                  {user.firstName} {user.lastName}
+                                </div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400">
+                                  ID: {user.id}
+                                </div>
+                              </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center">
-                            <div className="flex flex-col items-center">
-                              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                {order.user?.firstName} {order.user?.lastName}
-                              </span>
-                              <p className="text-gray-600 dark:text-gray-400 break-all">{order.user?.email}</p>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 dark:text-white">
-                            <span className="font-semibold text-green-600 dark:text-green-400">
-                              ${(() => {
-                                try {
-                                  if (order.totalAmount !== null && order.totalAmount !== undefined) {
-                                    return parseFloat(order.totalAmount).toFixed(2);
-                                  }
-                                  return '0.00';
-                                } catch (error) {
-                                  console.error('Total amount parsing error:', error, order.totalAmount);
-                                  return '0.00';
-                                }
-                              })()}
-                            </span>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                            {user.email}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-center">
                             <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
-                              order.status === 'PENDING' 
-                                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                : order.status === 'PROCESSING'
-                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                                : order.status === 'SHIPPED'
-                                ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
-                                : order.status === 'DELIVERED'
+                              user.role === 'ADMIN' 
+                                ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                            }`}>
+                              {user.role}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-2">
+                            <button
+                              onClick={() => handleUserAction('edit', user)}
+                              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                              title="Edit User"
+                            >
+                              <FaUserEdit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleUserAction('reset-password', user)}
+                              className="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300 transition-colors p-2 rounded-lg hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
+                              title="Reset Password"
+                            >
+                              <FaKey className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleUserAction('change-role', user)}
+                              className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 transition-colors p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20"
+                              title="Change Role"
+                            >
+                              <FaUserShield className="w-4 h-4" />
+                            </button>
+                          </td>
+                        </motion.tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                
+                {totalUserPages > 1 && (
+                  <Pagination
+                    currentPage={currentUserPage}
+                    totalPages={totalUserPages}
+                    onPageChange={setCurrentUserPage}
+                  />
+                )}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Products Tab */}
+          {activeTab === 'products' && (
+            <motion.div
+              key="products"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 p-6">
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 space-y-4 lg:space-y-0">
+                  <div>
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                      Product Management
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      {filteredProducts.length} products found • {products.length} total
+                    </p>
+                  </div>
+                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+                    <div className="relative w-full sm:w-64">
+                      <input
+                        type="text"
+                        value={productSearch}
+                        onChange={(e) => setProductSearch(e.target.value)}
+                        placeholder="Search products..."
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
+                      />
+                      <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    </div>
+                    <select
+                      value={productFilter}
+                      onChange={(e) => setProductFilter(e.target.value)}
+                      className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
+                    >
+                      <option value="all">All Categories</option>
+                      {categories.map(category => (
+                        <option key={category} value={category}>{category}</option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={() => setProductModalMode('add')}
+                      className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm font-medium rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg"
+                    >
+                      <FaPlus className="w-4 h-4 mr-2" />
+                      Add Product
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Products Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {paginatedProducts.length === 0 ? (
+                    <div className="col-span-full text-center py-12">
+                      <div className="text-gray-500 dark:text-gray-400">
+                        <FaImage className="mx-auto h-16 w-16 mb-4 opacity-50" />
+                        <p className="text-xl font-medium mb-2">No products found</p>
+                        <p className="text-sm">Try adjusting your search or filters</p>
+                      </div>
+                    </div>
+                  ) : (
+                    paginatedProducts.map((product, index) => (
+                      <motion.div
+                        key={product.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="bg-white dark:bg-gray-700 rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-600/50 overflow-hidden hover:shadow-xl transition-all duration-300 group"
+                      >
+                        <div className="relative">
+                          <img
+                            className="h-48 w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            src={product.image}
+                            alt={product.name}
+                            onError={(e) => {
+                              e.target.src = 'https://via.placeholder.com/300x200?text=No+Image';
+                            }}
+                          />
+                          <div className="absolute top-2 right-2">
+                            <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                              ${product.price}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="p-4">
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 truncate">
+                            {product.name}
+                          </h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                            {product.description}
+                          </p>
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              {product.category || 'Uncategorized'}
+                            </span>
+                            <span className={`text-xs px-2 py-1 rounded-full ${
+                              product.stock > 0 
                                 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                                 : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                             }`}>
-                              {order.status}
+                              {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
                             </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 dark:text-white">
-                            {(() => {
-                              try {
-                                if (order.orderDate) {
-                                  return new Date(order.orderDate).toLocaleDateString();
-                                } else if (order.createdAt) {
-                                  return new Date(order.createdAt).toLocaleDateString();
-                                }
-                                return 'N/A';
-                              } catch (error) {
-                                console.error('Date parsing error:', error, order.orderDate);
-                                return 'Invalid Date';
-                              }
-                            })()}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-3">
+                          </div>
+                          <div className="flex space-x-2">
                             <button
-                              onClick={() => handleViewOrderDetails(order)}
-                              className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 transition-colors p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20"
-                              title="View Order Details"
+                              onClick={() => handleProductAction('edit', product)}
+                              className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                             >
-                              <FaEye className="w-4 h-4" />
+                              <FaEdit className="w-3 h-3 mr-1 inline" />
+                              Edit
                             </button>
                             <button
-                              onClick={() => handleOrderAction('update-status', order)}
-                              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                              title="Update Status"
+                              onClick={() => handleProductAction('delete', product)}
+                              className="flex-1 bg-red-600 text-white px-3 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
                             >
-                              <FaEdit className="w-4 h-4" />
+                              <FaTrash className="w-3 h-3 mr-1 inline" />
+                              Delete
                             </button>
-                            {order.status !== 'CANCELLED' && (
-                              <button
-                                onClick={() => handleOrderAction('cancel', order)}
-                                className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
-                                title="Cancel Order"
-                              >
-                                <FaTimesCircle className="w-4 h-4" />
-                              </button>
-                            )}
-                          </td>
-                        </motion.tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))
+                  )}
+                </div>
+                
+                {totalProductPages > 1 && (
+                  <Pagination
+                    currentPage={currentProductPage}
+                    totalPages={totalProductPages}
+                    onPageChange={setCurrentProductPage}
+                  />
+                )}
               </div>
-              
-              {totalOrderPages > 1 && (
-                <Pagination
-                  currentPage={currentOrderPage}
-                  totalPages={totalOrderPages}
-                  onPageChange={setCurrentOrderPage}
-                />
-              )}
-            </div>
-          </motion.div>
-        </motion.div>
+            </motion.div>
+          )}
+
+          {/* Orders Tab */}
+          {activeTab === 'orders' && (
+            <motion.div
+              key="orders"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 p-6">
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 space-y-4 lg:space-y-0">
+                  <div>
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                      Order Management
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      {orders.length} total orders
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Orders List */}
+                <div className="space-y-4">
+                  {orders.slice(0, 10).map((order, index) => (
+                    <motion.div
+                      key={order.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 border border-gray-200/50 dark:border-gray-600/50"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
+                            <FaShoppingCart className="w-6 h-6 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-900 dark:text-white">
+                              Order #{order.id}
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              {order.items?.length || 0} items • ${order.totalAmount || 0}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                            order.status === 'COMPLETED' 
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                              : order.status === 'PENDING'
+                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                              : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                          }`}>
+                            {order.status || 'UNKNOWN'}
+                          </span>
+                          <button
+                            onClick={() => handleViewOrderDetails(order)}
+                            className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                            title="View Details"
+                          >
+                            <FaEye className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* User Modal */}
