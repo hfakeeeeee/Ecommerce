@@ -4,6 +4,8 @@ import { FaCamera, FaSpinner, FaCheck, FaEye, FaEyeSlash, FaUserCircle, FaEnvelo
 import { motion, AnimatePresence } from 'framer-motion';
 import Toast from '../components/Toast';
 
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
+
 export default function UserProfilePage() {
     const { user, setUser, updateProfile, updatePassword } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
@@ -57,7 +59,7 @@ export default function UserProfilePage() {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('/api/auth/upload-avatar', {
+            const response = await fetch(`${API_BASE_URL}/api/auth/upload-avatar`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -77,7 +79,7 @@ export default function UserProfilePage() {
             }));
             showToast('Profile picture updated successfully', 'success');
 
-            const verifyResponse = await fetch('/api/auth/verify', {
+            const verifyResponse = await fetch(`${API_BASE_URL}/api/auth/verify`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }

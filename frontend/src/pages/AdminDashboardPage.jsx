@@ -8,6 +8,8 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
+
 const AdminDashboardPage = () => {
   const [users, setUsers] = useState([]);
   const [products, setProducts] = useState([]);
@@ -77,22 +79,22 @@ const AdminDashboardPage = () => {
     try {
       const token = localStorage.getItem('token');
       const [usersResponse, productsResponse, ordersResponse, categoriesResponse] = await Promise.all([
-        fetch('/api/auth/admin/users', {
+        fetch(`${API_BASE_URL}/api/auth/admin/users`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         }),
-        fetch('/api/products/admin/all', {
+        fetch(`${API_BASE_URL}/api/products/admin/all`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         }),
-        fetch('/api/orders/admin/all', {
+        fetch(`${API_BASE_URL}/api/orders/admin/all`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         }),
-        fetch('/api/products/categories', {
+        fetch(`${API_BASE_URL}/api/products/categories`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -131,8 +133,8 @@ const AdminDashboardPage = () => {
       };
 
       const [analyticsResponse, trendsResponse] = await Promise.all([
-        fetch('/api/analytics/dashboard', { headers }),
-        fetch('/api/analytics/orders-by-month', { headers })
+        fetch(`${API_BASE_URL}/api/analytics/dashboard`, { headers }),
+        fetch(`${API_BASE_URL}/api/analytics/orders-by-month`, { headers })
       ]);
 
       if (!analyticsResponse.ok || !trendsResponse.ok) {
@@ -303,7 +305,7 @@ const AdminDashboardPage = () => {
       const token = localStorage.getItem('token');
       let response;
       if (actionType === 'edit') {
-        response = await fetch(`/api/auth/admin/users/${selectedUser.id}`, {
+        response = await fetch(`${API_BASE_URL}/api/auth/admin/users/${selectedUser.id}`, {
           method: 'PUT',
           headers: { 
             'Content-Type': 'application/json',
@@ -312,7 +314,7 @@ const AdminDashboardPage = () => {
           body: JSON.stringify(userForm)
         });
       } else if (actionType === 'change-role') {
-        response = await fetch(`/api/auth/admin/users/${selectedUser.id}/role`, {
+        response = await fetch(`${API_BASE_URL}/api/auth/admin/users/${selectedUser.id}/role`, {
           method: 'PUT',
           headers: { 
             'Content-Type': 'application/json',
@@ -321,7 +323,7 @@ const AdminDashboardPage = () => {
           body: JSON.stringify(userForm.role)
         });
       } else if (actionType === 'reset-password') {
-        response = await fetch(`/api/auth/admin/users/${selectedUser.id}/reset-password`, {
+        response = await fetch(`${API_BASE_URL}/api/auth/admin/users/${selectedUser.id}/reset-password`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -355,7 +357,7 @@ const AdminDashboardPage = () => {
 
       let response;
       if (actionType === 'add') {
-        response = await fetch('/api/products/admin/add', {
+        response = await fetch(`${API_BASE_URL}/api/products/admin/add`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -364,7 +366,7 @@ const AdminDashboardPage = () => {
           body: JSON.stringify(productData)
         });
       } else if (actionType === 'edit') {
-        response = await fetch(`/api/products/admin/edit/${selectedProduct.id}`, {
+        response = await fetch(`${API_BASE_URL}/api/products/admin/edit/${selectedProduct.id}`, {
           method: 'PUT',
           headers: { 
             'Content-Type': 'application/json',
@@ -373,7 +375,7 @@ const AdminDashboardPage = () => {
           body: JSON.stringify(productData)
         });
       } else if (actionType === 'delete') {
-        response = await fetch(`/api/products/${selectedProduct.id}`, {
+        response = await fetch(`${API_BASE_URL}/api/products/${selectedProduct.id}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -401,7 +403,7 @@ const AdminDashboardPage = () => {
       let response;
       
       if (actionType === 'update-status') {
-        response = await fetch(`/api/orders/admin/${selectedOrder.orderNumber}/status`, {
+        response = await fetch(`${API_BASE_URL}/api/orders/admin/${selectedOrder.orderNumber}/status`, {
           method: 'PUT',
           headers: { 
             'Content-Type': 'application/json',
@@ -410,7 +412,7 @@ const AdminDashboardPage = () => {
           body: JSON.stringify({ status: orderForm.status })
         });
       } else if (actionType === 'cancel') {
-        response = await fetch(`/api/orders/${selectedOrder.orderNumber}/cancel`, {
+        response = await fetch(`${API_BASE_URL}/api/orders/${selectedOrder.orderNumber}/cancel`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -1482,7 +1484,7 @@ const AdminDashboardPage = () => {
                 };
                 let response;
                 if (productModalMode === 'add') {
-                  response = await fetch('/api/products/admin/add', {
+                  response = await fetch(`${API_BASE_URL}/api/products/admin/add`, {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
@@ -1491,7 +1493,7 @@ const AdminDashboardPage = () => {
                     body: JSON.stringify(productData)
                   });
                 } else if (productModalMode === 'edit' && selectedProduct) {
-                  response = await fetch(`/api/products/admin/edit/${selectedProduct.id}`, {
+                  response = await fetch(`${API_BASE_URL}/api/products/admin/edit/${selectedProduct.id}`, {
                     method: 'PUT',
                     headers: {
                       'Content-Type': 'application/json',

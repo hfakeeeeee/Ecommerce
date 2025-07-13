@@ -7,6 +7,8 @@ import { FaPlus, FaMinus, FaShoppingCart, FaHeart, FaShare, FaStar, FaTruck, FaS
 import { useProducts } from '../context/ProductContext'
 import { useFavourites } from '../context/FavouritesContext'
 
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
+
 export default function ProductDetailsPage() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -24,7 +26,7 @@ export default function ProductDetailsPage() {
   useEffect(() => {
     setLoading(true)
     setError(null)
-    fetch(`/api/products/${id}`)
+    fetch(`${API_BASE_URL}/api/products/${id}`)
       .then((res) => {
         if (!res.ok) throw new Error('Product not found')
         return res.json()

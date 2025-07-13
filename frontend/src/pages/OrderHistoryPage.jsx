@@ -1,8 +1,11 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FaSpinner, FaBox, FaTruck, FaCheck, FaClock, FaExclamationTriangle, FaShoppingBag, FaCalendarAlt, FaMapMarkerAlt } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
+import Toast from '../components/Toast';
+
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
 
 const ORDER_STATES = {
     PENDING: { next: 'PROCESSING', color: 'yellow', icon: FaClock },
@@ -50,7 +53,7 @@ export default function OrderHistoryPage() {
 
     const fetchOrders = async () => {
         try {
-            const response = await fetch('/api/orders', {
+            const response = await fetch(`${API_BASE_URL}/api/orders`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -104,7 +107,7 @@ export default function OrderHistoryPage() {
         }
 
         try {
-            const response = await fetch(`/api/orders/${selectedOrderNumber}/cancel`, {
+            const response = await fetch(`${API_BASE_URL}/api/orders/${selectedOrderNumber}/cancel`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

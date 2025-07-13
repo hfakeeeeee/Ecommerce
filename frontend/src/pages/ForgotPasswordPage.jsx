@@ -4,6 +4,8 @@ import Toast from '../components/Toast';
 import { FaSpinner, FaEye, FaEyeSlash, FaCheck, FaTimes } from 'react-icons/fa';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
+
 export default function ForgotPasswordPage() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
@@ -69,7 +71,7 @@ export default function ForgotPasswordPage() {
 
         setIsLoading(true);
         try {
-            const response = await fetch('/api/auth/complete-reset', {
+            const response = await fetch(`${API_BASE_URL}/api/auth/complete-reset`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

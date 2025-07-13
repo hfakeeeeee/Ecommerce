@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -7,6 +7,8 @@ import { FaLock, FaCreditCard, FaPaypal, FaSpinner, FaCheck, FaTimes } from 'rea
 import Toast from '../components/Toast';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
+
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
 
 // Replace with your Stripe publishable key
 const stripePromise = loadStripe('pk_test_51RfHKTDGjgknPqtPnU07aiEbHLA0Awz1VZVu8qRTahPr8usnGluqQMCqPkxbFeG4j6ROaCHBTQWUW7apnPRrawci00mMDyyuuP');
@@ -68,7 +70,7 @@ function CheckoutForm({ shippingInfo, setLoading, showToast, clearCart, navigate
 
         try {
             // Create payment intent on your server
-            const response = await fetch('/api/create-payment-intent', {
+            const response = await fetch(`${API_BASE_URL}/api/create-payment-intent`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
