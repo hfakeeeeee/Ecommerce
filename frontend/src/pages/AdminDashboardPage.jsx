@@ -804,7 +804,7 @@ const AdminDashboardPage = () => {
                     <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <div className="relative flex items-center justify-between">
                     <div>
-                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Orders</p>
+                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Sucess Orders</p>
                         <h3 className="text-3xl font-bold text-gray-900 dark:text-white">{totalOrders}</h3>
                         <div className="flex items-center mt-2 text-green-600 dark:text-green-400">
                     </div>
