@@ -4,12 +4,13 @@ import {
   FaTimes, FaSave, FaSearch, FaImage, FaChevronLeft, FaChevronRight,
   FaFilter, FaSort, FaDownload, FaUpload, FaBox, FaTruck, FaCheckCircle, FaTimesCircle, FaEye,
   FaChartLine, FaUsers, FaShoppingCart, FaDollarSign, FaCrown, FaStar, FaArrowUp, FaArrowDown,
-  FaCalendarAlt, FaClock, FaMapMarkerAlt, FaPhone, FaEnvelope, FaGlobe, FaShieldAlt
+  FaCalendarAlt, FaClock, FaMapMarkerAlt, FaPhone, FaEnvelope, FaGlobe, FaShieldAlt, FaChevronDown
 } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { useAuth } from '../context/AuthContext';
 import { getImageUrl, getPlaceholderUrl } from '../utils/imageUtils';
+import { useNavigate } from 'react-router-dom';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
 
@@ -72,6 +73,8 @@ const AdminDashboardPage = () => {
 
   // Replace showProductModal and showAddProductModal with a single modal mode
   const [productModalMode, setProductModalMode] = useState('none'); // 'none' | 'add' | 'edit' | 'delete'
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchData();
@@ -405,7 +408,7 @@ const AdminDashboardPage = () => {
     try {
       const token = localStorage.getItem('token');
       let response;
-      
+
       if (actionType === 'update-status') {
         response = await fetch(`${API_BASE_URL}/api/orders/admin/${selectedOrder.orderNumber}/status`, {
           method: 'PUT',
@@ -423,6 +426,10 @@ const AdminDashboardPage = () => {
             'Authorization': `Bearer ${token}`
           }
         });
+      } else {
+        showToast(`Unknown order action: ${actionType}`, 'error');
+        console.error('Unknown order actionType:', actionType);
+        return;
       }
 
       if (response.ok) {
@@ -430,11 +437,19 @@ const AdminDashboardPage = () => {
         fetchData();
         setShowOrderModal(false);
       } else {
-        const error = await response.json();
-        showToast(error.message || `Failed to ${actionType} order`, 'error');
+        let errorMsg = `Failed to ${actionType} order (Status: ${response.status})`;
+        try {
+          const error = await response.json();
+          errorMsg = error.message || errorMsg;
+          console.error('Order update error:', error, 'Status:', response.status);
+        } catch (err) {
+          console.error('Order update error: could not parse JSON', err, 'Status:', response.status);
+        }
+        showToast(errorMsg, 'error');
       }
     } catch (error) {
-      showToast(`Error ${actionType} order`, 'error');
+      showToast(`Error ${actionType} order: ${error.message}`, 'error');
+      console.error('Order update exception:', error);
     }
   };
 
@@ -559,17 +574,19 @@ const AdminDashboardPage = () => {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Category
             </label>
+            <div className="relative w-full sm:w-auto">
             <select
               value={form.category}
               onChange={e => handleChange('category', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors"
-              required
+                className="appearance-none px-4 py-3 pr-10 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200 w-full"
             >
               <option value="">Select a category</option>
               {categories.map(category => (
                 <option key={category} value={category}>{category}</option>
               ))}
             </select>
+              <FaChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -643,6 +660,18 @@ const AdminDashboardPage = () => {
     setSelectedProduct(null);
   }, []);
 
+  // ... after const [orders, setOrders] = useState([]); ...
+  const nonCancelledOrders = React.useMemo(
+    () => orders.filter(order => order.status !== 'CANCELLED'),
+    [orders]
+  );
+  const totalOrders = nonCancelledOrders.length;
+  const totalRevenue = React.useMemo(
+    () => nonCancelledOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0),
+    [nonCancelledOrders]
+  );
+  // ... existing code ...
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
@@ -654,7 +683,7 @@ const AdminDashboardPage = () => {
           <div className="relative">
             <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
             <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-purple-600 rounded-full animate-spin" style={{ animationDelay: '0.5s' }}></div>
-          </div>
+        </div>
           <div className="text-center">
             <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Loading Dashboard</h3>
             <p className="text-gray-500 dark:text-gray-400">Preparing your admin workspace...</p>
@@ -667,9 +696,9 @@ const AdminDashboardPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Header */}
-      <motion.div
+        <motion.div
         initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
+          animate={{ opacity: 1, y: 0 }}
         className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 sticky top-0 z-40"
       >
         <div className="max-w-7xl mx-auto px-6 py-6">
@@ -681,26 +710,26 @@ const AdminDashboardPage = () => {
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    Admin Dashboard
-                  </h1>
+              Admin Dashboard
+            </h1>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Manage your e-commerce platform</p>
                 </div>
               </div>
-            </div>
-            
+          </div>
+
             {/* Quick Stats */}
             <div className="hidden lg:flex items-center space-x-6">
               <div className="text-center">
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">{analytics?.totalOrders || 0}</div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">Total Orders</div>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">{totalOrders}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Total Sucess Orders</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">${totalRevenue.toFixed(2)}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Revenue</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-gray-900 dark:text-white">{analytics?.totalUsers || 0}</div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">Users</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600 dark:text-green-400">${analytics?.totalRevenue?.toFixed(2) || '0.00'}</div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">Revenue</div>
               </div>
             </div>
           </div>
@@ -709,10 +738,10 @@ const AdminDashboardPage = () => {
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Navigation Tabs */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
           className="mb-8"
         >
           <div className="flex flex-wrap gap-2 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl p-2 shadow-lg border border-gray-200/50 dark:border-gray-700/50">
@@ -750,113 +779,105 @@ const AdminDashboardPage = () => {
             >
               {/* Analytics Overview */}
               <div className="mb-8">
-                <div className="flex justify-between items-center mb-6">
+              <div className="flex justify-between items-center mb-6">
                   <div>
                     <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                      Analytics Overview
-                    </h2>
+                  Analytics Overview
+                </h2>
                     <p className="text-gray-600 dark:text-gray-400">Real-time insights into your business performance</p>
                   </div>
-                  <button
-                    onClick={() => setShowChart(!showChart)}
+                <button
+                  onClick={() => setShowChart(!showChart)}
                     className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg"
-                  >
-                    <FaChartLine className="mr-2" />
+                >
+                  <FaChartLine className="mr-2" />
                     {showChart ? 'Hide Charts' : 'Show Charts'}
-                  </button>
-                </div>
+                </button>
+              </div>
               
                 {/* Enhanced Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                  <motion.div
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <motion.div
                     whileHover={{ scale: 1.02, y: -5 }}
                     className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
-                  >
+                >
                     <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <div className="relative flex items-center justify-between">
-                      <div>
+                    <div>
                         <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Orders</p>
-                        <h3 className="text-3xl font-bold text-gray-900 dark:text-white">{analytics?.totalOrders || 0}</h3>
+                        <h3 className="text-3xl font-bold text-gray-900 dark:text-white">{totalOrders}</h3>
                         <div className="flex items-center mt-2 text-green-600 dark:text-green-400">
-                          <FaArrowUp className="w-3 h-3 mr-1" />
-                          <span className="text-xs">+12% this month</span>
-                        </div>
-                      </div>
+                    </div>
+                    </div>
                       <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
                         <FaShoppingCart className="w-6 h-6 text-white" />
-                      </div>
-                    </div>
-                  </motion.div>
+                  </div>
+                  </div>
+                </motion.div>
 
-                  <motion.div
+                <motion.div
                     whileHover={{ scale: 1.02, y: -5 }}
                     className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
-                  >
+                >
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <div className="relative flex items-center justify-between">
-                      <div>
+                    <div>
                         <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Users</p>
                         <h3 className="text-3xl font-bold text-gray-900 dark:text-white">{analytics?.totalUsers || 0}</h3>
                         <div className="flex items-center mt-2 text-green-600 dark:text-green-400">
-                          <FaArrowUp className="w-3 h-3 mr-1" />
-                          <span className="text-xs">+8% this month</span>
-                        </div>
-                      </div>
+                    </div>
+                    </div>
                       <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                         <FaUsers className="w-6 h-6 text-white" />
-                      </div>
-                    </div>
-                  </motion.div>
+                  </div>
+                  </div>
+                </motion.div>
 
-                  <motion.div
+                <motion.div
                     whileHover={{ scale: 1.02, y: -5 }}
                     className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
-                  >
+                >
                     <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <div className="relative flex items-center justify-between">
-                      <div>
+                    <div>
                         <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Revenue</p>
-                        <h3 className="text-3xl font-bold text-gray-900 dark:text-white">${analytics?.totalRevenue?.toFixed(2) || '0.00'}</h3>
+                        <h3 className="text-3xl font-bold text-gray-900 dark:text-white">${totalRevenue.toFixed(2)}</h3>
                         <div className="flex items-center mt-2 text-green-600 dark:text-green-400">
-                          <FaArrowUp className="w-3 h-3 mr-1" />
-                          <span className="text-xs">+15% this month</span>
-                        </div>
-                      </div>
+                    </div>
+                    </div>
                       <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
                         <FaDollarSign className="w-6 h-6 text-white" />
-                      </div>
-                    </div>
-                  </motion.div>
+                  </div>
+                  </div>
+                </motion.div>
 
-                  <motion.div
+                <motion.div
                     whileHover={{ scale: 1.02, y: -5 }}
                     className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
-                  >
+                >
                     <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <div className="relative flex items-center justify-between">
-                      <div>
+                    <div>
                         <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Recent Orders</p>
                         <h3 className="text-3xl font-bold text-gray-900 dark:text-white">{analytics?.recentOrders || 0}</h3>
                         <div className="flex items-center mt-2 text-green-600 dark:text-green-400">
-                          <FaArrowUp className="w-3 h-3 mr-1" />
-                          <span className="text-xs">+5% this week</span>
-                        </div>
-                      </div>
+                    </div>
+                    </div>
                       <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
                         <FaChartLine className="w-6 h-6 text-white" />
-                      </div>
-                    </div>
-                  </motion.div>
-                </div>
+                  </div>
+                  </div>
+                </motion.div>
+              </div>
 
                 {/* Enhanced Charts Section */}
-                <AnimatePresence>
-                  {showChart && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3 }}
+              <AnimatePresence>
+                {showChart && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
                       className="grid grid-cols-1 lg:grid-cols-2 gap-6"
                     >
                       {/* Orders Trend Chart */}
@@ -869,31 +890,31 @@ const AdminDashboardPage = () => {
                           </div>
                         </div>
                         <div className="h-[300px]">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={orderTrends}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={orderTrends}>
                               <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
-                              <XAxis 
-                                dataKey="month" 
-                                stroke="#6B7280"
+                          <XAxis 
+                            dataKey="month" 
+                            stroke="#6B7280"
                                 tick={{ fill: '#6B7280', fontSize: 12 }}
-                              />
-                              <YAxis 
-                                stroke="#6B7280"
+                          />
+                          <YAxis 
+                            stroke="#6B7280"
                                 tick={{ fill: '#6B7280', fontSize: 12 }}
-                              />
-                              <Tooltip 
-                                contentStyle={{ 
-                                  backgroundColor: '#1F2937',
-                                  border: 'none',
+                          />
+                          <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: '#1F2937',
+                              border: 'none',
                                   borderRadius: '12px',
                                   color: '#F3F4F6',
                                   boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
-                                }}
-                              />
-                              <Bar 
-                                dataKey="orders" 
+                            }}
+                          />
+                          <Bar 
+                            dataKey="orders" 
                                 fill="url(#purpleGradient)" 
-                                name="Orders"
+                            name="Orders"
                                 radius={[6, 6, 0, 0]}
                               />
                               <defs>
@@ -902,8 +923,8 @@ const AdminDashboardPage = () => {
                                   <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.3}/>
                                 </linearGradient>
                               </defs>
-                            </BarChart>
-                          </ResponsiveContainer>
+                        </BarChart>
+                      </ResponsiveContainer>
                         </div>
                       </div>
 
@@ -927,367 +948,511 @@ const AdminDashboardPage = () => {
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </motion.div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </motion.div>
           )}
 
           {/* Users Tab */}
           {activeTab === 'users' && (
-            <motion.div
+          <motion.div
               key="users"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-            >
+          >
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 p-6">
-                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 space-y-4 lg:space-y-0">
-                  <div>
-                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                      User Management
-                    </h2>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      {filteredUsers.length} users found • {users.length} total
-                    </p>
-                  </div>
-                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
-                    <div className="relative w-full sm:w-64">
-                      <input
-                        type="text"
-                        value={userSearch}
-                        onChange={(e) => setUserSearch(e.target.value)}
-                        placeholder="Search users..."
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
-                      />
-                      <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                    </div>
-                    <select
-                      value={userFilter}
-                      onChange={(e) => setUserFilter(e.target.value)}
-                      className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
-                    >
-                      <option value="all">All Roles</option>
-                      <option value="USER">Users</option>
-                      <option value="ADMIN">Admins</option>
-                    </select>
-                  </div>
+              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 space-y-4 lg:space-y-0">
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                    User Management
+                  </h2>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    {filteredUsers.length} users found • {users.length} total
+                  </p>
                 </div>
-                
+                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+                  <div className="relative w-full sm:w-64">
+                    <input
+                      type="text"
+                      value={userSearch}
+                      onChange={(e) => setUserSearch(e.target.value)}
+                      placeholder="Search users..."
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
+                    />
+                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  </div>
+                    <div className="relative w-full sm:w-auto">
+                  <select
+                    value={userFilter}
+                    onChange={(e) => setUserFilter(e.target.value)}
+                        className="appearance-none px-4 py-3 pr-10 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200 w-full"
+                  >
+                    <option value="all">All Roles</option>
+                    <option value="USER">Users</option>
+                    <option value="ADMIN">Admins</option>
+                  </select>
+                      <FaChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    </div>
+                </div>
+              </div>
+              
                 {/* Users Table */}
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-700">
-                      <tr>
-                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          User
-                        </th>
-                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          Email
-                        </th>
-                        <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          Role
-                        </th>
-                        <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                      {paginatedUsers.map((user, index) => (
-                        <motion.tr
-                          key={user.id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                        >
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        User
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        Email
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        Role
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    {paginatedUsers.map((user, index) => (
+                      <motion.tr
+                        key={user.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      >
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <div className="flex-shrink-0 h-12 w-12">
-                                {user.imageUrl ? (
-                                  <img
-                                    src={getImageUrl(user.imageUrl)}
-                                    alt={user.firstName + ' ' + user.lastName}
-                                    className="h-12 w-12 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
-                                    onError={e => { e.target.src = getPlaceholderUrl(); }}
-                                  />
-                                ) : (
+                            <div className="flex items-center space-x-4">
+                              <div className="flex-shrink-0 flex-grow-0 h-12 w-12 min-w-[3rem] min-h-[3rem] flex items-center justify-center overflow-hidden">
+                              {user.imageUrl ? (
+                                <img
+                                  src={getImageUrl(user.imageUrl)}
+                                  alt={user.firstName + ' ' + user.lastName}
+                                    className="h-full w-full rounded-full object-cover object-center border-2 border-gray-200 dark:border-gray-600"
+                                  onError={e => { e.target.src = getPlaceholderUrl(); }}
+                                />
+                              ) : (
                                   <div className="h-12 w-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-lg">
-                                    {user.firstName.charAt(0)}{user.lastName.charAt(0)}
-                                  </div>
-                                )}
+                                  {user.firstName.charAt(0)}{user.lastName.charAt(0)}
+                                </div>
+                              )}
+                            </div>
+                              <div className="flex-1">
+                              <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                {user.firstName} {user.lastName}
                               </div>
-                              <div className="ml-4">
-                                <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                  {user.firstName} {user.lastName}
-                                </div>
-                                <div className="text-sm text-gray-500 dark:text-gray-400">
-                                  ID: {user.id}
-                                </div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">
+                                ID: {user.id}
                               </div>
                             </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                            {user.email}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center">
-                            <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
-                              user.role === 'ADMIN' 
-                                ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                            }`}>
-                              {user.role}
-                            </span>
-                          </td>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 dark:text-white">
+                          {user.email}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
+                            user.role === 'ADMIN' 
+                              ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                              : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                          }`}>
+                            {user.role}
+                          </span>
+                        </td>
                           <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-2">
-                            <button
-                              onClick={() => handleUserAction('edit', user)}
-                              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                              title="Edit User"
-                            >
-                              <FaUserEdit className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleUserAction('reset-password', user)}
-                              className="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300 transition-colors p-2 rounded-lg hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
-                              title="Reset Password"
-                            >
-                              <FaKey className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleUserAction('change-role', user)}
-                              className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 transition-colors p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20"
-                              title="Change Role"
-                            >
-                              <FaUserShield className="w-4 h-4" />
-                            </button>
-                          </td>
-                        </motion.tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                
-                {totalUserPages > 1 && (
-                  <Pagination
-                    currentPage={currentUserPage}
-                    totalPages={totalUserPages}
-                    onPageChange={setCurrentUserPage}
-                  />
-                )}
+                          <button
+                            onClick={() => handleUserAction('edit', user)}
+                            className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                            title="Edit User"
+                          >
+                            <FaUserEdit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleUserAction('reset-password', user)}
+                            className="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300 transition-colors p-2 rounded-lg hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
+                            title="Reset Password"
+                          >
+                            <FaKey className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleUserAction('change-role', user)}
+                            className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 transition-colors p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20"
+                            title="Change Role"
+                          >
+                            <FaUserShield className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            </motion.div>
+              
+              {totalUserPages > 1 && (
+                <Pagination
+                  currentPage={currentUserPage}
+                  totalPages={totalUserPages}
+                  onPageChange={setCurrentUserPage}
+                />
+              )}
+            </div>
+          </motion.div>
           )}
 
           {/* Products Tab */}
           {activeTab === 'products' && (
-            <motion.div
+          <motion.div
               key="products"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-            >
+          >
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 p-6">
-                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 space-y-4 lg:space-y-0">
-                  <div>
-                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                      Product Management
-                    </h2>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      {filteredProducts.length} products found • {products.length} total
-                    </p>
-                  </div>
-                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
-                    <div className="relative w-full sm:w-64">
-                      <input
-                        type="text"
-                        value={productSearch}
-                        onChange={(e) => setProductSearch(e.target.value)}
-                        placeholder="Search products..."
+              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 space-y-4 lg:space-y-0">
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                    Product Management
+                  </h2>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    {filteredProducts.length} products found • {products.length} total
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+                  <div className="relative w-full sm:w-64">
+                    <input
+                      type="text"
+                      value={productSearch}
+                      onChange={(e) => setProductSearch(e.target.value)}
+                      placeholder="Search products..."
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
-                      />
-                      <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    />
+                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  </div>
+                    <div className="relative w-full sm:w-auto">
+                  <select
+                    value={productFilter}
+                    onChange={(e) => setProductFilter(e.target.value)}
+                        className="appearance-none px-4 py-3 pr-10 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200 w-full"
+                  >
+                    <option value="all">All Categories</option>
+                    {categories.map(category => (
+                      <option key={category} value={category}>{category}</option>
+                    ))}
+                  </select>
+                      <FaChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
                     </div>
-                    <select
-                      value={productFilter}
-                      onChange={(e) => setProductFilter(e.target.value)}
-                      className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
-                    >
-                      <option value="all">All Categories</option>
-                      {categories.map(category => (
-                        <option key={category} value={category}>{category}</option>
-                      ))}
-                    </select>
-                    <button
+                  <button
                       onClick={() => setProductModalMode('add')}
                       className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm font-medium rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg"
-                    >
-                      <FaPlus className="w-4 h-4 mr-2" />
-                      Add Product
-                    </button>
-                  </div>
+                  >
+                    <FaPlus className="w-4 h-4 mr-2" />
+                    Add Product
+                  </button>
                 </div>
-                
-                {/* Products Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {paginatedProducts.length === 0 ? (
-                    <div className="col-span-full text-center py-12">
-                      <div className="text-gray-500 dark:text-gray-400">
-                        <FaImage className="mx-auto h-16 w-16 mb-4 opacity-50" />
-                        <p className="text-xl font-medium mb-2">No products found</p>
-                        <p className="text-sm">Try adjusting your search or filters</p>
-                      </div>
-                    </div>
-                  ) : (
-                    paginatedProducts.map((product, index) => (
-                      <motion.div
-                        key={product.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="bg-white dark:bg-gray-700 rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-600/50 overflow-hidden hover:shadow-xl transition-all duration-300 group"
-                      >
-                        <div className="relative">
-                          <img
-                            className="h-48 w-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            src={product.image}
-                            alt={product.name}
-                            onError={(e) => {
-                              e.target.src = 'https://via.placeholder.com/300x200?text=No+Image';
-                            }}
-                          />
-                          <div className="absolute top-2 right-2">
-                            <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+              </div>
+              
+                {/* Modern Products Table */}
+                <div className="bg-white dark:bg-gray-700 rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-600/50 overflow-hidden">
+              <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                      <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600">
+                    <tr>
+                          <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        Product
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        Price
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        Category
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        Stock
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                      <tbody className="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
+                    {paginatedProducts.length === 0 ? (
+                      <tr>
+                            <td colSpan="5" className="px-6 py-12 text-center">
+                          <div className="text-gray-500 dark:text-gray-400">
+                                <FaImage className="mx-auto h-16 w-16 mb-4 opacity-50" />
+                                <p className="text-xl font-medium mb-2">No products found</p>
+                            <p className="text-sm">Try adjusting your search or filters</p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      paginatedProducts.map((product, index) => (
+                        <motion.tr
+                          key={product.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                              className="hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors group"
+                        >
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <button
+                                  type="button"
+                                  onClick={() => navigate(`/product/${product.id}`)}
+                                  className="flex flex-col items-center w-full focus:outline-none group cursor-pointer hover:scale-105 transition-transform"
+                                  title={`View details for ${product.name}`}
+                                >
+                                  <div className="flex-shrink-0 h-16 w-16 flex items-center justify-center mb-2">
+                                    <img
+                                      className="h-16 w-16 rounded-xl object-cover shadow-md group-hover:shadow-lg transition-shadow duration-200"
+                                      src={product.image}
+                                      alt={product.name}
+                                      onError={(e) => {
+                                        e.target.src = 'https://via.placeholder.com/64x64?text=No+Image';
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="text-center">
+                                    <div className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors underline-offset-2 group-hover:underline">
+                                      {product.name}
+                                    </div>
+                                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                                      ID: {product.id}
+                                    </div>
+                                    <div className="text-xs text-gray-400 dark:text-gray-500 mt-1 line-clamp-2 max-w-xs">
+                                      {product.description}
+                                    </div>
+                                  </div>
+                                </button>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-center">
+                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                               ${product.price}
                             </span>
-                          </div>
-                        </div>
-                        <div className="p-4">
-                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 truncate">
-                            {product.name}
-                          </h3>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-                            {product.description}
-                          </p>
-                          <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                              {product.category || 'Uncategorized'}
-                            </span>
-                            <span className={`text-xs px-2 py-1 rounded-full ${
-                              product.stock > 0 
-                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                            }`}>
-                              {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
-                            </span>
-                          </div>
-                          <div className="flex space-x-2">
+                          </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 dark:text-white">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                            {product.category || 'Uncategorized'}
+                                </span>
+                          </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-center">
+                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${
+                                  product.stock > 0 
+                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                }`}>
+                                  {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+                                </span>
+                          </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                <div className="flex items-center justify-center space-x-2">
                             <button
                               onClick={() => handleProductAction('edit', product)}
-                              className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                              title="Edit Product"
                             >
-                              <FaEdit className="w-3 h-3 mr-1 inline" />
-                              Edit
+                              <FaEdit className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleProductAction('delete', product)}
-                              className="flex-1 bg-red-600 text-white px-3 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+                              className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
+                              title="Delete Product"
                             >
-                              <FaTrash className="w-3 h-3 mr-1 inline" />
-                              Delete
+                              <FaTrash className="w-4 h-4" />
                             </button>
-                          </div>
-                        </div>
-                      </motion.div>
-                    ))
-                  )}
-                </div>
-                
-                {totalProductPages > 1 && (
-                  <Pagination
-                    currentPage={currentProductPage}
-                    totalPages={totalProductPages}
-                    onPageChange={setCurrentProductPage}
-                  />
-                )}
+                                </div>
+                          </td>
+                        </motion.tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+                  </div>
               </div>
-            </motion.div>
+              
+              {totalProductPages > 1 && (
+                <Pagination
+                  currentPage={currentProductPage}
+                  totalPages={totalProductPages}
+                  onPageChange={setCurrentProductPage}
+                />
+              )}
+            </div>
+          </motion.div>
           )}
 
           {/* Orders Tab */}
           {activeTab === 'orders' && (
-            <motion.div
+          <motion.div
               key="orders"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-            >
+          >
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 p-6">
-                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 space-y-4 lg:space-y-0">
-                  <div>
-                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                      Order Management
-                    </h2>
-                    <p className="text-gray-600 dark:text-gray-400">
+              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 space-y-4 lg:space-y-0">
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                    Order Management
+                  </h2>
+                  <p className="text-gray-600 dark:text-gray-400">
                       {orders.length} total orders
-                    </p>
-                  </div>
-                </div>
-                
-                {/* Orders List */}
-                <div className="space-y-4">
-                  {orders.slice(0, 10).map((order, index) => (
-                    <motion.div
-                      key={order.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 border border-gray-200/50 dark:border-gray-600/50"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
-                            <FaShoppingCart className="w-6 h-6 text-white" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-gray-900 dark:text-white">
-                              Order #{order.id}
-                            </h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              {order.items?.length || 0} items • ${order.totalAmount || 0}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                            order.status === 'COMPLETED' 
-                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                              : order.status === 'PENDING'
-                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                              : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-                          }`}>
-                            {order.status || 'UNKNOWN'}
-                          </span>
-                          <button
-                            onClick={() => handleViewOrderDetails(order)}
-                            className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                            title="View Details"
-                          >
-                            <FaEye className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
+                  </p>
                 </div>
               </div>
-            </motion.div>
+              
+                {/* Modern Orders Table */}
+                <div className="bg-white dark:bg-gray-700 rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-600/50 overflow-hidden">
+              <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                      <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600">
+                    <tr>
+                          <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        Order
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        Customer
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Amount
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        Date
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                      <tbody className="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
+                        {orders.slice(0, 10).map((order, index) => (
+                        <motion.tr
+                          key={order.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                            className="hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors group"
+                          >
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center mr-3">
+                                  <FaShoppingCart className="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                  <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                                    #{order.id}
+                                  </div>
+                                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                                    {order.items?.length || 0} items
+                                  </div>
+                                </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                              <div className="flex items-center justify-center space-x-3">
+                                <div className="flex-shrink-0 h-10 w-10">
+                                  {order.user?.imageUrl ? (
+                                    <img
+                                      src={getImageUrl(order.user.imageUrl)}
+                                      alt={order.user?.firstName + ' ' + order.user?.lastName}
+                                      className="h-10 w-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
+                                      onError={e => { e.target.src = getPlaceholderUrl(); }}
+                                    />
+                                  ) : (
+                                    <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
+                                      {order.user?.firstName?.charAt(0)}{order.user?.lastName?.charAt(0)}
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="text-left min-w-0">
+                                  <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                {order.user?.firstName} {order.user?.lastName}
+                                  </div>
+                                  <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                    {order.user?.email}
+                                  </div>
+                                </div>
+                            </div>
+                          </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center">
+                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                              ${(() => {
+                                try {
+                                  if (order.totalAmount !== null && order.totalAmount !== undefined) {
+                                    return parseFloat(order.totalAmount).toFixed(2);
+                                  }
+                                  return '0.00';
+                                } catch (error) {
+                                  return '0.00';
+                                }
+                              })()}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${
+                                order.status === 'COMPLETED' 
+                                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                  : order.status === 'PENDING'
+                                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                : order.status === 'PROCESSING'
+                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                                  : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                              }`}>
+                                {order.status || 'UNKNOWN'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 dark:text-white">
+                            {(() => {
+                              try {
+                                if (order.orderDate) {
+                                  return new Date(order.orderDate).toLocaleDateString();
+                                } else if (order.createdAt) {
+                                  return new Date(order.createdAt).toLocaleDateString();
+                                }
+                                return 'N/A';
+                              } catch (error) {
+                                return 'Invalid Date';
+                              }
+                            })()}
+                          </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                              <div className="flex items-center justify-center space-x-2">
+                            <button
+                              onClick={() => handleViewOrderDetails(order)}
+                                  className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                  title="View Details"
+                            >
+                              <FaEye className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleOrderAction('update-status', order)}
+                              className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 transition-colors p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20"
+                              title="Edit Order"
+                            >
+                              <FaEdit className="w-4 h-4" />
+                            </button>
+                              </div>
+                          </td>
+                        </motion.tr>
+                        ))}
+                  </tbody>
+                </table>
+              </div>
+                </div>
+            </div>
+          </motion.div>
           )}
         </AnimatePresence>
       </div>
@@ -1713,7 +1878,7 @@ const AdminDashboardPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <div className="flex items-center mb-4">
-                      <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-lg mr-4 bg-gradient-to-r from-blue-500 to-purple-500 overflow-hidden border border-gray-300 dark:border-gray-700">
+                      <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-lg bg-gradient-to-r from-blue-500 to-purple-500 overflow-hidden border border-gray-300 dark:border-gray-700">
                         {selectedOrder.user?.imageUrl ? (
                           <img
                             src={getImageUrl(selectedOrder.user.imageUrl)}
@@ -1725,11 +1890,11 @@ const AdminDashboardPage = () => {
                           <span>{selectedOrder.user?.firstName?.charAt(0)}{selectedOrder.user?.lastName?.charAt(0)}</span>
                         )}
                       </div>
-                      <div>
-                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      <div className="ml-4 min-w-0 flex-1">
+                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
                           {selectedOrder.user?.firstName} {selectedOrder.user?.lastName}
                         </h4>
-                        <p className="text-gray-600 dark:text-gray-400 break-all">{selectedOrder.user?.email}</p>
+                        <p className="text-gray-600 dark:text-gray-400 truncate">{selectedOrder.user?.email}</p>
                       </div>
                     </div>
                   </div>
