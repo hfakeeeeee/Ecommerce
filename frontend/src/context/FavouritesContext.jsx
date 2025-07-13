@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
+import Toast from '../components/Toast';
 
 const FavouritesContext = createContext();
 
@@ -8,6 +9,7 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
 
 export function FavouritesProvider({ children }) {
   const [favourites, setFavourites] = useState([]);
+  const [notification, setNotification] = useState({ message: '', visible: false });
   const auth = useAuth();
   const token = auth?.token;
   const user = auth?.user;
@@ -43,9 +45,16 @@ export function FavouritesProvider({ children }) {
     }
   };
 
+  const showNotification = (message) => {
+    setNotification({ message, visible: true });
+    setTimeout(() => {
+      setNotification({ message: '', visible: false });
+    }, 3000);
+  };
+
   const addToFavourites = async (product) => {
     if (!token || !user) {
-      console.log('User must be logged in to add favorites');
+      showNotification('Please log in to add items to favourites');
       return;
     }
 
@@ -61,10 +70,12 @@ export function FavouritesProvider({ children }) {
 
       if (response.ok) {
         await fetchFavourites(); // Refresh the favorites list
+        showNotification('Added to favourites');
       } else {
         console.error('Failed to add favourite:', response.status);
         const errorData = await response.json();
         console.error('Error details:', errorData);
+        showNotification('Error adding to favourites');
       }
     } catch (error) {
       console.error('Error adding to favourites:', error);
@@ -85,10 +96,12 @@ export function FavouritesProvider({ children }) {
 
       if (response.ok) {
         await fetchFavourites(); // Refresh the favorites list
+        showNotification('Removed from favourites');
       } else {
         console.error('Failed to remove favourite:', response.status);
         const errorData = await response.json();
         console.error('Error details:', errorData);
+        showNotification('Error removing from favourites');
       }
     } catch (error) {
       console.error('Error removing from favourites:', error);
@@ -97,7 +110,7 @@ export function FavouritesProvider({ children }) {
 
   const toggleFavourite = async (product) => {
     if (!token || !user) {
-      console.log('User must be logged in to manage favorites');
+      showNotification('Please log in to manage favourites');
       return;
     }
 
@@ -145,9 +158,16 @@ export function FavouritesProvider({ children }) {
       addToFavourites,
       removeFromFavourites,
       toggleFavourite,
-      isFavourited
+      isFavourited,
+      notification
     }}>
       {children}
+      <Toast
+        message={notification.message}
+        type="success"
+        isVisible={notification.visible}
+        onClose={() => setNotification({ message: '', visible: false })}
+      />
     </FavouritesContext.Provider>
   );
 }

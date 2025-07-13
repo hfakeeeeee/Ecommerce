@@ -7,6 +7,8 @@ import {
 } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { useAuth } from '../context/AuthContext';
+import { getImageUrl, getPlaceholderUrl } from '../utils/imageUtils';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
 
@@ -883,10 +885,10 @@ const AdminDashboardPage = () => {
                             <div className="flex-shrink-0 h-10 w-10">
                               {user.imageUrl ? (
                                 <img
-                                  src={user.imageUrl}
+                                  src={getImageUrl(user.imageUrl)}
                                   alt={user.firstName + ' ' + user.lastName}
                                   className="h-10 w-10 rounded-full object-cover border border-gray-300 dark:border-gray-700"
-                                  onError={e => { e.target.src = 'https://via.placeholder.com/80x80?text=No+Image'; }}
+                                  onError={e => { e.target.src = getPlaceholderUrl(); }}
                                 />
                               ) : (
                                 <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
@@ -1365,10 +1367,10 @@ const AdminDashboardPage = () => {
                 {userForm.imageUrl && (
                   <div className="w-16 h-16 rounded-full overflow-hidden border border-gray-300 dark:border-gray-600 mt-2">
                     <img
-                      src={userForm.imageUrl}
+                      src={getImageUrl(userForm.imageUrl)}
                       alt="Avatar Preview"
                       className="w-full h-full object-cover"
-                      onError={e => { e.target.src = 'https://via.placeholder.com/80x80?text=No+Image'; }}
+                      onError={e => { e.target.src = getPlaceholderUrl(); }}
                     />
                   </div>
                 )}
@@ -1728,10 +1730,10 @@ const AdminDashboardPage = () => {
                       <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-lg mr-4 bg-gradient-to-r from-blue-500 to-purple-500 overflow-hidden border border-gray-300 dark:border-gray-700">
                         {selectedOrder.user?.imageUrl ? (
                           <img
-                            src={selectedOrder.user.imageUrl}
+                            src={getImageUrl(selectedOrder.user.imageUrl)}
                             alt={selectedOrder.user?.firstName + ' ' + selectedOrder.user?.lastName}
                             className="w-12 h-12 object-cover"
-                            onError={e => { e.target.src = 'https://via.placeholder.com/80x80?text=No+Image'; }}
+                            onError={e => { e.target.src = getPlaceholderUrl(); }}
                           />
                         ) : (
                           <span>{selectedOrder.user?.firstName?.charAt(0)}{selectedOrder.user?.lastName?.charAt(0)}</span>

@@ -19,9 +19,8 @@ export default function ProductDetailsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [quantity, setQuantity] = useState(1)
-  const [showToast, setShowToast] = useState(false)
-  const [toastMessage, setToastMessage] = useState('')
   const [isAddingToCart, setIsAddingToCart] = useState(false)
+  const [shareToast, setShareToast] = useState({ show: false, message: '' })
   
   useEffect(() => {
     setLoading(true)
@@ -55,9 +54,7 @@ export default function ProductDetailsPage() {
   const handleAddToCart = async () => {
     setIsAddingToCart(true)
     await addToCart(product, quantity)
-    setToastMessage('Added to cart successfully!')
-    setShowToast(true)
-    setTimeout(() => setShowToast(false), 3000)
+    // Don't show success message here - let CartContext handle the notification
     setIsAddingToCart(false)
   }
 
@@ -70,18 +67,15 @@ export default function ProductDetailsPage() {
 
   const handleWishlist = () => {
     toggleFavourite(product);
-    setToastMessage(isFavourited(product.id) ? 'Removed from favourites!' : 'Added to favourites!');
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 2000);
+    // Let FavouritesContext handle the notification
   }
 
   // Share button handler
   const handleShare = () => {
     const url = window.location.href;
     navigator.clipboard.writeText(url).then(() => {
-      setToastMessage('Product link copied!');
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 2000);
+      setShareToast({ show: true, message: 'Product link copied!' });
+      setTimeout(() => setShareToast({ show: false, message: '' }), 3000);
     });
   };
   
@@ -130,10 +124,10 @@ export default function ProductDetailsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <Toast
-        message={toastMessage}
-        type="cart"
-        isVisible={showToast}
-        onClose={() => setShowToast(false)}
+        message={shareToast.message}
+        type="success"
+        isVisible={shareToast.show}
+        onClose={() => setShareToast({ show: false, message: '' })}
       />
       
       <div className="container mx-auto px-4 py-8">

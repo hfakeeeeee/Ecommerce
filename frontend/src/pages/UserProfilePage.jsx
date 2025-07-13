@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { FaCamera, FaSpinner, FaCheck, FaEye, FaEyeSlash, FaUserCircle, FaEnvelope, FaLock, FaEdit, FaTimes } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import Toast from '../components/Toast';
+import { getImageUrl } from '../utils/imageUtils';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
 
@@ -174,7 +175,7 @@ export default function UserProfilePage() {
                                 >
                                     {user?.imageUrl ? (
                                         <img
-                                            src={user.imageUrl}
+                                            src={getImageUrl(user.imageUrl)}
                                             alt="Profile"
                                             className="w-full h-full object-cover"
                                             onError={(e) => {

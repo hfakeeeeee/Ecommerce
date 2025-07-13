@@ -69,7 +69,6 @@ const CatalogPage = () => {
   const [showFilters, setShowFilters] = useState(false)
   const { products, loading, error, pagination, fetchProductsByCategory } = useProducts()
   const { addToCart } = useCart()
-  const [notification, setNotification] = useState({ show: false, message: '', type: 'success' })
 
   // Get min and max prices from products for input placeholders
   const priceStats = products.length > 0 ? {
@@ -146,12 +145,7 @@ const CatalogPage = () => {
     e.preventDefault()
     e.stopPropagation()
     addToCart(product)
-    setNotification({ 
-      show: true, 
-      message: `${product.name} added to cart!`, 
-      type: 'success' 
-    })
-    setTimeout(() => setNotification({ show: false, message: '', type: 'success' }), 3000)
+    // Don't show success message here - let CartContext handle the notification
   }
 
   const handlePageChange = (newPage) => {
@@ -285,26 +279,7 @@ const CatalogPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Enhanced Notification */}
-        <AnimatePresence>
-          {notification.show && (
-            <motion.div
-              initial={{ opacity: 0, y: -50, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -50, scale: 0.9 }}
-              className={`fixed top-20 right-4 px-6 py-4 rounded-2xl shadow-2xl z-50 backdrop-blur-sm border ${
-                notification.type === 'success' 
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-blue-400/50' 
-                  : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-blue-400/50'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                {notification.message}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+
 
         {/* Modern Header */}
         <div className="mb-12">

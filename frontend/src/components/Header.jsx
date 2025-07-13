@@ -5,6 +5,7 @@ import ThemeSwitcher from './ThemeSwitcher';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { FaShoppingCart, FaUser, FaSignOutAlt, FaCog, FaUserCircle, FaEnvelope, FaHistory, FaHeart, FaMicrochip } from 'react-icons/fa';
+import { getImageUrl } from '../utils/imageUtils';
 
 const navLinks = [
   { name: 'Home', href: '/' },
@@ -35,6 +36,8 @@ export default function Header() {
     logout();
     navigate('/login');
   };
+
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
 
   return (
     <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50">
@@ -93,7 +96,7 @@ export default function Header() {
                     <div className="w-full h-full rounded-full overflow-hidden bg-white dark:bg-gray-800">
                       {user.imageUrl ? (
                         <img
-                          src={user.imageUrl}
+                          src={getImageUrl(user.imageUrl)}
                           alt="Profile"
                           className="w-full h-full object-cover"
                         />
@@ -120,7 +123,7 @@ export default function Header() {
                             <div className="w-full h-full rounded-full overflow-hidden bg-white dark:bg-gray-800">
                               {user.imageUrl ? (
                                 <img
-                                  src={user.imageUrl}
+                                  src={getImageUrl(user.imageUrl)}
                                   alt="Profile"
                                   className="w-full h-full object-cover"
                                 />
