@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ThemeSwitcher from './ThemeSwitcher';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { FaShoppingCart, FaUser, FaSignOutAlt, FaCog, FaUserCircle, FaEnvelope, FaHistory, FaHeart, FaMicrochip } from 'react-icons/fa';
+import { FaShoppingCart, FaUser, FaSignOutAlt, FaCog, FaUserCircle, FaEnvelope, FaHistory, FaHeart, FaMicrochip, FaBars } from 'react-icons/fa';
 import { getImageUrl } from '../utils/imageUtils';
 
 const navLinks = [
@@ -18,6 +18,7 @@ export default function Header() {
   const { getCartItemCount } = useCart();
   const { user, logout } = useAuth();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const profileMenuRef = useRef(null);
   const navigate = useNavigate();
 
@@ -27,7 +28,6 @@ export default function Header() {
         setShowProfileMenu(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
@@ -39,44 +39,66 @@ export default function Header() {
 
   const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
 
+  // Helper for active nav link
+  const isActive = (href) => window.location.pathname === href;
+
   return (
-    <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50">
-      <div className="container mx-auto px-4">
+    <header className="sticky top-0 z-50 w-full bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl shadow-lg rounded-b-2xl border-b border-gray-200/60 dark:border-gray-800/60">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
+          <Link to="/" className="flex items-center space-x-2 h-16">
             <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex items-center text-2xl font-bold text-blue-600 dark:text-blue-400"
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.96 }}
+              className="flex items-center text-2xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tight select-none h-16"
             >
-              <FaMicrochip className="w-6 h-6 mr-2" />
+              <FaMicrochip className="w-7 h-7 mr-2" />
               TECHVERSE
             </motion.div>
           </Link>
 
-          {/* Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-8 h-16">
             {navLinks.map(link => (
               <Link
                 key={link.name}
                 to={link.href}
-                className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                className={`relative px-2 py-1 text-lg font-medium transition-colors duration-200
+                  ${isActive(link.href)
+                    ? 'text-blue-600 dark:text-blue-400'
+                    : 'text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400'}
+                `}
               >
-                {link.name}
+                <span>{link.name}</span>
+                {isActive(link.href) && (
+                  <motion.span
+                    layoutId="nav-underline"
+                    className="absolute left-0 -bottom-1 w-full h-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full"
+                  />
+                )}
               </Link>
             ))}
           </nav>
 
+          {/* Mobile Hamburger */}
+          <button
+            className="md:hidden p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-gray-800 transition"
+            onClick={() => setShowMobileMenu((v) => !v)}
+            aria-label="Open menu"
+          >
+            <FaBars className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+          </button>
+
           {/* Actions */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 h-16">
             <ThemeSwitcher />
             {/* Cart Button */}
             <Link to="/cart" className="relative">
               <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                <FaShoppingCart className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+                <FaShoppingCart className="h-7 w-7 text-gray-600 dark:text-gray-300" />
                 {getCartItemCount() > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                  <span className="absolute -top-2 -right-2 bg-gradient-to-r from-pink-500 to-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg border-2 border-white dark:border-gray-900">
                     {getCartItemCount()}
                   </span>
                 )}
@@ -92,7 +114,7 @@ export default function Header() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-r from-blue-500 to-indigo-500 p-[2px]">
+                  <div className="w-11 h-11 rounded-full overflow-hidden bg-gradient-to-r from-blue-500 to-indigo-500 p-[2px] shadow-md">
                     <div className="w-full h-full rounded-full overflow-hidden bg-white dark:bg-gray-800">
                       {user.imageUrl ? (
                         <img
@@ -102,7 +124,7 @@ export default function Header() {
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-500">
-                          <FaUserCircle className="text-white w-6 h-6" />
+                          <FaUserCircle className="text-white w-7 h-7" />
                         </div>
                       )}
                     </div>
@@ -115,11 +137,11 @@ export default function Header() {
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      className="absolute right-0 mt-3 w-72 rounded-xl shadow-lg py-1 bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 overflow-hidden"
+                      className="absolute right-0 mt-3 w-80 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 py-1 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl overflow-hidden z-50"
                     >
                       <div className="px-4 py-4 border-b border-gray-200 dark:border-gray-700">
                         <div className="flex items-center space-x-3">
-                          <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-r from-blue-500 to-indigo-500 p-[2px]">
+                          <div className="w-14 h-14 rounded-full overflow-hidden bg-gradient-to-r from-blue-500 to-indigo-500 p-[2px]">
                             <div className="w-full h-full rounded-full overflow-hidden bg-white dark:bg-gray-800">
                               {user.imageUrl ? (
                                 <img
@@ -129,13 +151,13 @@ export default function Header() {
                                 />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-500">
-                                  <FaUserCircle className="text-white w-7 h-7" />
+                                  <FaUserCircle className="text-white w-8 h-8" />
                                 </div>
                               )}
                             </div>
                           </div>
                           <div>
-                            <div className="font-semibold text-gray-900 dark:text-white">
+                            <div className="font-semibold text-gray-900 dark:text-white text-lg">
                               {user.firstName} {user.lastName}
                             </div>
                             <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
@@ -149,35 +171,35 @@ export default function Header() {
                       <div className="py-1">
                         <Link
                           to="/profile"
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                          className="flex items-center px-4 py-3 text-base text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                           onClick={() => setShowProfileMenu(false)}
                         >
-                          <FaCog className="w-4 h-4 mr-3" />
+                          <FaCog className="w-5 h-5 mr-3" />
                           Profile Settings
                         </Link>
                         <Link
                           to="/orders"
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                          className="flex items-center px-4 py-3 text-base text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                           onClick={() => setShowProfileMenu(false)}
                         >
-                          <FaHistory className="w-4 h-4 mr-3" />
+                          <FaHistory className="w-5 h-5 mr-3" />
                           Order History
                         </Link>
                         <Link
                           to="/favourites"
-                          className="flex items-center px-4 py-2 text-sm text-pink-600 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/20 transition-colors"
+                          className="flex items-center px-4 py-3 text-base text-pink-600 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/20 transition-colors"
                           onClick={() => setShowProfileMenu(false)}
                         >
-                          <FaHeart className="w-4 h-4 mr-3" />
+                          <FaHeart className="w-5 h-5 mr-3" />
                           Favourites
                         </Link>
                         {user.role === 'ADMIN' && (
                           <Link
                             to="/admin"
-                            className="flex items-center px-4 py-2 text-sm text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                            className="flex items-center px-4 py-3 text-base text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                             onClick={() => setShowProfileMenu(false)}
                           >
-                            <FaUser className="w-4 h-4 mr-3" />
+                            <FaUser className="w-5 h-5 mr-3" />
                             Admin Dashboard
                           </Link>
                         )}
@@ -186,9 +208,9 @@ export default function Header() {
                             setShowProfileMenu(false);
                             handleLogout();
                           }}
-                          className="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                          className="flex items-center w-full px-4 py-3 text-base text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                         >
-                          <FaSignOutAlt className="w-4 h-4 mr-3" />
+                          <FaSignOutAlt className="w-5 h-5 mr-3" />
                           Sign out
                         </button>
                       </div>
@@ -201,7 +223,7 @@ export default function Header() {
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Link
                     to="/login"
-                    className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                    className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 text-lg"
                   >
                     Login
                   </Link>
@@ -209,7 +231,7 @@ export default function Header() {
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Link
                     to="/register"
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-colors text-lg shadow-md"
                   >
                     Register
                   </Link>
@@ -219,6 +241,108 @@ export default function Header() {
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {showMobileMenu && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="md:hidden absolute top-20 left-0 w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-2xl z-40 rounded-b-2xl border-b border-gray-200/60 dark:border-gray-800/60"
+          >
+            <nav className="flex flex-col items-center py-6 space-y-2">
+              {navLinks.map(link => (
+                <Link
+                  key={link.name}
+                  to={link.href}
+                  className={`w-full text-center py-3 text-lg font-medium rounded-xl transition-colors duration-200
+                    ${isActive(link.href)
+                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
+                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'}
+                  `}
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  {link.name}
+                </Link>
+              ))}
+              <div className="flex items-center justify-center gap-4 mt-4">
+                <ThemeSwitcher />
+                <Link to="/cart" className="relative">
+                  <FaShoppingCart className="h-7 w-7 text-gray-600 dark:text-gray-300" />
+                  {getCartItemCount() > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-gradient-to-r from-pink-500 to-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg border-2 border-white dark:border-gray-900">
+                      {getCartItemCount()}
+                    </span>
+                  )}
+                </Link>
+              </div>
+              <div className="flex flex-col items-center gap-2 mt-4">
+                {user ? (
+                  <>
+                    <Link
+                      to="/profile"
+                      className="w-full text-center py-3 text-base text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl"
+                      onClick={() => setShowMobileMenu(false)}
+                    >
+                      Profile Settings
+                    </Link>
+                    <Link
+                      to="/orders"
+                      className="w-full text-center py-3 text-base text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl"
+                      onClick={() => setShowMobileMenu(false)}
+                    >
+                      Order History
+                    </Link>
+                    <Link
+                      to="/favourites"
+                      className="w-full text-center py-3 text-base text-pink-600 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/20 rounded-xl"
+                      onClick={() => setShowMobileMenu(false)}
+                    >
+                      Favourites
+                    </Link>
+                    {user.role === 'ADMIN' && (
+                      <Link
+                        to="/admin"
+                        className="w-full text-center py-3 text-base text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl"
+                        onClick={() => setShowMobileMenu(false)}
+                      >
+                        Admin Dashboard
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => {
+                        setShowMobileMenu(false);
+                        handleLogout();
+                      }}
+                      className="w-full text-center py-3 text-base text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl"
+                    >
+                      Sign out
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to="/login"
+                      className="w-full text-center py-3 text-base text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl"
+                      onClick={() => setShowMobileMenu(false)}
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      to="/register"
+                      className="w-full text-center py-3 text-base bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl shadow-md"
+                      onClick={() => setShowMobileMenu(false)}
+                    >
+                      Register
+                    </Link>
+                  </>
+                )}
+              </div>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 } 
