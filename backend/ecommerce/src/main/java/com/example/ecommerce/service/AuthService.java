@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.List;
 import java.util.Optional;
+import java.nio.file.FileSystems;
 
 @Service
 public class AuthService {
@@ -85,45 +86,43 @@ public class AuthService {
     }
 
     public ResponseEntity<Map<String, String>> login(LoginRequest request) {
-        try {
-            // First, check if user exists
-            User user = userRepository.findByEmail(request.getEmail());
-            if (user == null) {
-                Map<String, String> response = new HashMap<>();
-                response.put("message", "Invalid email or password");
-                return ResponseEntity.status(401).body(response);
-            }
-
-            // Attempt authentication
-            Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-            );
-
-            // Set security context
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            String jwt = jwtUtils.generateToken(userDetails);
-
-            // Prepare response
-            Map<String, String> response = new HashMap<>();
-            response.put("token", jwt);
-            response.put("firstName", user.getFirstName());
-            response.put("lastName", user.getLastName());
-            response.put("email", user.getEmail());
-            response.put("imageUrl", user.getImageUrl() != null ? user.getImageUrl() : "");
-            response.put("role", user.getRole().toString());
-
-            return ResponseEntity.ok(response);
-
-        } catch (BadCredentialsException e) {
+        // First, check if user exists
+        User user = userRepository.findByEmail(request.getEmail());
+        if (user == null) {
             Map<String, String> response = new HashMap<>();
             response.put("message", "Invalid email or password");
             return ResponseEntity.status(401).body(response);
-        } catch (Exception e) {
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "An error occurred during login: " + e.getMessage());
-            return ResponseEntity.status(500).body(response);
         }
+
+        // Check if avatar file exists, if not, reset to default
+        if (user.getImageUrl() != null && !user.getImageUrl().isEmpty()) {
+            Path avatarPath = Paths.get(uploadDir, user.getImageUrl().replaceFirst("/uploads/?", "uploads/"));
+            if (!Files.exists(avatarPath)) {
+                user.setImageUrl(""); // Reset to default (empty string means default)
+                userRepository.save(user);
+            }
+        }
+
+        // Attempt authentication
+        Authentication authentication = authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+        );
+
+        // Set security context
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String jwt = jwtUtils.generateToken(userDetails);
+
+        // Prepare response
+        Map<String, String> response = new HashMap<>();
+        response.put("token", jwt);
+        response.put("firstName", user.getFirstName());
+        response.put("lastName", user.getLastName());
+        response.put("email", user.getEmail());
+        response.put("imageUrl", user.getImageUrl() != null ? user.getImageUrl() : "");
+        response.put("role", user.getRole().toString());
+
+        return ResponseEntity.ok(response);
     }
 
     public ResponseEntity<?> verifyToken() {
@@ -131,6 +130,14 @@ public class AuthService {
         if (authentication != null && authentication.isAuthenticated()) {
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             User user = userRepository.findByEmail(userDetails.getUsername());
+            // Check if avatar file exists, if not, reset to default
+            if (user.getImageUrl() != null && !user.getImageUrl().isEmpty()) {
+                Path avatarPath = Paths.get(uploadDir, user.getImageUrl().replaceFirst("/uploads/?", "uploads/"));
+                if (!Files.exists(avatarPath)) {
+                    user.setImageUrl(""); // Reset to default (empty string means default)
+                    userRepository.save(user);
+                }
+            }
             return ResponseEntity.ok(Map.of(
                 "firstName", user.getFirstName(),
                 "lastName", user.getLastName(),
