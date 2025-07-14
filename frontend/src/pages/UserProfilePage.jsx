@@ -158,7 +158,7 @@ export default function UserProfilePage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-8 px-2 sm:px-4 lg:px-8">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -166,12 +166,12 @@ export default function UserProfilePage() {
             >
                 {/* Profile Header */}
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden mb-8">
-                    <div className="relative h-48 bg-gradient-to-r from-blue-500 to-indigo-600">
-                        <div className="absolute -bottom-12 left-8">
+                    <div className="relative h-40 sm:h-48 bg-gradient-to-r from-blue-500 to-indigo-600">
+                        <div className="absolute -bottom-14 left-1/2 -translate-x-1/2 sm:left-8 sm:translate-x-0">
                             <div className="relative">
                                 <motion.div
                                     whileHover={{ scale: 1.05 }}
-                                    className="w-32 h-32 rounded-full overflow-hidden ring-4 ring-white dark:ring-gray-800 bg-white dark:bg-gray-700"
+                                    className="w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden ring-4 ring-white dark:ring-gray-800 bg-white dark:bg-gray-700"
                                 >
                                     {user?.imageUrl ? (
                                         <img
@@ -197,7 +197,7 @@ export default function UserProfilePage() {
                                     whileHover={{ scale: 1.1 }}
                                     whileTap={{ scale: 0.9 }}
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="absolute bottom-0 right-0 bg-indigo-600 text-white p-2 rounded-full hover:bg-indigo-700 transition-colors shadow-lg"
+                                    className="absolute bottom-1 right-1 sm:bottom-0 sm:right-0 bg-indigo-600 text-white p-2 rounded-full hover:bg-indigo-700 transition-colors shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
                                     disabled={loading}
                                 >
                                     <FaCamera size={16} />
@@ -212,13 +212,13 @@ export default function UserProfilePage() {
                             </div>
                         </div>
                     </div>
-                    <div className="pt-16 pb-6 px-8">
-                        <div className="flex justify-between items-center">
+                    <div className="pt-20 sm:pt-16 pb-6 px-4 sm:px-8">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 sm:gap-0 text-center sm:text-left">
                             <div>
-                                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                                     {user?.firstName} {user?.lastName}
                                 </h1>
-                                <p className="text-gray-600 dark:text-gray-400 flex items-center mt-1">
+                                <p className="text-gray-600 dark:text-gray-400 flex items-center justify-center sm:justify-start mt-1 text-sm sm:text-base">
                                     <FaEnvelope className="w-4 h-4 mr-2" />
                                     {user?.email}
                                 </p>
@@ -227,7 +227,7 @@ export default function UserProfilePage() {
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => setIsEditing(!isEditing)}
-                                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
+                                className="bg-indigo-600 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2 mx-auto sm:mx-0 text-sm sm:text-base"
                             >
                                 <FaEdit className="w-4 h-4" />
                                 <span>{isEditing ? 'Cancel' : 'Edit Profile'}</span>
@@ -243,7 +243,7 @@ export default function UserProfilePage() {
                             initial={{ opacity: 0, y: -20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
-                            className={`mb-6 p-4 rounded-lg shadow-md ${
+                            className={`mb-6 p-3 sm:p-4 rounded-lg shadow-md ${
                                 message.type === 'success' 
                                     ? 'bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-400' 
                                     : 'bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-400'
@@ -262,14 +262,14 @@ export default function UserProfilePage() {
                 </AnimatePresence>
 
                 {/* Profile Form */}
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-4 sm:p-8">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {!isChangingPassword ? (
                             <motion.div
                                 initial={false}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
-                                className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                                className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6"
                             >
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -281,7 +281,7 @@ export default function UserProfilePage() {
                                         value={formData.firstName}
                                         onChange={handleChange}
                                         disabled={!isEditing}
-                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white transition-colors disabled:opacity-50"
+                                        className="w-full px-3 py-2 sm:px-4 sm:py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white transition-colors disabled:opacity-50 text-sm sm:text-base"
                                     />
                                 </div>
                                 <div>
@@ -294,10 +294,10 @@ export default function UserProfilePage() {
                                         value={formData.lastName}
                                         onChange={handleChange}
                                         disabled={!isEditing}
-                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white transition-colors disabled:opacity-50"
+                                        className="w-full px-3 py-2 sm:px-4 sm:py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white transition-colors disabled:opacity-50 text-sm sm:text-base"
                                     />
                                 </div>
-                                <div className="md:col-span-2">
+                                <div className="sm:col-span-2">
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                         Email
                                     </label>
@@ -307,7 +307,7 @@ export default function UserProfilePage() {
                                         value={formData.email}
                                         onChange={handleChange}
                                         disabled={!isEditing}
-                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white transition-colors disabled:opacity-50"
+                                        className="w-full px-3 py-2 sm:px-4 sm:py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white transition-colors disabled:opacity-50 text-sm sm:text-base"
                                     />
                                 </div>
                             </motion.div>
@@ -316,7 +316,7 @@ export default function UserProfilePage() {
                                 initial={false}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
-                                className="space-y-6"
+                                className="space-y-4 sm:space-y-6"
                             >
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -328,7 +328,7 @@ export default function UserProfilePage() {
                                             name="currentPassword"
                                             value={formData.currentPassword}
                                             onChange={handleChange}
-                                            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white pr-10"
+                                            className="w-full px-3 py-2 sm:px-4 sm:py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white pr-10 text-sm sm:text-base"
                                         />
                                         <button
                                             type="button"
@@ -352,7 +352,7 @@ export default function UserProfilePage() {
                                         name="newPassword"
                                         value={formData.newPassword}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                                        className="w-full px-3 py-2 sm:px-4 sm:py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
                                     />
                                 </div>
                                 <div>
@@ -364,13 +364,13 @@ export default function UserProfilePage() {
                                         name="confirmPassword"
                                         value={formData.confirmPassword}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                                        className="w-full px-3 py-2 sm:px-4 sm:py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
                                     />
                                 </div>
                             </motion.div>
                         )}
 
-                        <div className="flex justify-between items-center pt-6">
+                        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center pt-4 sm:pt-6 gap-3 sm:gap-0">
                             {!isChangingPassword ? (
                                 <>
                                     <motion.button
@@ -378,7 +378,7 @@ export default function UserProfilePage() {
                                         whileTap={{ scale: 0.98 }}
                                         type="button"
                                         onClick={() => setIsChangingPassword(true)}
-                                        className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                                        className="flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors w-full sm:w-auto"
                                     >
                                         <FaLock className="w-4 h-4 mr-2" />
                                         Change Password
@@ -388,7 +388,7 @@ export default function UserProfilePage() {
                                             whileHover={{ scale: 1.02 }}
                                             whileTap={{ scale: 0.98 }}
                                             type="submit"
-                                            className="flex items-center px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                                            className="flex items-center justify-center px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors w-full sm:w-auto mt-2 sm:mt-0"
                                             disabled={loading}
                                         >
                                             {loading ? (
@@ -415,7 +415,7 @@ export default function UserProfilePage() {
                                                 confirmPassword: ''
                                             }));
                                         }}
-                                        className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                                        className="flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors w-full sm:w-auto"
                                     >
                                         Cancel
                                     </motion.button>
@@ -423,7 +423,7 @@ export default function UserProfilePage() {
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
                                         type="submit"
-                                        className="flex items-center px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                                        className="flex items-center justify-center px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors w-full sm:w-auto mt-2 sm:mt-0"
                                         disabled={loading}
                                     >
                                         {loading ? (

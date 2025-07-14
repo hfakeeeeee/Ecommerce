@@ -98,7 +98,7 @@ export default function WarrantyPage() {
         >
           <div className="inline-flex items-center gap-3 mb-6">
             <FaShieldAlt className="w-12 h-12 text-blue-600" />
-            <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-blue-600 dark:from-white dark:to-blue-400">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-blue-600 dark:from-white dark:to-blue-400 break-words whitespace-pre-line">
               Warranty & Returns
             </h1>
           </div>

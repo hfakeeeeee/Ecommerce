@@ -130,12 +130,12 @@ export default function ProductDetailsPage() {
         onClose={() => setShareToast({ show: false, message: '' })}
       />
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-2 sm:px-4 py-8">
         {/* Back to Catalog - left aligned */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8 flex justify-start"
+          className="mb-6 sm:mb-8 flex justify-start"
         >
           <button
             onClick={() => navigate('/catalog')}
@@ -148,7 +148,7 @@ export default function ProductDetailsPage() {
           </button>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 lg:gap-16 mb-10 md:mb-16">
           {/* Product Image Only */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
@@ -156,7 +156,7 @@ export default function ProductDetailsPage() {
             transition={{ duration: 0.6 }}
             className="flex flex-col items-center justify-center"
           >
-            <div className="relative group w-full max-w-md aspect-square rounded-3xl overflow-hidden bg-white dark:bg-gray-800 shadow-2xl">
+            <div className="relative group w-full max-w-xs sm:max-w-md md:max-w-lg aspect-square rounded-3xl overflow-hidden bg-white dark:bg-gray-800 shadow-2xl">
               <img
                 src={product.image}
                 alt={product.name}
@@ -168,18 +168,18 @@ export default function ProductDetailsPage() {
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.3 }}
-                  className="absolute top-6 left-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg"
+                  className="absolute top-4 left-4 sm:top-6 sm:left-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold shadow-lg"
                 >
                   {product.badge}
                 </motion.span>
               )}
               {/* Action Buttons */}
-              <div className="absolute top-6 right-6 flex flex-col gap-3">
+              <div className="absolute top-4 right-4 sm:top-6 sm:right-6 flex flex-col gap-2 sm:gap-3">
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={handleWishlist}
-                  className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${
+                  className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${
                     isFavourited(product.id)
                       ? 'bg-pink-500 text-white'
                       : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-pink-50 dark:hover:bg-pink-900/20'
@@ -191,7 +191,7 @@ export default function ProductDetailsPage() {
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={handleShare}
-                  className="w-12 h-12 rounded-full bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-center shadow-lg transition-all duration-300"
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-center shadow-lg transition-all duration-300"
                 >
                   <FaShare className="w-5 h-5" />
                 </motion.button>
@@ -204,24 +204,24 @@ export default function ProductDetailsPage() {
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="flex flex-col space-y-8"
+            className="flex flex-col space-y-6 sm:space-y-8"
           >
             {/* Header */}
-            <div className="space-y-4">
-              <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
+            <div className="space-y-2 sm:space-y-4">
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
                 {product.name}
               </h1>
-              <div className="flex items-center gap-4">
-                <span className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+                <span className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                   ${product.price}
                 </span>
                 {product.oldPrice && (
-                  <span className="text-2xl text-gray-400 line-through">
+                  <span className="text-lg sm:text-2xl text-gray-400 line-through">
                     ${product.oldPrice}
                   </span>
                 )}
                 {product.oldPrice && (
-                  <span className="bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-3 py-1 rounded-full text-sm font-semibold">
+                  <span className="bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold">
                     Save ${(product.oldPrice - product.price).toFixed(2)}
                   </span>
                 )}
@@ -229,56 +229,56 @@ export default function ProductDetailsPage() {
             </div>
 
             {/* Description */}
-            <div className="space-y-4">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Description</h3>
-              <p className="text-gray-600 dark:text-gray-400 text-lg leading-relaxed">
+            <div className="space-y-2 sm:space-y-4">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">Description</h3>
+              <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg leading-relaxed">
                 {product.description}
               </p>
             </div>
 
             {/* Product Details */}
-            <div className="grid grid-cols-2 gap-6">
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 flex flex-col items-center justify-center text-center">
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2 justify-center">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 flex flex-col items-center justify-center text-center">
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2 flex items-center gap-2 justify-center">
                   <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                   Category
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 capitalize text-lg">{product.category}</p>
+                <p className="text-gray-600 dark:text-gray-400 capitalize text-base sm:text-lg">{product.category}</p>
               </div>
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 flex flex-col items-center justify-center text-center">
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2 justify-center">
+              <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 flex flex-col items-center justify-center text-center">
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2 flex items-center gap-2 justify-center">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                   Stock Status
                 </h3>
-                <p className={`text-lg font-medium ${product.stock > 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                <p className={`text-base sm:text-lg font-medium ${product.stock > 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}> 
                   {product.stock > 0 ? `In Stock (${product.stock} available)` : 'Out of Stock'}
                 </p>
               </div>
             </div>
 
             {/* Features */}
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Features</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="flex items-center gap-3">
+            <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2 sm:mb-4">Features</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
+                <div className="flex items-center gap-2 sm:gap-3">
                   <FaTruck className="w-5 h-5 text-blue-500" />
-                  <span className="text-gray-600 dark:text-gray-400">Free Shipping</span>
+                  <span className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">Free Shipping</span>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                   <FaShieldAlt className="w-5 h-5 text-green-500" />
-                  <span className="text-gray-600 dark:text-gray-400">2 Year Warranty</span>
+                  <span className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">2 Year Warranty</span>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                   <FaUndo className="w-5 h-5 text-purple-500" />
-                  <span className="text-gray-600 dark:text-gray-400">30 Day Returns</span>
+                  <span className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">30 Day Returns</span>
                 </div>
               </div>
             </div>
 
             {/* Quantity and Actions */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                <label className="text-lg font-semibold text-gray-900 dark:text-white">Quantity:</label>
+            <div className="space-y-4 sm:space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
+                <label className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Quantity:</label>
                 <div className="flex items-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1">
                   <button
                     onClick={() => handleQuantityChange(-1)}
@@ -287,7 +287,7 @@ export default function ProductDetailsPage() {
                   >
                     <FaMinus />
                   </button>
-                  <span className="px-4 text-lg font-medium w-10 text-center select-none">
+                  <span className="px-4 text-base sm:text-lg font-medium w-10 text-center select-none">
                     {quantity}
                   </span>
                   <button
@@ -300,12 +300,12 @@ export default function ProductDetailsPage() {
                 </div>
               </div>
 
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleBuyNow}
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-semibold text-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full sm:w-auto flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-semibold text-base sm:text-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={product.stock === 0}
                 >
                   Buy Now
@@ -314,7 +314,7 @@ export default function ProductDetailsPage() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleAddToCart}
-                  className="flex-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-8 py-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 font-semibold text-lg border-2 border-gray-200 dark:border-gray-700 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                  className="w-full sm:w-auto flex-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 font-semibold text-base sm:text-lg border-2 border-gray-200 dark:border-gray-700 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
                   disabled={product.stock === 0}
                 >
                   <FaShoppingCart className="w-5 h-5" />
@@ -339,14 +339,14 @@ export default function ProductDetailsPage() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="mt-20"
+            className="mt-16 sm:mt-20"
           >
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">You Might Also Like</h2>
-              <p className="text-gray-600 dark:text-gray-400 text-lg">Discover more products in this category</p>
+            <div className="text-center mb-8 sm:mb-12">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-4">You Might Also Like</h2>
+              <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg">Discover more products in this category</p>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
               {recommendations.map((rec, index) => (
                 <motion.div
                   key={rec.id}
@@ -354,21 +354,21 @@ export default function ProductDetailsPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.1 * index }}
                   whileHover={{ y: -8 }}
-                  className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700 group flex flex-col h-[370px]"
+                  className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700 group flex flex-col h-[320px] sm:h-[370px]"
                 >
-                  <div className="relative overflow-hidden h-48">
+                  <div className="relative overflow-hidden h-36 sm:h-48">
                     <img
                       src={rec.image}
                       alt={rec.name}
-                      className="h-48 w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      className="h-36 sm:h-48 w-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </div>
-                  <div className="p-6 flex flex-col flex-1">
-                    <h3 className="font-semibold text-lg text-gray-900 dark:text-white mb-2 truncate" title={rec.name}>
+                  <div className="p-4 sm:p-6 flex flex-col flex-1">
+                    <h3 className="font-semibold text-base sm:text-lg text-gray-900 dark:text-white mb-1 sm:mb-2 truncate" title={rec.name}>
                       {rec.name.length > 40 ? rec.name.slice(0, 40) + '…' : rec.name}
                     </h3>
-                    <span className="text-blue-600 dark:text-blue-400 font-bold text-xl mb-4 block">
+                    <span className="text-blue-600 dark:text-blue-400 font-bold text-lg sm:text-xl mb-2 sm:mb-4 block">
                       ${rec.price}
                     </span>
                     <div className="mt-auto">
@@ -376,7 +376,7 @@ export default function ProductDetailsPage() {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => navigate(`/product/${rec.id}`)}
-                        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-3 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-semibold"
+                        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-semibold text-sm sm:text-base"
                       >
                         View Details
                       </motion.button>

@@ -45,30 +45,32 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 w-full bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl shadow-lg rounded-b-2xl border-b border-gray-200/60 dark:border-gray-800/60">
       <div className="max-w-7xl mx-auto px-2 sm:px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-16 min-h-[4rem]">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 h-16">
+          <Link to="/" className="flex items-center space-x-2 h-16 min-w-0">
             <motion.div
               whileHover={{ scale: 1.08 }}
               whileTap={{ scale: 0.96 }}
-              className="flex items-center text-2xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tight select-none h-16"
+              className="flex items-center text-2xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tight select-none h-16 min-w-0"
             >
-              <FaMicrochip className="w-7 h-7 mr-2" />
-              TECHVERSE
+              <FaMicrochip className="w-7 h-7 mr-2 shrink-0" />
+              <span className="truncate">TECHVERSE</span>
             </motion.div>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8 h-16">
+          <nav className="hidden md:flex items-center space-x-4 lg:space-x-8 h-16">
             {navLinks.map(link => (
               <Link
                 key={link.name}
                 to={link.href}
-                className={`relative px-2 py-1 text-lg font-medium transition-colors duration-200
+                className={`relative px-2 py-1 text-base lg:text-lg font-medium transition-colors duration-200
                   ${isActive(link.href)
                     ? 'text-blue-600 dark:text-blue-400'
                     : 'text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400'}
                 `}
+                tabIndex={0}
+                aria-current={isActive(link.href) ? 'page' : undefined}
               >
                 <span>{link.name}</span>
                 {isActive(link.href) && (
@@ -83,18 +85,20 @@ export default function Header() {
 
           {/* Mobile Hamburger */}
           <button
-            className="md:hidden p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-gray-800 transition"
+            className="md:hidden p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-gray-800 transition focus:outline-none focus:ring-2 focus:ring-blue-400"
             onClick={() => setShowMobileMenu((v) => !v)}
             aria-label="Open menu"
+            aria-expanded={showMobileMenu}
+            aria-controls="mobile-menu"
           >
             <FaBars className="w-6 h-6 text-blue-600 dark:text-blue-400" />
           </button>
 
           {/* Actions */}
-          <div className="flex items-center space-x-4 h-16">
+          <div className="flex items-center space-x-2 sm:space-x-4 h-16">
             <ThemeSwitcher />
             {/* Cart Button */}
-            <Link to="/cart" className="relative">
+            <Link to="/cart" className="relative" tabIndex={0} aria-label="Cart">
               <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                 <FaShoppingCart className="h-7 w-7 text-gray-600 dark:text-gray-300" />
                 {getCartItemCount() > 0 && (
@@ -249,6 +253,7 @@ export default function Header() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
+            id="mobile-menu"
             className="md:hidden absolute top-20 left-0 w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-2xl z-40 rounded-b-2xl border-b border-gray-200/60 dark:border-gray-800/60"
           >
             <nav className="flex flex-col items-center py-6 space-y-2">
@@ -256,19 +261,21 @@ export default function Header() {
                 <Link
                   key={link.name}
                   to={link.href}
-                  className={`w-full text-center py-3 text-lg font-medium rounded-xl transition-colors duration-200
+                  className={`w-full text-center py-3 text-base font-medium rounded-xl transition-colors duration-200
                     ${isActive(link.href)
                       ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
                       : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'}
                   `}
                   onClick={() => setShowMobileMenu(false)}
+                  tabIndex={0}
+                  aria-current={isActive(link.href) ? 'page' : undefined}
                 >
                   {link.name}
                 </Link>
               ))}
               <div className="flex items-center justify-center gap-4 mt-4">
                 <ThemeSwitcher />
-                <Link to="/cart" className="relative">
+                <Link to="/cart" className="relative" tabIndex={0} aria-label="Cart">
                   <FaShoppingCart className="h-7 w-7 text-gray-600 dark:text-gray-300" />
                   {getCartItemCount() > 0 && (
                     <span className="absolute -top-2 -right-2 bg-gradient-to-r from-pink-500 to-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg border-2 border-white dark:border-gray-900">
@@ -277,7 +284,7 @@ export default function Header() {
                   )}
                 </Link>
               </div>
-              <div className="flex flex-col items-center gap-2 mt-4">
+              <div className="flex flex-col items-center gap-2 mt-4 w-full px-2">
                 {user ? (
                   <>
                     <Link

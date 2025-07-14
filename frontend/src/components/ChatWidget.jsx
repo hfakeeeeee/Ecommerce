@@ -190,7 +190,7 @@ const ChatWidget = () => {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 chat-widget">
+    <div className="fixed bottom-2 sm:bottom-4 right-2 sm:right-4 left-2 sm:left-auto z-50 chat-widget">
       {!isOpen ? (
         <button
           onClick={toggleChat}
@@ -198,7 +198,7 @@ const ChatWidget = () => {
             isDarkMode 
               ? 'bg-blue-600 hover:bg-blue-700' 
               : 'bg-blue-500 hover:bg-blue-600'
-          } text-white rounded-full p-4 shadow-lg transition-colors duration-200`}
+          } text-white rounded-full p-3 sm:p-4 shadow-lg transition-colors duration-200`}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
@@ -209,15 +209,15 @@ const ChatWidget = () => {
           isDarkMode 
             ? 'bg-gray-800 text-white' 
             : 'bg-white text-gray-900'
-          } rounded-lg shadow-xl w-96 h-[500px] flex flex-col transition-colors duration-200`}
+          } rounded-lg shadow-xl w-full max-w-xs sm:max-w-md md:max-w-lg h-[70vh] sm:w-96 sm:h-[500px] flex flex-col mx-auto sm:mx-0 transition-colors duration-200`}
         >
-          <div className={`p-4 ${
+          <div className={`p-3 sm:p-4 ${
             isDarkMode 
               ? 'bg-blue-600' 
               : 'bg-blue-500'
             } text-white rounded-t-lg flex justify-between items-center`}
           >
-            <h3 className="font-semibold">Chat Support</h3>
+            <h3 className="font-semibold text-sm sm:text-base">Chat Support</h3>
             <div className="flex items-center gap-2">
               <button 
                 onClick={handleClearChat} 
@@ -236,7 +236,7 @@ const ChatWidget = () => {
             </div>
           </div>
           
-          <div className={`flex-1 overflow-y-auto p-4 ${
+          <div className={`flex-1 overflow-y-auto p-3 sm:p-4 ${
             isDarkMode 
               ? 'bg-gray-800' 
               : 'bg-gray-50'
@@ -248,9 +248,7 @@ const ChatWidget = () => {
               >
                 <div className="flex items-start gap-2 mb-1">
                   {!msg.userMessage && (
-                    <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      Bot
-                    </div>
+                    <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Bot</div>
                   )}
                 </div>
                 <div
@@ -266,22 +264,20 @@ const ChatWidget = () => {
                 >
                   {renderMessage(msg)}
                 </div>
-                <div className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  {new Date(msg.timestamp).toLocaleTimeString()}
-                </div>
+                <div className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{new Date(msg.timestamp).toLocaleTimeString()}</div>
               </div>
             ))}
             <div ref={messagesEndRef} />
           </div>
 
-          <form onSubmit={handleSubmit} className={`p-4 border-t ${
+          <form onSubmit={handleSubmit} className={`p-3 sm:p-4 border-t ${
             isDarkMode 
               ? 'border-gray-700 bg-gray-800' 
               : 'border-gray-200 bg-white'
           }`}>
             <div className="flex flex-col gap-2 w-full">
               {error && (
-                <div className="text-red-500 text-sm mb-2">{error}</div>
+                <div className="text-red-500 text-xs sm:text-sm mb-2">{error}</div>
               )}
               <div className="flex gap-2">
                 <input
@@ -289,11 +285,11 @@ const ChatWidget = () => {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Type your message..."
-                  className={`flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`flex-1 p-2 sm:p-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     isDarkMode
                       ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
                       : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                  }`}
+                  } text-xs sm:text-base`}
                 />
                 <button
                   type="submit"
@@ -301,7 +297,7 @@ const ChatWidget = () => {
                     isDarkMode
                       ? 'bg-blue-600 hover:bg-blue-700'
                       : 'bg-blue-500 hover:bg-blue-600'
-                  } text-white px-4 py-2 rounded-lg transition-colors duration-200`}
+                  } text-white px-3 sm:px-4 py-2 rounded-lg transition-colors duration-200 text-xs sm:text-base`}
                 >
                   Send
                 </button>
@@ -318,7 +314,7 @@ const ChatWidget = () => {
             isDarkMode 
               ? 'bg-gray-800 text-white' 
               : 'bg-white text-gray-900'
-          } rounded-lg shadow-xl p-6 max-w-sm mx-4 transform transition-all`}>
+          } rounded-lg shadow-xl p-4 sm:p-6 w-full max-w-xs sm:max-w-sm mx-4 transform transition-all`}>
             <div className="flex items-center mb-4">
               <div className="flex-shrink-0">
                 <svg className="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -326,18 +322,16 @@ const ChatWidget = () => {
                 </svg>
               </div>
               <div className="ml-3">
-                <h3 className="text-lg font-medium">Clear Conversation</h3>
+                <h3 className="text-base sm:text-lg font-medium">Clear Conversation</h3>
               </div>
             </div>
-            <div className="mb-6">
-              <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                Are you sure you want to clear all chat messages? This action cannot be undone.
-              </p>
+            <div className="mb-4 sm:mb-6">
+              <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Are you sure you want to clear all chat messages? This action cannot be undone.</p>
             </div>
-            <div className="flex gap-3 justify-end">
+            <div className="flex gap-2 sm:gap-3 justify-end">
               <button
                 onClick={cancelClearChat}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-lg transition-colors duration-200 ${
                   isDarkMode
                     ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -347,7 +341,7 @@ const ChatWidget = () => {
               </button>
               <button
                 onClick={confirmClearChat}
-                className="px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200"
+                className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200"
               >
                 Clear All
               </button>
