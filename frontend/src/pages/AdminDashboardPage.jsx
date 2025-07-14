@@ -736,15 +736,15 @@ const AdminDashboardPage = () => {
         </div>
       </motion.div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-6 py-4 sm:py-8">
         {/* Navigation Tabs */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          className="mb-8"
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-6 sm:mb-8"
         >
-          <div className="flex flex-wrap gap-2 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl p-2 shadow-lg border border-gray-200/50 dark:border-gray-700/50">
+          <div className="flex flex-nowrap overflow-x-auto gap-2 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl p-1 sm:p-2 shadow-lg border border-gray-200/50 dark:border-gray-700/50 scrollbar-thin scrollbar-thumb-blue-200 dark:scrollbar-thumb-blue-900">
             {[
               { id: 'overview', label: 'Overview', icon: FaChartLine },
               { id: 'users', label: 'Users', icon: FaUsers },
@@ -779,105 +779,104 @@ const AdminDashboardPage = () => {
             >
               {/* Analytics Overview */}
               <div className="mb-8">
-              <div className="flex justify-between items-center mb-6">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-4 sm:gap-0">
                   <div>
-                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                  Analytics Overview
-                </h2>
-                    <p className="text-gray-600 dark:text-gray-400">Real-time insights into your business performance</p>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-1 sm:mb-2 break-words whitespace-pre-line">
+                      Analytics Overview
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">Real-time insights into your business performance</p>
                   </div>
-                <button
-                  onClick={() => setShowChart(!showChart)}
-                    className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg"
-                >
-                  <FaChartLine className="mr-2" />
+                  <button
+                    onClick={() => setShowChart(!showChart)}
+                    className="flex items-center px-3 py-2 sm:px-4 sm:py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg text-sm sm:text-base"
+                  >
+                    <FaChartLine className="mr-2" />
                     {showChart ? 'Hide Charts' : 'Show Charts'}
-                </button>
-              </div>
-              
-                {/* Enhanced Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <motion.div
-                    whileHover={{ scale: 1.02, y: -5 }}
-                    className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
-                >
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="relative flex items-center justify-between">
-                    <div>
-                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Sucess Orders</p>
-                        <h3 className="text-3xl font-bold text-gray-900 dark:text-white">{totalOrders}</h3>
-                        <div className="flex items-center mt-2 text-green-600 dark:text-green-400">
+                  </button>
+                </div>
+                {/* Stats Cards Responsive Grid */}
+                <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                  <motion.div
+                      whileHover={{ scale: 1.02, y: -5 }}
+                      className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
+                  >
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <div className="relative flex items-center justify-between">
+                      <div>
+                          <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Sucess Orders</p>
+                          <h3 className="text-3xl font-bold text-gray-900 dark:text-white">{totalOrders}</h3>
+                          <div className="flex items-center mt-2 text-green-600 dark:text-green-400">
+                      </div>
+                      </div>
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                          <FaShoppingCart className="w-6 h-6 text-white" />
                     </div>
                     </div>
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                        <FaShoppingCart className="w-6 h-6 text-white" />
-                  </div>
-                  </div>
-                </motion.div>
+                  </motion.div>
 
-                <motion.div
-                    whileHover={{ scale: 1.02, y: -5 }}
-                    className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
-                >
-                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="relative flex items-center justify-between">
-                    <div>
-                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Users</p>
-                        <h3 className="text-3xl font-bold text-gray-900 dark:text-white">{analytics?.totalUsers || 0}</h3>
-                        <div className="flex items-center mt-2 text-green-600 dark:text-green-400">
+                  <motion.div
+                      whileHover={{ scale: 1.02, y: -5 }}
+                      className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
+                  >
+                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <div className="relative flex items-center justify-between">
+                      <div>
+                          <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Users</p>
+                          <h3 className="text-3xl font-bold text-gray-900 dark:text-white">{analytics?.totalUsers || 0}</h3>
+                          <div className="flex items-center mt-2 text-green-600 dark:text-green-400">
+                      </div>
+                      </div>
+                        <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                          <FaUsers className="w-6 h-6 text-white" />
                     </div>
                     </div>
-                      <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                        <FaUsers className="w-6 h-6 text-white" />
-                  </div>
-                  </div>
-                </motion.div>
+                  </motion.div>
 
-                <motion.div
-                    whileHover={{ scale: 1.02, y: -5 }}
-                    className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
-                >
-                    <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="relative flex items-center justify-between">
-                    <div>
-                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Revenue</p>
-                        <h3 className="text-3xl font-bold text-gray-900 dark:text-white">${totalRevenue.toFixed(2)}</h3>
-                        <div className="flex items-center mt-2 text-green-600 dark:text-green-400">
+                  <motion.div
+                      whileHover={{ scale: 1.02, y: -5 }}
+                      className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
+                  >
+                      <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <div className="relative flex items-center justify-between">
+                      <div>
+                          <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Revenue</p>
+                          <h3 className="text-3xl font-bold text-gray-900 dark:text-white">${totalRevenue.toFixed(2)}</h3>
+                          <div className="flex items-center mt-2 text-green-600 dark:text-green-400">
+                      </div>
+                      </div>
+                        <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                          <FaDollarSign className="w-6 h-6 text-white" />
                     </div>
                     </div>
-                      <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
-                        <FaDollarSign className="w-6 h-6 text-white" />
-                  </div>
-                  </div>
-                </motion.div>
+                  </motion.div>
 
-                <motion.div
-                    whileHover={{ scale: 1.02, y: -5 }}
-                    className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
-                >
-                    <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="relative flex items-center justify-between">
-                    <div>
-                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Recent Orders</p>
-                        <h3 className="text-3xl font-bold text-gray-900 dark:text-white">{analytics?.recentOrders || 0}</h3>
-                        <div className="flex items-center mt-2 text-green-600 dark:text-green-400">
+                  <motion.div
+                      whileHover={{ scale: 1.02, y: -5 }}
+                      className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
+                  >
+                      <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <div className="relative flex items-center justify-between">
+                      <div>
+                          <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Recent Orders</p>
+                          <h3 className="text-3xl font-bold text-gray-900 dark:text-white">{analytics?.recentOrders || 0}</h3>
+                          <div className="flex items-center mt-2 text-green-600 dark:text-green-400">
+                      </div>
+                      </div>
+                        <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
+                          <FaChartLine className="w-6 h-6 text-white" />
                     </div>
                     </div>
-                      <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
-                        <FaChartLine className="w-6 h-6 text-white" />
-                  </div>
-                  </div>
-                </motion.div>
-              </div>
+                  </motion.div>
+                </div>
 
                 {/* Enhanced Charts Section */}
-              <AnimatePresence>
-                {showChart && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3 }}
+                <AnimatePresence>
+                  {showChart && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
                       className="grid grid-cols-1 lg:grid-cols-2 gap-6"
                     >
                       {/* Orders Trend Chart */}
@@ -965,17 +964,17 @@ const AdminDashboardPage = () => {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
           >
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 p-6">
-              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 space-y-4 lg:space-y-0">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 p-2 sm:p-6">
+              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4 sm:mb-6 gap-4 lg:gap-0">
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                  <h2 className="text-xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-1 sm:mb-2 break-words whitespace-pre-line">
                     User Management
                   </h2>
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-base">
                     {filteredUsers.length} users found • {users.length} total
                   </p>
                 </div>
-                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
                   <div className="relative w-full sm:w-64">
                     <input
                       type="text"
@@ -1002,8 +1001,8 @@ const AdminDashboardPage = () => {
               </div>
               
                 {/* Users Table */}
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-xs sm:text-sm">
                   <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
                       <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -1119,17 +1118,17 @@ const AdminDashboardPage = () => {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
           >
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 p-6">
-              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 space-y-4 lg:space-y-0">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 p-2 sm:p-6">
+              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4 sm:mb-6 gap-4 lg:gap-0">
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                  <h2 className="text-xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-1 sm:mb-2 break-words whitespace-pre-line">
                     Product Management
                   </h2>
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-base">
                     {filteredProducts.length} products found • {products.length} total
                   </p>
                 </div>
-                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
                   <div className="relative w-full sm:w-64">
                     <input
                       type="text"
@@ -1274,11 +1273,10 @@ const AdminDashboardPage = () => {
                                 </div>
                           </td>
                         </motion.tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-                  </div>
+                      )))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
               
               {totalProductPages > 1 && (
@@ -1301,14 +1299,14 @@ const AdminDashboardPage = () => {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
           >
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 p-6">
-              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 space-y-4 lg:space-y-0">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 p-2 sm:p-6">
+              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4 sm:mb-6 gap-4 lg:gap-0">
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                  <h2 className="text-xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-1 sm:mb-2 break-words whitespace-pre-line">
                     Order Management
                   </h2>
-                  <p className="text-gray-600 dark:text-gray-400">
-                      {orders.length} total orders
+                  <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-base">
+                    {orders.length} total orders
                   </p>
                 </div>
               </div>
@@ -1363,33 +1361,33 @@ const AdminDashboardPage = () => {
                                 </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center">
-                              <div className="flex items-center justify-center space-x-3">
-                                <div className="flex-shrink-0 h-10 w-10">
-                                  {order.user?.imageUrl ? (
-                                    <img
-                                      src={getImageUrl(order.user.imageUrl)}
-                                      alt={order.user?.firstName + ' ' + order.user?.lastName}
-                                      className="h-10 w-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
-                                      onError={e => { 
-                                      e.target.onerror = null; // Prevent infinite loop
+                          <td className="px-6 py-4 whitespace-nowrap text-left">
+                            <div className="flex items-center justify-start space-x-3 min-h-[2.5rem]">
+                              <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center">
+                                {order.user?.imageUrl ? (
+                                  <img
+                                    src={getImageUrl(order.user.imageUrl)}
+                                    alt={order.user?.firstName + ' ' + order.user?.lastName}
+                                    className="h-10 w-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
+                                    onError={e => {
+                                      e.target.onerror = null;
                                       e.target.src = createDataUrlPlaceholder('No Image', 80, 80);
                                     }}
-                                    />
-                                  ) : (
-                                    <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
-                                      {order.user?.firstName?.charAt(0)}{order.user?.lastName?.charAt(0)}
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="text-left min-w-0">
-                                  <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                {order.user?.firstName} {order.user?.lastName}
+                                  />
+                                ) : (
+                                  <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
+                                    {order.user?.firstName?.charAt(0)}{order.user?.lastName?.charAt(0)}
                                   </div>
-                                  <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                    {order.user?.email}
-                                  </div>
-                                </div>
+                                )}
+                              </div>
+                              <div className="flex flex-col justify-center text-left min-w-0 h-10">
+                                <span className="text-sm font-semibold text-gray-900 dark:text-white leading-none self-start">
+                                  {order.user?.firstName} {order.user?.lastName}
+                                </span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400 leading-none mt-0.5 self-start">
+                                  {order.user?.email}
+                                </span>
+                              </div>
                             </div>
                           </td>
                             <td className="px-6 py-4 whitespace-nowrap text-center">
