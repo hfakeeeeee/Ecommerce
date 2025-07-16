@@ -91,6 +91,9 @@ Welcome to **TECHVERSE** – a cutting-edge, full-stack ecommerce platform desig
 ### Prerequisites
 - Docker and Docker Compose
 - Git
+- Node.js (v18+) and npm (for local development)
+- Java 17 (for local development)
+- Maven or Gradle (for local development)
 
 ### 1️⃣ Clone and Setup
 
@@ -117,6 +120,7 @@ APP_URL=http://localhost
 # Frontend Configuration
 FRONTEND_HOST=http://localhost
 FRONTEND_PORT=80
+VITE_BACKEND_URL=http://localhost:8080
 
 # CORS Configuration
 CORS_ADDITIONAL_ORIGINS=
@@ -126,6 +130,12 @@ SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ecommerce
 SPRING_DATASOURCE_USERNAME=postgres
 SPRING_DATASOURCE_PASSWORD=root
 SERVER_PORT=8080
+```
+
+Also edit a `.env` file in the `frontend` directory:
+
+```env
+VITE_BACKEND_URL=http://localhost:8080
 ```
 
 ### 3️⃣ Stripe Configuration
@@ -141,15 +151,84 @@ SERVER_PORT=8080
 
 > ⚠️ **Never commit your secret keys to version control!**
 
-### 4️⃣ Launch Application
+### 4️⃣ Running with Docker (Recommended for Production)
 
 ```bash
+# Build and start all services
 docker-compose up --build
+
+# To run in detached mode
+docker-compose up -d --build
+
+# To stop all services
+docker-compose down
 ```
 
 The application will be available at:
 - 🌐 **Frontend**: http://localhost
 - 🔧 **Backend API**: http://localhost:8080
+
+### 5️⃣ Running Locally (Recommended for Development)
+
+**Start PostgreSQL Database:**
+```bash
+# Start only the database service
+docker-compose up postgres -d
+```
+
+**Start Backend:**
+```bash
+# Navigate to backend directory
+cd backend/ecommerce
+
+# Build the project
+./gradlew build
+
+# Run the application
+./gradlew bootRun
+```
+
+**Start Frontend:**
+```bash
+# Navigate to frontend directory
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+
+The development servers will be available at:
+- 🌐 **Frontend**: http://localhost:5173
+- 🔧 **Backend API**: http://localhost:8080
+
+### 6️⃣ Development Tips
+
+- Use `npm run dev` for hot-reload frontend development
+- Use `./gradlew bootRun` with dev tools for backend development
+- Access Swagger UI at http://localhost:8080/swagger-ui.html
+- PostgreSQL database can be accessed at localhost:5432
+
+### 7️⃣ Troubleshooting Local Setup
+
+1. **Port Conflicts**
+   - Ensure ports 5432 (PostgreSQL), 8080 (Backend), and 5173/80 (Frontend) are available
+   - Modify ports in `.env` if needed
+
+2. **Database Connection**
+   - For local development, update `SPRING_DATASOURCE_URL` to `jdbc:postgresql://localhost:5432/ecommerce`
+   - Ensure PostgreSQL service is running: `docker ps`
+
+3. **Frontend API Connection**
+   - Verify `VITE_BACKEND_URL` matches your backend URL
+   - Check CORS settings in backend if getting connection errors
+
+4. **Build Issues**
+   - Clear node_modules: `rm -rf node_modules && npm install`
+   - Clear Gradle cache: `./gradlew clean`
+   - Check Java version: `java -version`
 
 ---
 
