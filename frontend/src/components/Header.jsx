@@ -164,9 +164,9 @@ export default function Header() {
                             <div className="font-semibold text-gray-900 dark:text-white text-lg">
                               {user.firstName} {user.lastName}
                             </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-                              <FaEnvelope className="w-3 h-3 mr-1" />
-                              {user.email}
+                            <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center max-w-[200px]">
+                              <FaEnvelope className="w-3 h-3 mr-1 shrink-0" />
+                              <span className="truncate">{user.email}</span>
                             </div>
                           </div>
                         </div>
