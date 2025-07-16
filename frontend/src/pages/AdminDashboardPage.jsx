@@ -35,6 +35,8 @@ const AdminDashboardPage = () => {
   const [analytics, setAnalytics] = useState(null);
   const [orderTrends, setOrderTrends] = useState([]);
   const [activeTab, setActiveTab] = useState('overview');
+  const [autoModeEnabled, setAutoModeEnabled] = useState(true);
+  const [autoModeLoading, setAutoModeLoading] = useState(true);
 
   // Search and filter states
   const [userSearch, setUserSearch] = useState('');
@@ -79,6 +81,7 @@ const AdminDashboardPage = () => {
   useEffect(() => {
     fetchData();
     fetchAnalytics();
+    fetchAutoModeStatus();
   }, []);
 
   const fetchData = async () => {
@@ -162,6 +165,51 @@ const AdminDashboardPage = () => {
     } catch (error) {
       console.error('Error fetching analytics:', error);
       showToast('Error fetching analytics data', 'error');
+    }
+  };
+
+  const fetchAutoModeStatus = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/api/orders/admin/auto-mode`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setAutoModeEnabled(data.enabled);
+      }
+    } catch (error) {
+      console.error('Error fetching auto mode status:', error);
+      showToast('Failed to fetch auto mode status', 'error');
+    } finally {
+      setAutoModeLoading(false);
+    }
+  };
+
+  const toggleAutoMode = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/api/orders/admin/auto-mode`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ enabled: !autoModeEnabled })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setAutoModeEnabled(data.enabled);
+        showToast(data.message, 'success');
+      } else {
+        showToast('Failed to toggle auto mode', 'error');
+      }
+    } catch (error) {
+      console.error('Error toggling auto mode:', error);
+      showToast('Failed to toggle auto mode', 'error');
     }
   };
 
@@ -418,6 +466,12 @@ const AdminDashboardPage = () => {
           },
           body: JSON.stringify({ status: orderForm.status })
         });
+
+        if (response.status === 400) {
+          const error = await response.json();
+          showToast(error.message || 'Cannot update status at this time', 'error');
+          return;
+        }
       } else if (actionType === 'cancel') {
         response = await fetch(`${API_BASE_URL}/api/orders/${selectedOrder.orderNumber}/cancel`, {
           method: 'POST',
@@ -1309,6 +1363,38 @@ const AdminDashboardPage = () => {
                     {orders.length} total orders
                   </p>
                 </div>
+                <div className="flex items-center space-x-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 px-4 py-2 rounded-xl border border-blue-100 dark:border-blue-800/50">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {autoModeEnabled ? 'Auto Updates' : 'Manual Updates'}
+                    </span>
+                    <button
+                      onClick={toggleAutoMode}
+                      disabled={autoModeLoading}
+                      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                        autoModeEnabled 
+                          ? 'bg-green-500 focus:ring-green-500' 
+                          : 'bg-gray-400 focus:ring-blue-500'
+                      } disabled:opacity-50`}
+                      role="switch"
+                      aria-checked={autoModeEnabled}
+                    >
+                      <span className="sr-only">
+                        {autoModeEnabled ? 'Disable automatic order processing' : 'Enable automatic order processing'}
+                      </span>
+                      <span
+                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                          autoModeEnabled ? 'translate-x-5' : 'translate-x-0'
+                        }`}
+                      />
+                      {autoModeLoading && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-gray-900/20 rounded-full">
+                          <FaSpinner className="w-3 h-3 text-white animate-spin" />
+                        </div>
+                      )}
+                    </button>
+                  </div>
+                </div>
               </div>
               
                 {/* Modern Orders Table */}
@@ -1745,17 +1831,44 @@ const AdminDashboardPage = () => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Order Status
               </label>
-              <select
-                value={orderForm.status}
-                onChange={(e) => setOrderForm({...orderForm, status: e.target.value})}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors"
-              >
-                <option value="PENDING">Pending</option>
-                <option value="PROCESSING">Processing</option>
-                <option value="SHIPPED">Shipped</option>
-                <option value="DELIVERED">Delivered</option>
-                <option value="CANCELLED">Cancelled</option>
-              </select>
+              <div className="space-y-4">
+                <select
+                  value={orderForm.status}
+                  onChange={(e) => setOrderForm({...orderForm, status: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors"
+                >
+                  <option value="PENDING">Pending</option>
+                  <option value="PROCESSING">Processing</option>
+                  <option value="SHIPPED">Shipped</option>
+                  <option value="DELIVERED">Delivered</option>
+                  <option value="CANCELLED">Cancelled</option>
+                </select>
+
+                {!autoModeEnabled && selectedOrder && (
+                  <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-4 text-sm">
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0">
+                        <FaClock className="h-5 w-5 text-blue-400" aria-hidden="true" />
+                      </div>
+                      <div className="ml-3">
+                        <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                          Manual Mode Active
+                        </h3>
+                        <div className="mt-2 text-sm text-blue-700 dark:text-blue-300">
+                          <p>
+                            Minimum waiting times still apply:
+                          </p>
+                          <ul className="list-disc pl-5 mt-2 space-y-1">
+                            <li>Pending → Processing: {orderConfig?.pendingToProcessingSeconds || 30} seconds</li>
+                            <li>Processing → Shipped: {orderConfig?.processingToShippedSeconds || 60} seconds</li>
+                            <li>Shipped → Delivered: {orderConfig?.shippedToDeliveredSeconds || 90} seconds</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
             <div className="flex justify-end space-x-3 pt-6">
               <button

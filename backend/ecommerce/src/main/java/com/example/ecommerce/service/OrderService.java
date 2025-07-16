@@ -88,9 +88,27 @@ public class OrderService {
         // If changing from a non-cancelled status to cancelled, restore stock
         if (!"CANCELLED".equals(currentStatus) && "CANCELLED".equals(newStatus)) {
             restoreStockForOrder(order);
+            order.setStatus(newStatus);
+            return orderRepository.save(order);
         }
 
-        // Admin can set any status
+        // Check if enough time has passed for the status transition
+        LocalDateTime minimumTransitionTime = calculateMinimumTransitionTime(order, currentStatus, newStatus);
+        if (minimumTransitionTime != null && order.getOrderDate().isAfter(minimumTransitionTime)) {
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST, 
+                "Cannot update status yet. Please wait for the minimum processing time."
+            );
+        }
+
+        // Admin can set any valid status
+        if (!isValidStatusTransition(currentStatus, newStatus)) {
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST, 
+                "Invalid status transition from " + currentStatus + " to " + newStatus
+            );
+        }
+
         order.setStatus(newStatus);
         return orderRepository.save(order);
     }
@@ -196,5 +214,41 @@ public class OrderService {
             order.setStatus("DELIVERED");
             orderRepository.save(order);
         }
+    }
+
+    private LocalDateTime calculateMinimumTransitionTime(Order order, String currentStatus, String newStatus) {
+        if (currentStatus == null || newStatus == null || order.getOrderDate() == null) {
+            return null;
+        }
+
+        LocalDateTime orderDate = order.getOrderDate();
+        
+        // Calculate the minimum time that should have passed based on the status transition
+        switch (currentStatus.toUpperCase()) {
+            case "PENDING":
+                if ("PROCESSING".equals(newStatus)) {
+                    return orderDate.plusSeconds(orderConfig.getPendingToProcessingSeconds());
+                }
+                break;
+            case "PROCESSING":
+                if ("SHIPPED".equals(newStatus)) {
+                    return orderDate.plusSeconds(
+                        orderConfig.getPendingToProcessingSeconds() + 
+                        orderConfig.getProcessingToShippedSeconds()
+                    );
+                }
+                break;
+            case "SHIPPED":
+                if ("DELIVERED".equals(newStatus)) {
+                    return orderDate.plusSeconds(
+                        orderConfig.getPendingToProcessingSeconds() + 
+                        orderConfig.getProcessingToShippedSeconds() + 
+                        orderConfig.getShippedToDeliveredSeconds()
+                    );
+                }
+                break;
+        }
+        
+        return null;
     }
 } 

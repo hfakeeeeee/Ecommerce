@@ -2,6 +2,7 @@ package com.example.ecommerce.controller;
 
 import com.example.ecommerce.model.Order;
 import com.example.ecommerce.service.OrderService;
+import com.example.ecommerce.config.OrderConfig;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -14,9 +15,11 @@ import java.util.Map;
 public class OrderController {
 
     private final OrderService orderService;
+    private final OrderConfig orderConfig;
 
-    public OrderController(OrderService orderService) {
+    public OrderController(OrderService orderService, OrderConfig orderConfig) {
         this.orderService = orderService;
+        this.orderConfig = orderConfig;
     }
 
     @GetMapping
@@ -68,5 +71,24 @@ public class OrderController {
         orderService.processProcessingOrders();
         orderService.processShippedOrders();
         return ResponseEntity.ok(Map.of("message", "Order automation triggered successfully"));
+    }
+
+    // Get auto mode status
+    @GetMapping("/admin/auto-mode")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Boolean>> getAutoModeStatus() {
+        return ResponseEntity.ok(Map.of("enabled", orderConfig.isAutoModeEnabled()));
+    }
+
+    // Toggle auto mode
+    @PutMapping("/admin/auto-mode")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> setAutoMode(@RequestBody Map<String, Boolean> payload) {
+        boolean enabled = payload.get("enabled");
+        orderConfig.setAutoModeEnabled(enabled);
+        return ResponseEntity.ok(Map.of(
+            "enabled", enabled,
+            "message", "Auto mode " + (enabled ? "enabled" : "disabled") + " successfully"
+        ));
     }
 } 

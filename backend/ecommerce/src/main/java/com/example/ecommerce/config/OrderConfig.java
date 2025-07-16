@@ -11,6 +11,7 @@ public class OrderConfig {
     private int processingToShippedSeconds = 60;
     private int shippedToDeliveredSeconds = 90;
     private int schedulerIntervalSeconds = 10;
+    private boolean autoModeEnabled = true; // Default to auto mode
     
     public int getPendingToProcessingSeconds() {
         return pendingToProcessingSeconds;
@@ -42,5 +43,13 @@ public class OrderConfig {
     
     public void setSchedulerIntervalSeconds(int schedulerIntervalSeconds) {
         this.schedulerIntervalSeconds = schedulerIntervalSeconds;
+    }
+
+    public boolean isAutoModeEnabled() {
+        return autoModeEnabled;
+    }
+
+    public void setAutoModeEnabled(boolean autoModeEnabled) {
+        this.autoModeEnabled = autoModeEnabled;
     }
 } 
