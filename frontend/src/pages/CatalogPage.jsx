@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   FaShoppingCart, 
@@ -57,6 +57,7 @@ function PriceRangeInput({ priceStats, priceRange, onChange }) {
 }
 
 const CatalogPage = () => {
+  const [searchParams] = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [currentPage, setCurrentPage] = useState(0)
   const [sortBy, setSortBy] = useState('name')
@@ -69,6 +70,14 @@ const CatalogPage = () => {
   const [showFilters, setShowFilters] = useState(false)
   const { products, loading, error, pagination, fetchProductsByCategory } = useProducts()
   const { addToCart } = useCart()
+
+  // Set initial category from URL parameter
+  useEffect(() => {
+    const categoryParam = searchParams.get('category');
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+    }
+  }, [searchParams]);
 
   // Get min and max prices from products for input placeholders
   const priceStats = products.length > 0 ? {
@@ -99,6 +108,7 @@ const CatalogPage = () => {
     if (id === 'audio') return 'Audio';
     if (id === 'gaming') return 'Gaming';
     if (id === 'wearables') return 'Wearables';
+    if (id === 'all') return '';
     return '';
   };
 
