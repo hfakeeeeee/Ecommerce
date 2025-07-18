@@ -15,6 +15,22 @@ import { useNavigate } from 'react-router-dom';
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
 
 const AdminDashboardPage = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  // Add role verification
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    
+    if (user.role !== 'ADMIN') {
+      navigate('/');
+      return;
+    }
+  }, [user, navigate]);
+
   const [users, setUsers] = useState([]);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -37,6 +53,7 @@ const AdminDashboardPage = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [autoModeEnabled, setAutoModeEnabled] = useState(true);
   const [autoModeLoading, setAutoModeLoading] = useState(true);
+  const [orderConfig, setOrderConfig] = useState(null); // Add this line
 
   // Search and filter states
   const [userSearch, setUserSearch] = useState('');
@@ -76,12 +93,11 @@ const AdminDashboardPage = () => {
   // Replace showProductModal and showAddProductModal with a single modal mode
   const [productModalMode, setProductModalMode] = useState('none'); // 'none' | 'add' | 'edit' | 'delete'
 
-  const navigate = useNavigate();
-
   useEffect(() => {
     fetchData();
     fetchAnalytics();
     fetchAutoModeStatus();
+    fetchOrderConfig(); // Add this line
   }, []);
 
   const fetchData = async () => {
@@ -216,6 +232,23 @@ const AdminDashboardPage = () => {
   const showToast = (message, type = 'success') => {
     setToast({ message, type, visible: true });
     setTimeout(() => setToast({ message: '', type: '', visible: false }), 3000);
+  };
+
+  const fetchOrderConfig = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/api/orders/admin/config`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setOrderConfig(data);
+      }
+    } catch (error) {
+      console.error('Error fetching order config:', error);
+    }
   };
 
   // Always sort by ID
@@ -451,31 +484,75 @@ const AdminDashboardPage = () => {
     }
   };
 
+  const getValidStatusTransitions = (currentStatus) => {
+    // Return all possible statuses for admin
+    return ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
+  };
+
   const handleOrderSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Verify admin role before proceeding
+      if (!user || user.role !== 'ADMIN') {
+        showToast('You must be an admin to perform this action', 'error');
+        return;
+      }
+
       const token = localStorage.getItem('token');
+      if (!token) {
+        showToast('Authentication token not found. Please log in again.', 'error');
+        return;
+      }
+
       let response;
+      const orderIdentifier = selectedOrder?.orderNumber || selectedOrder?.id;
+      
+      if (!orderIdentifier) {
+        showToast('Order identifier not found', 'error');
+        return;
+      }
 
       if (actionType === 'update-status') {
-        response = await fetch(`${API_BASE_URL}/api/orders/admin/${selectedOrder.orderNumber}/status`, {
+        console.log('Updating order status:', {
+          orderIdentifier,
+          currentStatus: selectedOrder.status,
+          newStatus: orderForm.status,
+          endpoint: `${API_BASE_URL}/api/orders/admin/${orderIdentifier}/status`,
+          userRole: user.role
+        });
+
+        response = await fetch(`${API_BASE_URL}/api/orders/admin/${orderIdentifier}/status`, {
           method: 'PUT',
           headers: { 
+            'Accept': 'application/json',
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({ status: orderForm.status })
         });
 
+        // Log the response details
+        console.log('Update status response:', {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries())
+        });
+
+        if (response.status === 403) {
+          showToast('You do not have permission to update this order status.', 'error');
+          return;
+        }
+
         if (response.status === 400) {
           const error = await response.json();
-          showToast(error.message || 'Cannot update status at this time', 'error');
+          showToast(error.message || 'Cannot update status at this time. Please check the minimum waiting time requirements.', 'error');
           return;
         }
       } else if (actionType === 'cancel') {
-        response = await fetch(`${API_BASE_URL}/api/orders/${selectedOrder.orderNumber}/cancel`, {
+        response = await fetch(`${API_BASE_URL}/api/orders/${orderIdentifier}/cancel`, {
           method: 'POST',
           headers: { 
+            'Accept': 'application/json',
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           }
@@ -487,23 +564,29 @@ const AdminDashboardPage = () => {
       }
 
       if (response.ok) {
+        const responseData = await response.json();
+        console.log('Success response data:', responseData);
         showToast(`Order ${actionType} successful`, 'success');
         fetchData();
         setShowOrderModal(false);
       } else {
         let errorMsg = `Failed to ${actionType} order (Status: ${response.status})`;
         try {
-          const error = await response.json();
-          errorMsg = error.message || errorMsg;
-          console.error('Order update error:', error, 'Status:', response.status);
+          if (response.headers.get('content-type')?.includes('application/json')) {
+            const error = await response.json();
+            errorMsg = error.message || errorMsg;
+          } else {
+            const textError = await response.text();
+            console.error('Non-JSON error response:', textError);
+          }
         } catch (err) {
-          console.error('Order update error: could not parse JSON', err, 'Status:', response.status);
+          console.error('Error parsing response:', err);
         }
         showToast(errorMsg, 'error');
       }
     } catch (error) {
-      showToast(`Error ${actionType} order: ${error.message}`, 'error');
       console.error('Order update exception:', error);
+      showToast(`Error ${actionType} order: ${error.message}`, 'error');
     }
   };
 
@@ -1837,28 +1920,26 @@ const AdminDashboardPage = () => {
                   onChange={(e) => setOrderForm({...orderForm, status: e.target.value})}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors"
                 >
-                  <option value="PENDING">Pending</option>
-                  <option value="PROCESSING">Processing</option>
-                  <option value="SHIPPED">Shipped</option>
-                  <option value="DELIVERED">Delivered</option>
-                  <option value="CANCELLED">Cancelled</option>
+                  {getValidStatusTransitions(selectedOrder?.status).map(status => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
                 </select>
 
                 {!autoModeEnabled && selectedOrder && (
                   <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-4 text-sm">
-                    <div className="flex items-start">
-                      <div className="flex-shrink-0">
-                        <FaClock className="h-5 w-5 text-blue-400" aria-hidden="true" />
+                    <div className="flex flex-col items-center text-center">
+                      <div className="flex-shrink-0 mb-3">
+                        <FaClock className="h-6 w-6 text-blue-400" aria-hidden="true" />
                       </div>
-                      <div className="ml-3">
-                        <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                      <div>
+                        <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">
                           Manual Mode Active
                         </h3>
-                        <div className="mt-2 text-sm text-blue-700 dark:text-blue-300">
-                          <p>
+                        <div className="text-sm text-blue-700 dark:text-blue-300">
+                          <p className="mb-2">
                             Minimum waiting times still apply:
                           </p>
-                          <ul className="list-disc pl-5 mt-2 space-y-1">
+                          <ul className="list-none space-y-2">
                             <li>Pending → Processing: {orderConfig?.pendingToProcessingSeconds || 30} seconds</li>
                             <li>Processing → Shipped: {orderConfig?.processingToShippedSeconds || 60} seconds</li>
                             <li>Shipped → Delivered: {orderConfig?.shippedToDeliveredSeconds || 90} seconds</li>

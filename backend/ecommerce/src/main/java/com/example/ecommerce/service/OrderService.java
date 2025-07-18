@@ -88,27 +88,9 @@ public class OrderService {
         // If changing from a non-cancelled status to cancelled, restore stock
         if (!"CANCELLED".equals(currentStatus) && "CANCELLED".equals(newStatus)) {
             restoreStockForOrder(order);
-            order.setStatus(newStatus);
-            return orderRepository.save(order);
         }
 
-        // Check if enough time has passed for the status transition
-        LocalDateTime minimumTransitionTime = calculateMinimumTransitionTime(order, currentStatus, newStatus);
-        if (minimumTransitionTime != null && order.getOrderDate().isAfter(minimumTransitionTime)) {
-            throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST, 
-                "Cannot update status yet. Please wait for the minimum processing time."
-            );
-        }
-
-        // Admin can set any valid status
-        if (!isValidStatusTransition(currentStatus, newStatus)) {
-            throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST, 
-                "Invalid status transition from " + currentStatus + " to " + newStatus
-            );
-        }
-
+        // Admin can set any status directly
         order.setStatus(newStatus);
         return orderRepository.save(order);
     }
