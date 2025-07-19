@@ -68,59 +68,112 @@ public class AuthService {
     }
 
     public ResponseEntity<?> register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Email is already taken"));
+        try {
+            // Validate email format
+            if (!request.getEmail().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Please enter a valid email address"));
+            }
+
+            // Check if email exists
+            if (userRepository.existsByEmail(request.getEmail())) {
+                return ResponseEntity.badRequest().body(Map.of("message", "This email is already registered"));
+            }
+
+            // Validate password
+            if (request.getPassword().length() < 8) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Password must be at least 8 characters long"));
+            }
+            if (!request.getPassword().matches(".*[A-Z].*")) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Password must contain at least one uppercase letter"));
+            }
+            if (!request.getPassword().matches(".*[a-z].*")) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Password must contain at least one lowercase letter"));
+            }
+            if (!request.getPassword().matches(".*[0-9].*")) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Password must contain at least one number"));
+            }
+            if (!request.getPassword().matches(".*[!@#$%^&*].*")) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Password must contain at least one special character (!@#$%^&*)"));
+            }
+
+            // Validate name fields
+            if (request.getFirstName().length() < 2) {
+                return ResponseEntity.badRequest().body(Map.of("message", "First name must be at least 2 characters long"));
+            }
+            if (request.getLastName().length() < 2) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Last name must be at least 2 characters long"));
+            }
+            if (!request.getFirstName().matches("^[\\p{L}\\s-']+$")) {
+                return ResponseEntity.badRequest().body(Map.of("message", "First name can only contain letters, spaces, hyphens and apostrophes"));
+            }
+            if (!request.getLastName().matches("^[\\p{L}\\s-']+$")) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Last name can only contain letters, spaces, hyphens and apostrophes"));
+            }
+
+            User user = new User();
+            user.setFirstName(request.getFirstName().trim());
+            user.setLastName(request.getLastName().trim());
+            user.setEmail(request.getEmail().toLowerCase().trim());
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+            user.setRole(User.Role.USER);
+
+            userRepository.save(user);
+            return ResponseEntity.ok(Map.of("message", "Registration successful! You can now log in."));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("message", "An error occurred during registration. Please try again."));
         }
-
-        User user = new User();
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(User.Role.USER);
-
-        userRepository.save(user);
-        return ResponseEntity.ok(Map.of("message", "User registered successfully"));
     }
 
     public ResponseEntity<Map<String, String>> login(LoginRequest request) {
-        // First, check if user exists
-        User user = userRepository.findByEmail(request.getEmail());
-        if (user == null) {
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Invalid email or password");
-            return ResponseEntity.status(401).body(response);
-        }
-
-        // Check if avatar file exists, if not, reset to default
-        if (user.getImageUrl() != null && !user.getImageUrl().isEmpty()) {
-            Path avatarPath = Paths.get(uploadDir, user.getImageUrl().replaceFirst("/uploads/?", "uploads/"));
-            if (!Files.exists(avatarPath)) {
-                user.setImageUrl(""); // Reset to default (empty string means default)
-                userRepository.save(user);
+        try {
+            // First, check if user exists
+            User user = userRepository.findByEmail(request.getEmail());
+            if (user == null) {
+                Map<String, String> response = new HashMap<>();
+                response.put("message", "Invalid email or password");
+                return ResponseEntity.status(401).body(response);
             }
+
+            // Check if avatar file exists, if not, reset to default
+            if (user.getImageUrl() != null && !user.getImageUrl().isEmpty()) {
+                Path avatarPath = Paths.get(uploadDir, user.getImageUrl().replaceFirst("/uploads/?", "uploads/"));
+                if (!Files.exists(avatarPath)) {
+                    user.setImageUrl(""); // Reset to default (empty string means default)
+                    userRepository.save(user);
+                }
+            }
+
+            // Attempt authentication
+            try {
+                Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+                );
+
+                // Set security context
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+                String jwt = jwtUtils.generateToken(userDetails);
+
+                // Prepare response
+                Map<String, String> response = new HashMap<>();
+                response.put("token", jwt);
+                response.put("firstName", user.getFirstName());
+                response.put("lastName", user.getLastName());
+                response.put("email", user.getEmail());
+                response.put("imageUrl", user.getImageUrl() != null ? user.getImageUrl() : "");
+                response.put("role", user.getRole().toString());
+
+                return ResponseEntity.ok(response);
+            } catch (Exception e) {
+                Map<String, String> response = new HashMap<>();
+                response.put("message", "Invalid email or password");
+                return ResponseEntity.status(401).body(response);
+            }
+        } catch (Exception e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "An error occurred during login. Please try again.");
+            return ResponseEntity.status(500).body(response);
         }
-
-        // Attempt authentication
-        Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
-
-        // Set security context
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String jwt = jwtUtils.generateToken(userDetails);
-
-        // Prepare response
-        Map<String, String> response = new HashMap<>();
-        response.put("token", jwt);
-        response.put("firstName", user.getFirstName());
-        response.put("lastName", user.getLastName());
-        response.put("email", user.getEmail());
-        response.put("imageUrl", user.getImageUrl() != null ? user.getImageUrl() : "");
-        response.put("role", user.getRole().toString());
-
-        return ResponseEntity.ok(response);
     }
 
     public ResponseEntity<?> verifyToken() {
