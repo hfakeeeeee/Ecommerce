@@ -321,6 +321,11 @@ const AdminDashboardPage = () => {
 
   const totalOrderPages = Math.ceil(filteredOrders.length / itemsPerPage);
 
+  // Reset pagination when filters change
+  React.useEffect(() => {
+    setCurrentOrderPage(1);
+  }, [orderSearch, orderFilter]);
+
   // Image handling - URL preview
   const handleImageUrlChange = (e) => {
     const url = e.target.value;
@@ -1511,148 +1516,171 @@ const AdminDashboardPage = () => {
               
                 {/* Modern Orders Table */}
                 <div className="bg-white dark:bg-gray-700 rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-600/50 overflow-hidden">
-              <div className="overflow-x-auto">
+                  <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
                       <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600">
-                    <tr>
+                        <tr>
                           <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Order
-                      </th>
-                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Customer
-                      </th>
-                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Order
+                          </th>
+                          <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Customer
+                          </th>
+                          <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                             Amount
-                      </th>
-                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Date
-                      </th>
-                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
+                          </th>
+                          <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Status
+                          </th>
+                          <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Date
+                          </th>
+                          <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
                       <tbody className="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
-                        {paginatedOrders.map((order, index) => (
-                        <motion.tr
-                          key={order.id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                            className="hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors group"
-                          >
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center">
-                                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center mr-3">
-                                  <FaShoppingCart className="w-5 h-5 text-white" />
-                                </div>
-                                <div>
-                                  <div className="text-sm font-semibold text-gray-900 dark:text-white">
-                                    #{order.id}
-                                  </div>
-                                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                                    {order.items?.length || 0} items
-                                  </div>
-                                </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-left">
-                            <div className="flex items-center justify-start space-x-3 min-h-[2.5rem]">
-                              <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center">
-                                {order.user?.imageUrl ? (
-                                  <img
-                                    src={getImageUrl(order.user.imageUrl)}
-                                    alt={order.user?.firstName + ' ' + order.user?.lastName}
-                                    className="h-10 w-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
-                                    onError={e => {
-                                      e.target.onerror = null;
-                                      e.target.src = createDataUrlPlaceholder('No Image', 80, 80);
-                                    }}
-                                  />
-                                ) : (
-                                  <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
-                                    {order.user?.firstName?.charAt(0)}{order.user?.lastName?.charAt(0)}
-                                  </div>
-                                )}
+                        {paginatedOrders.length === 0 ? (
+                          <tr>
+                            <td colSpan="6" className="px-6 py-12 text-center">
+                              <div className="text-gray-500 dark:text-gray-400">
+                                <FaBox className="mx-auto h-16 w-16 mb-4 opacity-50" />
+                                <p className="text-xl font-medium mb-2">No orders found</p>
+                                <p className="text-sm">Try adjusting your search or filters</p>
                               </div>
-                              <div className="flex flex-col justify-center text-left min-w-0 h-10">
-                                <span className="text-sm font-semibold text-gray-900 dark:text-white leading-none self-start">
-                                  {order.user?.firstName} {order.user?.lastName}
+                            </td>
+                          </tr>
+                        ) : (
+                          paginatedOrders.map((order, index) => (
+                            <motion.tr
+                              key={order.id}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: index * 0.05 }}
+                                className="hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors group"
+                              >
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="flex items-center">
+                                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center mr-3">
+                                      <FaShoppingCart className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div>
+                                      <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                                        #{order.id}
+                                      </div>
+                                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                                        {order.items?.length || 0} items
+                                      </div>
+                                    </div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-left">
+                                <div className="flex items-center justify-start space-x-3 min-h-[2.5rem]">
+                                  <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center">
+                                    {order.user?.imageUrl ? (
+                                      <img
+                                        src={getImageUrl(order.user.imageUrl)}
+                                        alt={order.user?.firstName + ' ' + order.user?.lastName}
+                                        className="h-10 w-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
+                                        onError={e => {
+                                          e.target.onerror = null;
+                                          e.target.src = createDataUrlPlaceholder('No Image', 80, 80);
+                                        }}
+                                      />
+                                    ) : (
+                                      <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
+                                        {order.user?.firstName?.charAt(0)}{order.user?.lastName?.charAt(0)}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="flex flex-col justify-center text-left min-w-0 h-10">
+                                    <span className="text-sm font-semibold text-gray-900 dark:text-white leading-none self-start">
+                                      {order.user?.firstName} {order.user?.lastName}
+                                    </span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400 leading-none mt-0.5 self-start">
+                                      {order.user?.email}
+                                    </span>
+                                  </div>
+                                </div>
+                              </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-center">
+                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                  ${(() => {
+                                    try {
+                                      if (order.totalAmount !== null && order.totalAmount !== undefined) {
+                                        return parseFloat(order.totalAmount).toFixed(2);
+                                      }
+                                      return '0.00';
+                                    } catch (error) {
+                                      return '0.00';
+                                    }
+                                  })()}
                                 </span>
-                                <span className="text-xs text-gray-500 dark:text-gray-400 leading-none mt-0.5 self-start">
-                                  {order.user?.email}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-center">
+                                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${
+                                    order.status === 'COMPLETED' 
+                                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                      : order.status === 'PENDING'
+                                    ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                    : order.status === 'PROCESSING'
+                                    ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                                      : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                                  }`}>
+                                    {order.status || 'UNKNOWN'}
                                 </span>
-                              </div>
-                            </div>
-                          </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-center">
-                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                              ${(() => {
-                                try {
-                                  if (order.totalAmount !== null && order.totalAmount !== undefined) {
-                                    return parseFloat(order.totalAmount).toFixed(2);
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 dark:text-white">
+                                {(() => {
+                                  try {
+                                    if (order.orderDate) {
+                                      return new Date(order.orderDate).toLocaleDateString();
+                                    } else if (order.createdAt) {
+                                      return new Date(order.createdAt).toLocaleDateString();
+                                    }
+                                    return 'N/A';
+                                  } catch (error) {
+                                    return 'Invalid Date';
                                   }
-                                  return '0.00';
-                                } catch (error) {
-                                  return '0.00';
-                                }
-                              })()}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center">
-                              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${
-                                order.status === 'COMPLETED' 
-                                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                  : order.status === 'PENDING'
-                                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                : order.status === 'PROCESSING'
-                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                                  : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-                              }`}>
-                                {order.status || 'UNKNOWN'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 dark:text-white">
-                            {(() => {
-                              try {
-                                if (order.orderDate) {
-                                  return new Date(order.orderDate).toLocaleDateString();
-                                } else if (order.createdAt) {
-                                  return new Date(order.createdAt).toLocaleDateString();
-                                }
-                                return 'N/A';
-                              } catch (error) {
-                                return 'Invalid Date';
-                              }
-                            })()}
-                          </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                              <div className="flex items-center justify-center space-x-2">
-                            <button
-                              onClick={() => handleViewOrderDetails(order)}
-                                  className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                                  title="View Details"
-                            >
-                              <FaEye className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleOrderAction('update-status', order)}
-                              className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 transition-colors p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20"
-                              title="Edit Order"
-                            >
-                              <FaEdit className="w-4 h-4" />
-                            </button>
-                              </div>
-                          </td>
-                        </motion.tr>
-                        ))}
-                  </tbody>
-                </table>
-              </div>
+                                })()}
+                              </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                  <div className="flex items-center justify-center space-x-2">
+                                <button
+                                  onClick={() => handleViewOrderDetails(order)}
+                                      className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                      title="View Details"
+                                >
+                                  <FaEye className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleOrderAction('update-status', order)}
+                                  className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 transition-colors p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20"
+                                  title="Edit Order"
+                                >
+                                  <FaEdit className="w-4 h-4" />
+                                </button>
+                                  </div>
+                              </td>
+                            </motion.tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
+
+                {/* Pagination Controls */}
+                {totalOrderPages > 1 && (
+                  <div className="mt-6">
+                    <Pagination
+                      currentPage={currentOrderPage}
+                      totalPages={totalOrderPages}
+                      onPageChange={setCurrentOrderPage}
+                    />
+                  </div>
+                )}
             </div>
           </motion.div>
           )}
