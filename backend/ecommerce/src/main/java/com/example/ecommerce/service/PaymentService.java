@@ -49,11 +49,30 @@ public class PaymentService {
         
         // Create payment intent
         PaymentIntent paymentIntent = PaymentIntent.create(params);
-
-        // Create order and reduce stock
-        createOrder(payload, paymentIntent.getId(), amount / 100.0, user); // Convert cents back to dollars
         
         return paymentIntent.getClientSecret();
+    }
+
+    @Transactional
+    public void handleSuccessfulPayment(String paymentIntentId, Map<String, Object> payload, User user) {
+        try {
+            // Verify payment intent exists and is successful
+            PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentIntentId);
+            if (!"succeeded".equals(paymentIntent.getStatus())) {
+                throw new RuntimeException("Payment has not succeeded");
+            }
+
+            // Check if order already exists for this payment intent
+            if (orderService.findByPaymentIntentId(paymentIntentId) != null) {
+                throw new RuntimeException("Order already exists for this payment");
+            }
+
+            // Create order and reduce stock
+            Double amount = Double.parseDouble(payload.get("amount").toString()) / 100.0; // Convert cents to dollars
+            createOrder(payload, paymentIntentId, amount, user);
+        } catch (StripeException e) {
+            throw new RuntimeException("Failed to verify payment status", e);
+        }
     }
 
     private void validateStockAvailability(Map<String, Object> payload) {

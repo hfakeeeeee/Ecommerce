@@ -59,6 +59,10 @@ public class OrderService {
         return orderRepository.findByOrderNumber(orderNumber);
     }
 
+    public Order findByPaymentIntentId(String paymentIntentId) {
+        return orderRepository.findByPaymentIntentId(paymentIntentId);
+    }
+
     @Transactional
     public Order updateOrderStatus(String orderNumber, String newStatus) {
         Order order = orderRepository.findByOrderNumber(orderNumber);

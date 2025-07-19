@@ -1443,39 +1443,68 @@ const AdminDashboardPage = () => {
                     Order Management
                   </h2>
                   <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-base">
-                    {orders.length} total orders
+                    {filteredOrders.length} orders found • {orders.length} total
                   </p>
                 </div>
-                <div className="flex items-center space-x-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 px-4 py-2 rounded-xl border border-blue-100 dark:border-blue-800/50">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {autoModeEnabled ? 'Auto Updates' : 'Manual Updates'}
-                    </span>
-                    <button
-                      onClick={toggleAutoMode}
-                      disabled={autoModeLoading}
-                      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                        autoModeEnabled 
-                          ? 'bg-green-500 focus:ring-green-500' 
-                          : 'bg-gray-400 focus:ring-blue-500'
-                      } disabled:opacity-50`}
-                      role="switch"
-                      aria-checked={autoModeEnabled}
-                    >
-                      <span className="sr-only">
-                        {autoModeEnabled ? 'Disable automatic order processing' : 'Enable automatic order processing'}
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                  <div className="flex items-center space-x-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 px-4 py-2 rounded-xl border border-blue-100 dark:border-blue-800/50">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {autoModeEnabled ? 'Auto Updates' : 'Manual Updates'}
                       </span>
-                      <span
-                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                          autoModeEnabled ? 'translate-x-5' : 'translate-x-0'
-                        }`}
+                      <button
+                        onClick={toggleAutoMode}
+                        disabled={autoModeLoading}
+                        className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                          autoModeEnabled 
+                            ? 'bg-green-500 focus:ring-green-500' 
+                            : 'bg-gray-400 focus:ring-blue-500'
+                        } disabled:opacity-50`}
+                        role="switch"
+                        aria-checked={autoModeEnabled}
+                      >
+                        <span className="sr-only">
+                          {autoModeEnabled ? 'Disable automatic order processing' : 'Enable automatic order processing'}
+                        </span>
+                        <span
+                          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                            autoModeEnabled ? 'translate-x-5' : 'translate-x-0'
+                          }`}
+                        />
+                        {autoModeLoading && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-gray-900/20 rounded-full">
+                            <FaSpinner className="w-3 h-3 text-white animate-spin" />
+                          </div>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
+                    <div className="relative w-full sm:w-64">
+                      <input
+                        type="text"
+                        value={orderSearch}
+                        onChange={(e) => setOrderSearch(e.target.value)}
+                        placeholder="Search orders..."
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
                       />
-                      {autoModeLoading && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-gray-900/20 rounded-full">
-                          <FaSpinner className="w-3 h-3 text-white animate-spin" />
-                        </div>
-                      )}
-                    </button>
+                      <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    </div>
+                    <div className="relative w-full sm:w-auto">
+                      <select
+                        value={orderFilter}
+                        onChange={(e) => setOrderFilter(e.target.value)}
+                        className="appearance-none px-4 py-3 pr-10 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all duration-200 w-full"
+                      >
+                        <option value="all">All Statuses</option>
+                        <option value="PENDING">Pending</option>
+                        <option value="PROCESSING">Processing</option>
+                        <option value="SHIPPED">Shipped</option>
+                        <option value="DELIVERED">Delivered</option>
+                        <option value="CANCELLED">Cancelled</option>
+                      </select>
+                      <FaChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1507,7 +1536,7 @@ const AdminDashboardPage = () => {
                     </tr>
                   </thead>
                       <tbody className="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
-                        {orders.slice(0, 10).map((order, index) => (
+                        {paginatedOrders.map((order, index) => (
                         <motion.tr
                           key={order.id}
                           initial={{ opacity: 0, y: 10 }}

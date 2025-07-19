@@ -50,4 +50,35 @@ public class PaymentController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    @PostMapping("/payment-success")
+    public ResponseEntity<?> handlePaymentSuccess(@RequestBody Map<String, Object> payload) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null) {
+                logger.error("No authentication found");
+                return ResponseEntity.badRequest().body(Map.of("error", "Not authenticated"));
+            }
+
+            String email = authentication.getName();
+            logger.info("Processing successful payment for user: {}", email);
+
+            User user = userRepository.findByEmail(email);
+            if (user == null) {
+                logger.error("User not found for email: {}", email);
+                return ResponseEntity.badRequest().body(Map.of("error", "User not found"));
+            }
+
+            String paymentIntentId = (String) payload.get("paymentIntentId");
+            if (paymentIntentId == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Payment intent ID is required"));
+            }
+
+            paymentService.handleSuccessfulPayment(paymentIntentId, payload, user);
+            return ResponseEntity.ok(Map.of("message", "Payment processed successfully"));
+        } catch (Exception e) {
+            logger.error("Error processing payment success", e);
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 } 

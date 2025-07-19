@@ -122,6 +122,32 @@ function CheckoutForm({ shippingInfo, setLoading, showToast, removeSelectedItems
             }
 
             if (paymentIntent.status === 'succeeded') {
+                // Call payment-success endpoint to create order
+                const paymentSuccessResponse = await fetch(`${API_BASE_URL}/api/payment-success`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        paymentIntentId: paymentIntent.id,
+                        amount: getCartTotalWithShipping() * 100, // Convert to cents
+                        shipping: shippingInfo,
+                        items: selectedItems.map(item => ({
+                            id: item.productId,
+                            name: item.productName,
+                            price: item.price,
+                            quantity: item.quantity,
+                            image: item.productImage
+                        }))
+                    })
+                });
+
+                if (!paymentSuccessResponse.ok) {
+                    const errorData = await paymentSuccessResponse.json();
+                    throw new Error(errorData.error || 'Failed to process payment');
+                }
+
                 // Remove only the selected items from cart after successful payment
                 const selectedProductIds = selectedItems.map(item => item.productId);
                 await removeSelectedItems(selectedProductIds);
@@ -274,13 +300,13 @@ export default function PaymentPage() {
             return false;
         }
         // City: required, min 2 chars, only letters, spaces, hyphens, apostrophes
-        if (!shippingInfo.city.trim() || shippingInfo.city.trim().length < 2 || !/^[a-zA-Z\s\-']+$/.test(shippingInfo.city.trim())) {
-            showToast('Please enter a valid city (letters, spaces, hyphens, apostrophes only)', 'error');
+        if (!shippingInfo.city.trim() || shippingInfo.city.trim().length < 2 || !/^[\p{L}\s\-']+$/u.test(shippingInfo.city.trim())) {
+            showToast('Please enter a valid city name', 'error');
             return false;
         }
         // State: required, min 2 chars, letters, spaces, hyphens, apostrophes, and numbers
-        if (!shippingInfo.state.trim() || shippingInfo.state.trim().length < 2 || !/^[a-zA-Z0-9\s\-']+$/.test(shippingInfo.state.trim())) {
-            showToast('Please enter a valid state (letters, numbers, spaces, hyphens, apostrophes only)', 'error');
+        if (!shippingInfo.state.trim() || shippingInfo.state.trim().length < 2 || !/^[\p{L}0-9\s\-']+$/u.test(shippingInfo.state.trim())) {
+            showToast('Please enter a valid state/province name', 'error');
             return false;
         }
         // ZIP Code: required, format depends on country
