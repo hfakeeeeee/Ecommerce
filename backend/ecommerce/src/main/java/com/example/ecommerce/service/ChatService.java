@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 @Service
@@ -20,6 +21,8 @@ public class ChatService {
     @Autowired
     private ProductRepository productRepository;
 
+    private static final ZoneId VIETNAM_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
+
     // Store conversation context for each user
     private final Map<Long, ConversationContext> userContexts = new HashMap<>();
 
@@ -30,7 +33,7 @@ public class ChatService {
         LocalDateTime lastInteraction;
 
         ConversationContext() {
-            this.lastInteraction = LocalDateTime.now();
+            this.lastInteraction = LocalDateTime.now(VIETNAM_ZONE);
         }
     }
 
@@ -39,7 +42,7 @@ public class ChatService {
         chatMessage.setMessage(message);
         chatMessage.setUser(user);
         chatMessage.setUserMessage(true);
-        chatMessage.setTimestamp(LocalDateTime.now());
+        chatMessage.setTimestamp(LocalDateTime.now(VIETNAM_ZONE));
         return chatMessageRepository.save(chatMessage);
     }
 
@@ -52,13 +55,13 @@ public class ChatService {
         
         // Check if the context is too old (more than 30 minutes)
         if (context.lastInteraction != null && 
-            context.lastInteraction.plusMinutes(30).isBefore(LocalDateTime.now())) {
+            context.lastInteraction.plusMinutes(30).isBefore(LocalDateTime.now(VIETNAM_ZONE))) {
             context = new ConversationContext();
             userContexts.put(user.getId(), context);
         }
         
         // Update last interaction time
-        context.lastInteraction = LocalDateTime.now();
+        context.lastInteraction = LocalDateTime.now(VIETNAM_ZONE);
 
         // Handle follow-up questions about products
         if (context.lastTopic != null && context.lastTopic.equals("product_search") && 
@@ -114,7 +117,7 @@ public class ChatService {
         botMessage.setMessage(botResponse);
         botMessage.setUser(user);
         botMessage.setUserMessage(false);
-        botMessage.setTimestamp(LocalDateTime.now());
+        botMessage.setTimestamp(LocalDateTime.now(VIETNAM_ZONE));
         return chatMessageRepository.save(botMessage);
     }
 

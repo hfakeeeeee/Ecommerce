@@ -122,8 +122,16 @@ function CheckoutForm({ shippingInfo, setLoading, showToast, removeSelectedItems
             }
 
             if (paymentIntent.status === 'succeeded') {
-                // Call payment-success endpoint to create order
-                const paymentSuccessResponse = await fetch(`${API_BASE_URL}/api/payment-success`, {
+                // Show success message and redirect immediately
+                showToast('Payment successful! Redirecting to your orders...', 'success');
+                
+                // Remove items from cart immediately
+                const selectedProductIds = selectedItems.map(item => item.productId);
+                await removeSelectedItems(selectedProductIds);
+                sessionStorage.removeItem('selectedCartItems');
+
+                // Start order processing in background
+                fetch(`${API_BASE_URL}/api/payment-success`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -131,8 +139,17 @@ function CheckoutForm({ shippingInfo, setLoading, showToast, removeSelectedItems
                     },
                     body: JSON.stringify({
                         paymentIntentId: paymentIntent.id,
-                        amount: getCartTotalWithShipping() * 100, // Convert to cents
-                        shipping: shippingInfo,
+                        amount: getCartTotalWithShipping() * 100,
+                        shipping: {
+                            firstName: shippingInfo.firstName,
+                            lastName: shippingInfo.lastName,
+                            email: shippingInfo.email,
+                            address: shippingInfo.address,
+                            city: shippingInfo.city,
+                            state: shippingInfo.state,
+                            zipCode: shippingInfo.zipCode,
+                            country: shippingInfo.country
+                        },
                         items: selectedItems.map(item => ({
                             id: item.productId,
                             name: item.productName,
@@ -141,22 +158,13 @@ function CheckoutForm({ shippingInfo, setLoading, showToast, removeSelectedItems
                             image: item.productImage
                         }))
                     })
+                }).catch(error => {
+                    console.error('Background order processing error:', error);
+                    // Don't show error to user since payment was successful
                 });
 
-                if (!paymentSuccessResponse.ok) {
-                    const errorData = await paymentSuccessResponse.json();
-                    throw new Error(errorData.error || 'Failed to process payment');
-                }
-
-                // Remove only the selected items from cart after successful payment
-                const selectedProductIds = selectedItems.map(item => item.productId);
-                await removeSelectedItems(selectedProductIds);
-                // Clear session storage
-                sessionStorage.removeItem('selectedCartItems');
-                showToast('Payment successful! Thank you for your purchase.', 'success');
-                setTimeout(() => {
-                    navigate('/');
-                }, 2000);
+                // Redirect to order history page
+                navigate('/orders');
             }
         } catch (error) {
             console.error('Payment error:', error);
